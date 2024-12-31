@@ -5,6 +5,6 @@ hmyVelocity
 
 | :Command: | :Description: | :Permission: |
 |:---------|:-------------|------------:|
-|lobby         |             |            |
-|hmy server [name]       |             |            |
+|lobby| Brings you back to Lobby.||
+|hmy server [name]| Brings you to a Server, defined in velocity.toml|hmy.server.[name]|
 |         |             |            |
