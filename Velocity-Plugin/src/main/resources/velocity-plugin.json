@@ -1,0 +1,13 @@
+{
+    "id": "hmyvelocityplugin",
+    "name": "hmyPlugin",
+    "version": "1.0",
+    "authors": ["Haaremy"],
+    "main": "com.haaremy.hmyvelocityplugin.HmyVelocityPlugin",
+    "dependencies": [
+        {
+            "id": "luckperms",
+            "optional": false
+        }
+    ]
+}

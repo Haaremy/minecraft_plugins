@@ -1,0 +1,63 @@
+
+[[Basics]]
+    lobby                                       Go back to Lobby Server.  
+    hmy server [server]                         Switch Servers in Proxy.
+    hmy world [world]                           Switch World in current Server.
+	help [page]	                                Views a list of available commands.
+	rules [page]	                            Views the server rules.
+
+[[World]]
+	fly	[player]*                               Take off, and soar!
+	weather	[sun, storm, rain, ...] [duration]  Sets the weather.
+	gm [name, id] [player]*	                    Change player gamemode.
+	time [number]                               Display/Change the world time.
+	lightning [player]	                        Strikes at the cursor or a player.
+	speed [player]* [walk, fly]* [speed]        Change your walk or fly speed.
+	skull [player]                              Get the players head.
+
+[[Chat]]
+	mute [player]                               Mute, unmute, or temporarily mute a player.
+	dm [player]	                                Sends a private message to the specified player.
+	broadcast [proxy, server, world] [message]	Broadcasts a message to the entire server.
+	r [message]                                 Quickly reply to the last player to message you.
+
+[[Admin]]
+	tempban [player] [date] [reson]             Temporary ban a user.
+	tempbanip [player] [date] [reson]           Temporarily ban an IP Address.
+	unban [player]	                            Unbans the specified player.
+	unbanip [player]	                        Unbans the specified IP address.
+	kickall [player] [reson]                    Kicks all players off the server except the issuer.
+	kick [player] [reson]                       Kicks a specified player with a reason.
+	ban [player] [reson]                        Bans a player.
+	banip [player] [reson]                      Bans an IP address.
+	seen [player]	                            Shows the last logout time of a player.
+	getpos [player]	                            Get your current coordinates or those of a player.
+	socialspy [player]*                         Spy private Messages. /<command> [player] [on|off]
+	vanish	                                    Hide yourself from other players.
+	kill [player, entity]	                    Kills specified player or entitie.
+	invsee	[player]                            See and/or edit the inventory of other players.
+	sudo [player] [command]                     Make another user perform a command.
+	give [player] [item name, id] [amount]      Give a player an item.
+
+
+[[Home]]
+	home [player]* [name, id]                   Teleport to your home.
+	sethome [name]                              Set home to your current location.
+	renamehome [old name, id] [new name]        Renames a home.
+	delhome	[name, id]                          Removes a home.
+
+[[Teleport]]
+	tpauto                                      Automatically accept teleportation requests.
+	tpacancel                                   Cancel all outstanding teleport requests. Specify [player] to cancel requests with them.
+	tpa                                         Request to teleport to the specified player.
+	tpahere                                     Request that the specified player teleport to you.
+	tpall                                       Teleport all online players to another player.
+	tp                                          Teleport to a player.
+	tpoffline                                   Teleport to a player's last known logout location
+	tpdeny                                      Rejects teleport requests.
+	tpaccept                                    Accepts teleport requests.
+	tphere                                      Teleport a player to you.
+	tpohere                                     Teleport here override for tptoggle.
+	tppos                                       Teleport to coordinates.
+	tpr                                         Teleport randomly.
+	settpr                                      Set the random teleport location and parameters.

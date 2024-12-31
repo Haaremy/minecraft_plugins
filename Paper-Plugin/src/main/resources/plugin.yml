@@ -1,0 +1,15 @@
+name: hmyPaper
+version: 1.0
+main: de.haaremy.hmypaper.HmyPaperPlugin
+api-version: 1.19
+depend: [LuckPerms]
+description: Ein Plugin von @Haaremy zur Integration in einen Paper Server mit LuckPerms.
+author: Haaremy
+website: haaremy.de
+commands:
+  lobby:
+    description: "Teleportiert dich zum Lobby-Server."
+    usage: "/lobby"
+  spawn:
+    description: "Teleportiert dich zum Welt-Spawnpunkt."
+    usage: "/spawn"
