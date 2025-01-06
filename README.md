@@ -1,7 +1,22 @@
 # Mc.Haaremy.de Plugins
 Plugins for Velocity and PaperMc Server.
 
-hmyVelocity
+## My Setup:
+```bash
+├── Velocity
+|   ├── server.jar
+|   ├── plugins
+|   |   ├── hmyVelocity.jar
+|   ├── Servers
+|   |   ├── Paper (Lobby)
+|   |   |   ├── plugins
+|   |   |   |   ├── hmyPaper.jar
+|   |   ├── Paper (Sonstige)
+|   |   |   ├── plugins
+|   |   |   |   ├── hmyPaper.jar
+```
+
+## hmyVelocity
 
 | :Command: | :Description: | :Permission: |
 |:---------|:-------------|------------:|
