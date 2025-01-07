@@ -1,5 +1,5 @@
 name: hmyPaper
-version: 1.0
+version: "1.0"
 main: de.haaremy.hmypaper.HmyPaperPlugin
 api-version: 1.19
 depend: [LuckPerms]
@@ -7,9 +7,125 @@ description: Ein Plugin von @Haaremy zur Integration in einen Paper Server mit L
 author: Haaremy
 website: haaremy.de
 commands:
+  help:
+    description: Zeigt eine Liste der verfügbaren Befehle an.
+    usage: /help [Seite]
+    permission: hmy.help
+    rules:
+    description: Zeigt die Serverregeln an.
+    usage: /rules [Seite]
+    permission: hmy.rules
   lobby:
     description: "Teleportiert dich zum Lobby-Server."
     usage: "/lobby"
   spawn:
     description: "Teleportiert dich zum Welt-Spawnpunkt."
     usage: "/spawn"
+  fly:
+    description: Aktiviert/Deaktiviert das Fliegen.
+    usage: /fly [Spieler]
+    permission: hmy.fly
+  weather:
+    description: Ändert das Wetter.
+    usage: /weather [sonne|regen|sturm] [Dauer]
+    permission: hmy.weather
+  gm:
+    description: Ändert den Spielmodus.
+    usage: /gm [name|id] [Spieler]
+    permission: hmy.gm
+  time:
+    description: Zeigt oder ändert die aktuelle Zeit.
+    usage: /time [Nummer]
+    permission: hmy.time
+  lightning:
+    description: Lässt einen Blitz einschlagen.
+    usage: /lightning [Spieler]
+    permission: hmy.lightning
+  speed:
+    description: Ändert die Geh- oder Fluggeschwindigkeit.
+    usage: /speed [Spieler] [walk|fly] [Geschwindigkeit]
+    permission: hmy.speed
+  skull:
+    description: Gibt den Kopf eines Spielers.
+    usage: /skull [Spieler]
+    permission: hmy.skull
+  mute:
+    description: Stummschaltet einen Spieler.
+    usage: /mute [Spieler]
+    permission: hmy.mute
+  dm:
+    description: Sendet eine private Nachricht.
+    usage: /dm [Spieler] [Nachricht]
+    permission: hmy.dm
+  broadcast:
+    description: Sendet eine Nachricht an den gesamten Server.
+    usage: /broadcast [Nachricht]
+    permission: hmy.broadcast
+  r:
+    description: Antwortet auf die letzte Nachricht.
+    usage: /r [Nachricht]
+    permission: hmy.r
+  tempban:
+    description: Sperrt einen Spieler temporär.
+    usage: /tempban [Spieler] [Dauer] [Grund]
+    permission: hmy.tempban
+  tempbanip:
+    description: Sperrt eine IP-Adresse temporär.
+    usage: /tempbanip [Spieler] [Dauer] [Grund]
+    permission: hmy.tempbanip
+  unban:
+    description: Entsperrt einen Spieler.
+    usage: /unban [Spieler]
+    permission: hmy.unban
+  unbanip:
+    description: Entsperrt eine IP-Adresse.
+    usage: /unbanip [IP]
+    permission: hmy.unbanip
+  kickall:
+    description: Kickt alle Spieler.
+    usage: /kickall [Grund]
+    permission: hmy.kickall
+  kick:
+    description: Kickt einen Spieler.
+    usage: /kick [Spieler] [Grund]
+    permission: hmy.kick
+  ban:
+    description: Sperrt einen Spieler dauerhaft.
+    usage: /ban [Spieler] [Grund]
+    permission: hmy.ban
+  banip:
+    description: Sperrt eine IP-Adresse dauerhaft.
+    usage: /banip [IP] [Grund]
+    permission: hmy.banip
+  seen:
+    description: Zeigt die letzte Abmeldezeit eines Spielers.
+    usage: /seen [Spieler]
+    permission: hmy.seen
+  getpos:
+    description: Zeigt die Position eines Spielers.
+    usage: /getpos [Spieler]
+    permission: hmy.getpos
+  socialspy:
+    description: Aktiviert/Deaktiviert SocialSpy.
+    usage: /socialspy [on|off]
+    permission: hmy.socialspy
+  vanish:
+    description: Macht den Spieler unsichtbar.
+    usage: /vanish
+    permission: hmy.vanish
+  kill:
+    description: Tötet einen Spieler oder ein Wesen.
+    usage: /kill [Spieler|Entity]
+    permission: hmy.kill
+  invsee:
+    description: Zeigt das Inventar eines Spielers an.
+    usage: /invsee [Spieler]
+    permission: hmy.invsee
+  sudo:
+    description: Lässt einen Spieler einen Befehl ausführen.
+    usage: /sudo [Spieler] [Befehl]
+    permission: hmy.sudo
+  give:
+    description: Gibt einem Spieler ein Item.
+    usage: /give [Spieler] [Item] [Anzahl]
+    permission: hmy.give

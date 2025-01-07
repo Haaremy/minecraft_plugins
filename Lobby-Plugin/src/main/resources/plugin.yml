@@ -1,0 +1,25 @@
+name: hmyLobby
+version: "1.0"
+main: de.haaremy.hmylobby.HmyLobby
+api-version: 1.19
+depend: [LuckPerms]
+description: Ein Plugin von @Haaremy zur Verwaltung eines Lobby-Servers.
+author: Haaremy
+website: https://haaremy.de
+commands:
+  none:
+    description: "No Commands."
+    usage: "/none"
+permissions:
+  hmy.lobby.message.none:
+    description: Deaktiviert die Willkommensnachricht beim Betreten der Lobby.
+    default: false
+  hmy.lobby.sound.none:
+    description: Deaktiviert die Sounds beim Betreten der Lobby.
+    default: false
+  hmy.lobby.particle.none:
+    description: Deaktiviert die Partikel beim Betreten der Lobby.
+    default: false
+  hmy.lobby.inventory.edit:
+    description: Erlaubt das editieren der Inventory Slots.
+    default: false

@@ -1,5 +1,8 @@
 de\haaremy\hmyvelocityplugin\LobbyC.class
 de\haaremy\hmyvelocityplugin\PlayerJoinListener.class
+de\haaremy\hmyvelocityplugin\BanC.class
 de\haaremy\hmyvelocityplugin\HmyLobby.class
+de\haaremy\hmyvelocityplugin\KickC.class
+de\haaremy\hmyvelocityplugin\BroadcastC.class
 de\haaremy\hmyvelocityplugin\HmyVelocityPlugin.class
 de\haaremy\hmyvelocityplugin\ServerC.class

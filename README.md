@@ -27,7 +27,7 @@ https://github.com/LuckPerms/LuckPerms
 
 | :Command: | :Description: | :Permission: |
 |:---------|:-------------|------------:|
-|lobby| Brings you back to Lobby.||
+|lobby| Brings you back to Lobby, defined as "lobby" in velocity.toml.||
 |hmy server [name]| Brings you to a Server, defined in velocity.toml|hmy.server.[name]|
 |         |             |            |
 
@@ -44,3 +44,11 @@ https://github.com/LuckPerms/LuckPerms
 |spawn| Brings you back to Spawn*.||
 |hmy server [name]| Brings you to a Server, defined in velocity.toml|hmy.server.[name]|
 |         |             |            |
+
+
+## hmyLobby
+
+- Willkommensnachricht -> hmy.lobby.message.none: deaktiviert Nachricht
+- Join Sound -> hmy.lobby.sound.none: deaktiviert Nachricht
+- Partikel -> hmy.lobby.particle.none: deaktiviert Nachricht
+- Anti Build 

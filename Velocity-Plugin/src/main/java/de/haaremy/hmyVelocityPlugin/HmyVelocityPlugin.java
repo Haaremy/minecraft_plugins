@@ -58,6 +58,10 @@ public class HmyVelocityPlugin {
             return;
         }
 
+        // standard-Server
+         String defaultServerName = "lobby"; // Standardservername
+        server.getEventManager().register(this, new PlayerJoinListener(server, defaultServerName));
+
         // Plugin-Features initialisieren
         initializePluginFeatures();
     }
@@ -82,6 +86,16 @@ public class HmyVelocityPlugin {
     private void initializePluginFeatures() {
         // HmyLobby initialisieren
         this.hmyLobby = new HmyLobby(server, logger, language, luckPerms);
+
+        // Broadcast-Befehl registrieren
+        server.getCommandManager().register(
+        server.getCommandManager().metaBuilder("broadcast").build(),
+        new BroadcastC(server)
+        );
+        
         logger.info("HmyLobby erfolgreich initialisiert.");
+
     }
+
+    
 }
