@@ -7,9 +7,10 @@ description: Ein Plugin von @Haaremy zur Verwaltung eines Lobby-Servers.
 author: Haaremy
 website: https://haaremy.de
 commands:
-  none:
-    description: "No Commands."
-    usage: "/none"
+  server: 
+    description: "Teleportiert dich zum gewählten Server."
+    usage: "/hmy server <name>"
+    permission: hmy.server.<name>
 permissions:
   hmy.lobby.message.none:
     description: Deaktiviert die Willkommensnachricht beim Betreten der Lobby.

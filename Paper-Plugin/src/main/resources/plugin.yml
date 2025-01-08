@@ -11,7 +11,7 @@ commands:
     description: Zeigt eine Liste der verfügbaren Befehle an.
     usage: /help [Seite]
     permission: hmy.help
-    rules:
+  rules:
     description: Zeigt die Serverregeln an.
     usage: /rules [Seite]
     permission: hmy.rules
@@ -129,3 +129,6 @@ commands:
     description: Gibt einem Spieler ein Item.
     usage: /give [Spieler] [Item] [Anzahl]
     permission: hmy.give
+  triggervelocity:
+    description: Triggert einen Velocity-Befehl.
+    permission: hmy.triggervelocity

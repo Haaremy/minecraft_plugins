@@ -1,7 +1,13 @@
 package de.haaremy.hmypaper;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,6 +29,7 @@ public class HmyPaperPlugin extends JavaPlugin {
         }
 
         // Befehle und Events registrieren
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "hmy:trigger");
         registerCommands();
         registerEvents();
 
@@ -45,6 +52,8 @@ public class HmyPaperPlugin extends JavaPlugin {
     }
 
     private void registerCommands() {
+
+        registerCommand("triggervelocity", this);
 
         //lobby & /hmy server sind in hmyVelocity registriert
         // Basics
@@ -105,5 +114,40 @@ public class HmyPaperPlugin extends JavaPlugin {
 
     public LuckPerms getLuckPerms() {
         return luckPerms;
+    }
+
+     @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (command.getName().equalsIgnoreCase("triggervelocity")) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("Nur Spieler können diesen Befehl ausführen!");
+                return true;
+            }
+
+            if (args.length < 2) {
+                sender.sendMessage("Verwendung: /triggervelocity <Befehl> <Argumente>");
+                return true;
+            }
+
+            Player player = (Player) sender;
+            String velocityCommand = String.join(" ", args);
+
+            // Nachricht an Velocity senden
+            try {
+                ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
+                DataOutputStream out = new DataOutputStream(byteArray);
+
+                out.writeUTF(player.getName()); // Spielername
+                out.writeUTF(velocityCommand);  // Der auszuführende Befehl
+
+                player.sendPluginMessage(this, "hmy:trigger", byteArray.toByteArray());
+
+            } catch (Exception e) {
+                player.sendMessage("Fehler beim Senden der Nachricht!");
+                e.printStackTrace();
+            }
+            return true;
+        }
+        return false;
     }
 }

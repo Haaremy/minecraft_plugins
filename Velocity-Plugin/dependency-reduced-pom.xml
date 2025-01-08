@@ -4,7 +4,7 @@
   <groupId>de.haaremy</groupId>
   <artifactId>hmyVelocity</artifactId>
   <name>hmyVelocity</name>
-  <version>A2</version>
+  <version>3</version>
   <build>
     <resources>
       <resource>

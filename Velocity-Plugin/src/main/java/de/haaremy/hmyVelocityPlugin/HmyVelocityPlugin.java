@@ -1,5 +1,7 @@
 package de.haaremy.hmyvelocityplugin;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -9,11 +11,14 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 
+import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPerms;
 
 @Plugin(
@@ -30,12 +35,15 @@ public class HmyVelocityPlugin {
     private Properties language;
     private LuckPerms luckPerms;
     private HmyLobby hmyLobby;
+    private final ProxyServer proxyServer;
+    private static final MinecraftChannelIdentifier CHANNEL = MinecraftChannelIdentifier.create("hmy", "trigger");
 
     @Inject
     public HmyVelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
+        this.proxyServer = server;
     }
 
     @Subscribe
@@ -61,6 +69,10 @@ public class HmyVelocityPlugin {
         // standard-Server
          String defaultServerName = "lobby"; // Standardservername
         server.getEventManager().register(this, new PlayerJoinListener(server, defaultServerName));
+
+        // Listens to Commands From Bukkit
+        server.getChannelRegistrar().register(CHANNEL);
+
 
         // Plugin-Features initialisieren
         initializePluginFeatures();
@@ -93,9 +105,38 @@ public class HmyVelocityPlugin {
         new BroadcastC(server)
         );
         
-        logger.info("HmyLobby erfolgreich initialisiert.");
+        logger.info("Velocity: HmyLobby-Modul erfolgreich initialisiert.");
 
     }
 
+    @Subscribe
+    public void onPluginMessage(PluginMessageEvent event) {
+        if (!event.getIdentifier().equals(CHANNEL)) {
+            return;
+        }
+
+        try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(event.getData()))) {
+        // Spielername und Befehl auslesen
+        String playerName = in.readUTF();
+        String command = in.readUTF();
+
+        logger.info("Nachricht empfangen: Spieler = " + playerName + ", Befehl = " + command);
+
+        // Spieler suchen und Befehl ausführen
+        server.getPlayer(playerName).ifPresentOrElse(player -> {
+            server.getCommandManager().executeAsync(player, command).whenComplete((result, throwable) -> {
+                if (throwable != null) {
+                    player.sendMessage(Component.text("Fehler beim Ausführen des Befehls: " + command));
+                }
+            });
+        }, () -> {
+            logger.warn("Spieler nicht gefunden: " + playerName);
+        });
+    } catch (Exception e) {
+        logger.error("Fehler beim Lesen der Plugin-Nachricht: ", e);
+    }
+}
+
     
 }
+

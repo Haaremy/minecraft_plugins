@@ -32,14 +32,12 @@ public class PlayerEventListener implements Listener {
         plugin.getLogger().info(player.getName() + " hat die Lobby betreten.");
 
         // Schuhe und andere Items ins Inventar legen
-        giveBoots(player);
         giveLobbyItems(player);
 
         // Partikel und Sounds mit Verzögerung und Wiederholung abspielen
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            player.getWorld().spawnParticle(Particle.HEART, player.getLocation().add(0, 1.5, 0), 10, 0.5, 0.5, 0.5, 0.1);
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-        }, 60L, 20L); // Startet nach 3 Sekunden und wiederholt sich jede Sekunde
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            playFeedbackEffects(player);
+        }, 20L); // Startet nach 1 Sekunden und wiederholt sich jede Sekunde
     }
 
     @EventHandler
@@ -48,13 +46,7 @@ public class PlayerEventListener implements Listener {
         plugin.getLogger().info(player.getName() + " hat die Lobby verlassen.");
     }
 
-    private void giveBoots(Player player) {
-        ItemStack boots = createItem(Material.LEATHER_BOOTS, "§bWechselschuhe", List.of(
-            "§7Klicke mit den Schuhen in der Hand, um",
-            "§7die Geschwindigkeit zu ändern."
-        ));
-        player.getInventory().setItem(8, boots); // Schuhe in den letzten Slot legen
-    }
+
 
     private void giveLobbyItems(Player player) {
         // Nether Stern (Position Mitte)
@@ -64,6 +56,13 @@ public class PlayerEventListener implements Listener {
         // Spieler-Kopf (Position Start)
         ItemStack playerHead = getPlayerHead(player, "§bDein My-Menü", List.of("§7Zeigt Optionen basierend auf Rechten an"));
         player.getInventory().setItem(0, playerHead);
+
+        // Schuhe für Geschwindigkeit (Position Ende)
+        ItemStack Pfeil = createItem(Material.ARROW, "§bPfeil", List.of(
+                    "§7Klicke mit den Schuhen in der Hand, um",
+                    "§7die Geschwindigkeit zu ändern."
+                ));
+                player.getInventory().setItem(8, Pfeil);
     }
 
     private ItemStack createItem(Material material, String name, List<String> lore) {
@@ -93,92 +92,92 @@ public class PlayerEventListener implements Listener {
 public void onPlayerInteract(PlayerInteractEvent event) {
     Player player = event.getPlayer();
     ItemStack item = player.getInventory().getItemInMainHand();
+    ItemStack newItem;
 
-    if (item != null && item.hasItemMeta() && item.getItemMeta().getDisplayName().equals("§bWechselschuhe")) {
-        // Bestimme aktuelles Material und wechsle zum nächsten
-        Material currentMaterial = item.getType();
-        double newSpeed = 0.1; // Standardgeschwindigkeit
-
-        switch (currentMaterial) {
-            case LEATHER_BOOTS:
-                item.setType(Material.GOLDEN_BOOTS);
-                newSpeed = 0.3; // Geschwindigkeit erhöhen
-                player.sendMessage("§6Geschwindigkeit erhöht: Goldene Schuhe (+30%)");
+  
+        switch (item.getType()) {
+            case ARROW:
+                newItem = createItem(Material.TIPPED_ARROW, "§bPfeil", List.of(
+                    "§7Klicke mit dem Pfeil in der Hand, um",
+                    "§7die Geschwindigkeit zu ändern."
+                ));
+                player.getInventory().setItem(8, newItem);
+                player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.3);
                 break;
 
-            case GOLDEN_BOOTS:
-                item.setType(Material.DIAMOND_BOOTS);
-                newSpeed = 0.5; // Geschwindigkeit weiter erhöhen
-                player.sendMessage("§bGeschwindigkeit erhöht: Diamantschuhe (+50%)");
+            case TIPPED_ARROW:
+                newItem = createItem(Material.SPECTRAL_ARROW, "§bPfeil", List.of(
+                    "§7Klicke mit den Schuhen in der Hand, um",
+                    "§7die Geschwindigkeit zu ändern."
+                ));
+                player.getInventory().setItem(8, newItem);
+                player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.5);
                 break;
 
-            case DIAMOND_BOOTS:
-                item.setType(Material.LEATHER_BOOTS);
-                newSpeed = 0.1; // Zurück zur Standardgeschwindigkeit
-                player.sendMessage("§7Geschwindigkeit zurückgesetzt: Lederschuhe (+10%)");
+            case SPECTRAL_ARROW:
+                newItem = createItem(Material.ARROW, "§bPfeil", List.of(
+                    "§7Klicke mit den Schuhen in der Hand, um",
+                    "§7die Geschwindigkeit zu ändern."
+                ));
+                player.getInventory().setItem(8, newItem);
+                player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.1);
                 break;
+
+            case NETHER_STAR:
+                openLobbyMenu(player);
+                break;
+            
+            case PLAYER_HEAD:
+                openHeadMenu(player);
+                break;
+
 
             default:
-                break;
+                return; // Kein gültiges Item
         }
 
-        // Geschwindigkeit setzen
-        player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(newSpeed);
+        
 
-        // Aktualisiertes Item zurück ins Inventar legen
-        player.getInventory().setItemInMainHand(item);
-
-        // Feedback-Effekte (Partikel und Sound)
-        playFeedbackEffects(player);
-    }
+    
 }
 
 private void playFeedbackEffects(Player player) {
-    // Längere Partikel- und Sound-Effekte
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
         // Einmaliger Partikeleffekt (z. B. Herzen für 2 Sekunden)
-        for (int i = 0; i < 40; i++) { // 40 Frames für 2 Sekunden
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+
                 player.getWorld().spawnParticle(
-                    Particle.HEART,
-                    player.getLocation().add(0, 1.5, 0), // Position über dem Spieler
-                    5, // Anzahl der Partikel
-                    0.5, 0.5, 0.5, // Offset für zufällige Verteilung
+                    Particle.DRAGON_BREATH,
+                    player.getLocation().add(0, 0, 0), // Position unter dem Spieler
+                    1000, // Anzahl der Partikel
+                    1, 0, 1, // Offset für zufällige Verteilung
                     0.1 // Geschwindigkeit
                 );
-            }, i);
-        }
+ 
+
 
         // Einmaliger Soundeffekt (längere Dauer)
         player.playSound(
             player.getLocation(),
             Sound.ENTITY_PLAYER_LEVELUP,
             1.0f, // Lautstärke
-            1.0f // Tonhöhe
+            0.4f // Tonhöhe
         );
-    }, 0L); // Sofort starten
+
+        //player.sendTitle();
 }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
+        ItemStack item = player.getInventory().getItemInMainHand();
 
-        ItemStack clickedItem = event.getCurrentItem();
-        if (clickedItem == null || !clickedItem.hasItemMeta() || clickedItem.getItemMeta().getDisplayName() == null) return;
-
-        String itemName = clickedItem.getItemMeta().getDisplayName();
-        switch (itemName) {
-            case "§6Lobby-Menü":
-                openLobbyMenu(player);
+         switch (event.getCurrentItem().getType()) {
+            case GRASS_BLOCK:
+                 player.performCommand("triggervelocity hmy server survival");
                 break;
-
-            case "§bDein My-Menü":
-                openHeadMenu(player);
-                break;
-
             default:
                 break;
-        }
+         }
+
 
         if (!player.hasPermission("hmy.lobby.inventory.edit")) {
             event.setCancelled(true); // Verhindert, dass Items verschoben werden
@@ -188,7 +187,9 @@ private void playFeedbackEffects(Player player) {
     private void openLobbyMenu(Player player) {
         Inventory menu = Bukkit.createInventory(null, 9, "§6Lobby-Menü");
 
-        // Item hinzufügen: Grasblock (Position 1)
+        ItemStack netherBlock = createItem(Material.NETHER_STAR, "§aLobby-Server", List.of("§7Du bist hier."));
+        menu.setItem(0, netherBlock);
+
         ItemStack grassBlock = createItem(Material.GRASS_BLOCK, "§aSurvival-Server", List.of("§7Klicke hier, um", "§7zum Survival-Server zu wechseln."));
         menu.setItem(1, grassBlock);
 
