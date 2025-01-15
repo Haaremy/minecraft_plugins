@@ -1,0 +1,8 @@
+name: hmyKitsuneSegen
+version: "1.0"
+main: de.haaremy.hmykitsunesegen.HmyKitsuneSegen
+api-version: 1.19
+depend: [LuckPerms]
+description: Ein Plugin von @Haaremy als Kampfspiel auf Mythologischer Grundlage.
+author: Haaremy
+website: https://haaremy.de

@@ -10,15 +10,24 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import de.haaremy.hmypaper.utils.PermissionUtils;
+
 public class ComDirectMessage implements CommandExecutor {
 
     private static final Map<Player, Player> lastMessaged = new HashMap<>();
+    private final HmyLanguageManager language;
+
+    public ComDirectMessage(HmyLanguageManager language) {
+        this.language = language;
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("hmy.dm")) {
-            sender.sendMessage("§cDu hast keine Berechtigung, diesen Befehl zu verwenden.");
-            return true;
+        if (sender instanceof Player player) {
+            if (! PermissionUtils.hasPermission(player, "hmy.dm")) {
+                language.getMessage("p_no_permission", "Keine Berechtigung.");
+                return false;
+            }
         }
 
         if (args.length < 2) {

@@ -6,13 +6,23 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import de.haaremy.hmypaper.utils.PermissionUtils;
+
 public class ComFly implements CommandExecutor {
+
+    private final HmyLanguageManager language;
+
+    public ComFly(HmyLanguageManager language) {
+        this.language = language;
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage("Dieser Befehl kann nur von Spielern ausgeführt werden.");
-            return true;
+        if (sender instanceof Player player) {
+            if (! PermissionUtils.hasPermission(player, "hmy.fly")) {
+                language.getMessage("p_no_permission", "Keine Berechtigung.");
+                return false;
+            }
         }
 
         Player player = (Player) sender;

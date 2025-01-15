@@ -6,13 +6,23 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import de.haaremy.hmypaper.utils.PermissionUtils;
+
 public class ComGamemode implements CommandExecutor {
+
+    private final HmyLanguageManager language;
+
+    public ComGamemode(HmyLanguageManager language) {
+        this.language = language;
+    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission("hmy.gm")) {
-            sender.sendMessage("§cDu hast keine Berechtigung, diesen Befehl zu verwenden.");
-            return true;
+        if (sender instanceof Player player) {
+            if (! PermissionUtils.hasPermission(player, "hmy.gm")) {
+                language.getMessage("p_no_permission", "Keine Berechtigung.");
+                return false;
+            }
         }
 
         if (!(sender instanceof Player)) {
@@ -28,9 +38,21 @@ public class ComGamemode implements CommandExecutor {
         }
 
         try {
-            GameMode mode = GameMode.valueOf(args[0].toUpperCase());
+            GameMode mode = GameMode.valueOf("SURVIVAL");
+            try {
+                int number = Integer.parseInt(args[0]); 
+                switch (number){
+                    case 0: mode = GameMode.valueOf("SURVIVAL"); break;
+                    case 1: mode = GameMode.valueOf("CREATIVE"); break;
+                    case 2: mode = GameMode.valueOf("SPECTATOR"); break;
+            }
+                
+    } catch (NumberFormatException e) {
+        // args[0] ist kein gültiger Integer
+       mode = GameMode.valueOf(args[0].toUpperCase());
+    }
+            
             player.setGameMode(mode);
-            sender.sendMessage("§aSpielmodus geändert zu: " + mode.name());
         } catch (IllegalArgumentException e) {
             sender.sendMessage("§cUngültiger Spielmodus.");
         }

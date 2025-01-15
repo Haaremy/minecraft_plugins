@@ -14,10 +14,12 @@ public class PlayerJoinListener {
 
     private final ProxyServer server;
     private final String defaultServerName;
+    private final HmyLanguageManager languageManager;
 
-    public PlayerJoinListener(ProxyServer server, String defaultServerName) {
+    public PlayerJoinListener(ProxyServer server, String defaultServerName, HmyLanguageManager languageManager) {
         this.server = server;
         this.defaultServerName = defaultServerName;
+        this.languageManager = languageManager;
     }
 
     @Subscribe
@@ -25,10 +27,13 @@ public class PlayerJoinListener {
         Player player = event.getPlayer();
         Optional<RegisteredServer> defaultServer = server.getServer(defaultServerName);
 
+        // Verbinde den Spieler mit dem Standardserver, falls keine Verbindung besteht
         if (defaultServer.isPresent() && player.getCurrentServer().isEmpty()) {
             player.createConnectionRequest(defaultServer.get()).connect();
-        } else {
-            player.sendMessage(Component.text("Willkommen! Du bist bereits mit einem Server verbunden."));
         }
+
+        // Nachricht basierend auf Spieler-Sprache senden
+        String welcomeMessage = languageManager.getMessage(player, "welcome_message", "Willkommen auf dem Server!");
+        player.sendMessage(Component.text(welcomeMessage));
     }
 }

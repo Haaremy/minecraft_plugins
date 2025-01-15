@@ -59,7 +59,7 @@ commands:
     permission: hmy.dm
   broadcast:
     description: Sendet eine Nachricht an den gesamten Server.
-    usage: /broadcast [Nachricht]
+    usage: /broadcast [proxy|server|world] [Nachricht]
     permission: hmy.broadcast
   r:
     description: Antwortet auf die letzte Nachricht.

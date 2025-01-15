@@ -5,10 +5,12 @@ C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\HmySpawn.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComKill.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\HmyChat.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\HmyConfigManager.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComBroadcast.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComSpeed.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComSudo.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComHelp.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\HmyLanguageManager.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComWeather.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComInvSee.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComMute.java
@@ -22,4 +24,6 @@ C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComTime.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComGamemode.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\HmyTab.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\utils\PermissionUtils.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComSkull.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Paper-Plugin\src\main\java\de\haaremy\hmyPaper\ComHmyLanguage.java
