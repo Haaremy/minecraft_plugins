@@ -62,10 +62,13 @@ https://download.luckperms.net/1569/bukkit/loader/LuckPerms-Bukkit-5.4.152.jar (
 
 ## hmyPaper
 
+- Antibuild
+    -> Name of World in Settings activates AntiBuild
+    -> Name of Worlds in Settings define Rules (allowed Blocks to place/brake, disable damage types)
 - Chat Prefixes defined in LuckPerms
 - Custom Tablist
 - Spawnpoint and /spawn
-    -> Name of World in SpawnWorldNames.yml allows "/spawn"
+    -> Name of World in Settings allows "/spawn"
 
 
 | :Command: | :Description: | :Permission: |
@@ -91,7 +94,5 @@ https://download.luckperms.net/1569/bukkit/loader/LuckPerms-Bukkit-5.4.152.jar (
     - globe: language selector
     - blaze rod: heap into air
 - server reconnect with fields 2 blocks below player -> gras+green_wool below --> Connect to Survival Server, when step onto
-
-## AntiBuild 
 
 ## KitsuneSegen (Game)

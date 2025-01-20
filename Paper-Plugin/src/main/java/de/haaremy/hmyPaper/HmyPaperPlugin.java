@@ -12,6 +12,27 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.haaremy.hmypaper.commands.ComBroadcast;
+import de.haaremy.hmypaper.commands.ComDirectMessage;
+import de.haaremy.hmypaper.commands.ComFly;
+import de.haaremy.hmypaper.commands.ComGamemode;
+import de.haaremy.hmypaper.commands.ComGetPos;
+import de.haaremy.hmypaper.commands.ComGive;
+import de.haaremy.hmypaper.commands.ComHelp;
+import de.haaremy.hmypaper.commands.ComInvSee;
+import de.haaremy.hmypaper.commands.ComKill;
+import de.haaremy.hmypaper.commands.ComLightning;
+import de.haaremy.hmypaper.commands.ComMute;
+import de.haaremy.hmypaper.commands.ComReply;
+import de.haaremy.hmypaper.commands.ComRules;
+import de.haaremy.hmypaper.commands.ComSkull;
+import de.haaremy.hmypaper.commands.ComSocialSpy;
+import de.haaremy.hmypaper.commands.ComSpawn;
+import de.haaremy.hmypaper.commands.ComSpeed;
+import de.haaremy.hmypaper.commands.ComSudo;
+import de.haaremy.hmypaper.commands.ComTime;
+import de.haaremy.hmypaper.commands.ComVanish;
+import de.haaremy.hmypaper.commands.ComWeather;
 import net.luckperms.api.LuckPerms;
 
 
@@ -100,6 +121,7 @@ public class HmyPaperPlugin extends JavaPlugin {
 
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new HmySpawn(this), this);
+        getServer().getPluginManager().registerEvents(new HmyAntiBuild(this), this);
         getServer().getPluginManager().registerEvents(new HmyChat(luckPerms), this);
 
         HmyTab hmyTab = new HmyTab(luckPerms);

@@ -1,8 +1,0 @@
-name: hmyAntibuild
-version: "1.0"
-main: de.haaremy.hmyantibuild.HmyAntibuild
-api-version: 1.19
-depend: [LuckPerms]
-description: Ein Plugin von @Haaremy zur Verwaltung von Editierungen.
-author: Haaremy
-website: https://haaremy.de
