@@ -1,8 +1,8 @@
-name: hmyAntibuild
+name: hmyKitsuneSegen
 version: "1.0"
-main: de.haaremy.hmyantibuild.HmyAntibuild
+main: de.haaremy.hmykitsunesegen.HmyKitsuneSegen
 api-version: 1.19
 depend: [LuckPerms]
-description: Ein Plugin von @Haaremy zur Verwaltung von Editierungen.
+description: Ein Plugin von @Haaremy als Kampfspiel auf Mythologischer Grundlage.
 author: Haaremy
 website: https://haaremy.de

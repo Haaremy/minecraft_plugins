@@ -38,7 +38,7 @@
     </dependencies>
 
     <build>
-        <finalName>hmyPaper-3</finalName>
+        <finalName>hmyPaper</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

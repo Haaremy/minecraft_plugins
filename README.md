@@ -3,10 +3,11 @@ Plugins for Velocity and PaperMc Server.
 
 [Dependencie]
 LuckPerms:
-https://luckperms.net/
-https://github.com/LuckPerms/LuckPerms
-https://download.luckperms.net/1569/velocity/LuckPerms-Velocity-5.4.152.jar (Velocity)
-https://download.luckperms.net/1569/bukkit/loader/LuckPerms-Bukkit-5.4.152.jar (Bukkit / Paper)
+[Website](https://luckperms.net/ "Offizielle Website des Plugins.")
+[GitHub](https://github.com/LuckPerms/LuckPerms "Offizielle Website des Plugins.")
+[Download Velocity Plugin](https://download.luckperms.net/1569/velocity/LuckPerms-Velocity-5.4.152.jar "Download des Velocity Plugins von LuckPerms.")
+[Download Bukkit/Paper Plugin](https://download.luckperms.net/1569/bukkit/loader/LuckPerms-Bukkit-5.4.152.jar "Download des Bukkit Plugins von LuckPerms.")
+
 
 ## My Server-Setup:
 ```bash
@@ -22,10 +23,13 @@ https://download.luckperms.net/1569/bukkit/loader/LuckPerms-Bukkit-5.4.152.jar (
 |   |   |   |   ├── hmyVelocity.conf
 |   |   |   |
 |   ├── servers
+|   |   ├── global_plugins (optional)
+|   |   |   ├── hmyPaper.jar
+|   |   |   |
 |   |   ├── Paper (Lobby)
 |   |   |   ├── plugins
 |   |   |   |   ├── LuckPermsBukkit.jar
-|   |   |   |   ├── hmyPaper.jar
+|   |   |   |   ├── hmyPaper.jar (optional symbolic link /server/global_plugins/hmyPaper.jar)
 |   |   |   |   ├── hmyLobby.jar
 |   |   |   |   ├── hmySettings
 |   |   |   |   |   ├── hmyServer.conf
@@ -33,14 +37,14 @@ https://download.luckperms.net/1569/bukkit/loader/LuckPerms-Bukkit-5.4.152.jar (
 |   |   ├── Paper (Survival)
 |   |   |   ├── plugins
 |   |   |   |   ├── LuckPermsBukkit.jar
-|   |   |   |   ├── hmyPaper.jar
+|   |   |   |   ├── hmyPaper.jar (optional symbolic link /server/global_plugins/hmyPaper.jar)
 |   |   |   |   ├── hmySettings
 |   |   |   |   |   ├── hmyServer.conf
 |   |   |   |
 |   |   ├── Paper (Kitsune Segen (Game))
 |   |   |   ├── plugins
 |   |   |   |   ├── LuckPermsBukkit.jar
-|   |   |   |   ├── hmyPaper.jar
+|   |   |   |   ├── hmyPaper.jar (optional symbolic link /server/global_plugins/hmyPaper.jar)
 |   |   |   |   ├── hmyKitsuneSegen.jar
 |   |   |   |   ├── hmySettings
 |   |   |   |   |   ├── hmyServer.conf
@@ -69,16 +73,18 @@ https://download.luckperms.net/1569/bukkit/loader/LuckPerms-Bukkit-5.4.152.jar (
 - Custom Tablist
 - Spawnpoint and /spawn
     -> Name of World in Settings allows "/spawn"
+- World Switcher
 
 
 | :Command: | :Description: | :Permission: |
 |:---------|:-------------|------------:|
+|world [name]| Switch to world.|hmy.world.[name]|
 |spawn| Brings you back to Spawn*.|-|
 |dm [player]|Direct Messages a player|hmy.dm|
 |r|Answers direct message|hmy.r|
 |fly [player]*|Set fly-mode|hmy.fly|
 |gm [name|id]|Set gamemode|hmy.gm|
-|getpos [player]
+|getpos [player]|Get World and Position of Player|hmy.getpos|
 
 
 ## hmyLobby

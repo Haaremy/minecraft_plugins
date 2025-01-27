@@ -1,4 +1,11 @@
-de\haaremy\hmyantibuild\AntiBuildListener.class
-de\haaremy\hmyantibuild\CommandManager.class
-de\haaremy\hmyantibuild\HmyAntibuild.class
-de\haaremy\hmyantibuild\ConfigManager.class
+de\haaremy\hmykitsunesegen\HmyKitsuneSegen.class
+de\haaremy\hmykitsunesegen\PlayerChestClick.class
+de\haaremy\hmykitsunesegen\PlayerEventListener.class
+de\haaremy\hmykitsunesegen\utils\PermissionUtils.class
+de\haaremy\hmykitsunesegen\HmyLanguageManager.class
+de\haaremy\hmykitsunesegen\PlayerEventListener$3.class
+de\haaremy\hmykitsunesegen\PlayerEventListener$2.class
+de\haaremy\hmykitsunesegen\PlayerEventListener$1.class
+de\haaremy\hmykitsunesegen\HmyConfigManager.class
+de\haaremy\hmykitsunesegen\PlayerChestClick$1.class
+de\haaremy\hmykitsunesegen\LuckyItem.class

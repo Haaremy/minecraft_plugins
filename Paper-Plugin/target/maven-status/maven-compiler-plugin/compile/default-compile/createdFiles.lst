@@ -8,6 +8,7 @@ de\haaremy\hmypaper\utils\PermissionUtils.class
 de\haaremy\hmypaper\HmyAntiBuild.class
 de\haaremy\hmypaper\utils\WorldSettings.class
 de\haaremy\hmypaper\commands\ComKill.class
+de\haaremy\hmypaper\commands\ComWorld.class
 de\haaremy\hmypaper\commands\ComBroadcast.class
 de\haaremy\hmypaper\commands\ComSocialSpy.class
 de\haaremy\hmypaper\HmyLanguageManager.class

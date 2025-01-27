@@ -30,7 +30,7 @@ public void onEnable() {
         var logger = getLogger();
         Path dataDirectory = getDataFolder().toPath().getParent();
         this.configManager = new HmyConfigManager(logger,dataDirectory);
-        logger.info("Haaremy: Paper Config mit initialisiert.");
+        logger.info("Haaremy: Paper Config wird initialisiert.");
         this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
         logger.info("Haaremy: Paper Sprachen initialisiert.");
 

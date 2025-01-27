@@ -1,0 +1,9 @@
+game_spawn_locations:
+  - world: "game_kitsuneSegen_50"
+    x: 0
+    y: 70
+    z: 0
+  - world: "game_kitsuneSegen_50"
+    x: 10
+    y: 70
+    z: 10

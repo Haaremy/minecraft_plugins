@@ -33,6 +33,7 @@ import de.haaremy.hmypaper.commands.ComSudo;
 import de.haaremy.hmypaper.commands.ComTime;
 import de.haaremy.hmypaper.commands.ComVanish;
 import de.haaremy.hmypaper.commands.ComWeather;
+import de.haaremy.hmypaper.commands.ComWorld;
 import net.luckperms.api.LuckPerms;
 
 
@@ -97,6 +98,7 @@ public class HmyPaperPlugin extends JavaPlugin {
         registerCommand("spawn", new ComSpawn());
 
         // World Commands
+        registerCommand("world", new ComWorld(language));
         registerCommand("fly", new ComFly(language));
         registerCommand("weather", new ComWeather());
         registerCommand("gm", new ComGamemode(language));

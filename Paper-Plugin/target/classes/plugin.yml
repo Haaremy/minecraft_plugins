@@ -132,3 +132,6 @@ commands:
   triggervelocity:
     description: Triggert einen Velocity-Befehl.
     permission: hmy.triggervelocity
+  world:
+    description: Switch world.
+    permission: hmy.world
