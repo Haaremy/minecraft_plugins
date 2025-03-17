@@ -218,15 +218,15 @@ public class LuckyItem implements Listener {
 
             // Setze optional Lore
             meta.setLore(List.of(
-                    ChatColor.GRAY + "Spezieller Pfeil für: " + category
+                    "§7Cheeese!"
             ));
 
             // Füge Verzauberungen basierend auf Kategorie und Seltenheit hinzu
             switch (category) {
-                case "Multishot" -> amount = (int) Math.ceil(amount*10* (int) random.nextDouble() * multiplier);
-                case "Speedshot" -> amount = (int) Math.ceil(amount*30* (int) random.nextDouble() * multiplier);
-                case "Distanceshot" -> amount = (int) Math.ceil(amount*2* (int) random.nextDouble() * multiplier);
-                case "Precisionshot" -> amount = (int) Math.ceil(amount*5* (int) random.nextDouble() * multiplier);
+                case "Multishot" -> amount = (int) Math.ceil(amount*10* random.nextDouble() * multiplier);
+                case "Speedshot" -> amount = (int) Math.ceil(amount*30* random.nextDouble() * multiplier);
+                case "Distanceshot" -> amount = (int) Math.ceil(amount*2* random.nextDouble() * multiplier);
+                case "Precisionshot" -> amount = (int) Math.ceil(amount*5* random.nextDouble() * multiplier);
             }
 
             

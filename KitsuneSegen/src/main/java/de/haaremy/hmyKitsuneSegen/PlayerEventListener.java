@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -21,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -57,7 +60,6 @@ public class PlayerEventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         event.setJoinMessage(null); // Prevent the join message from being broadcast
-        plugin.getLogger().info(player.getName() + " hat die Welt betreten.");
         Location spawn = Bukkit.getWorld(this.hubworld).getSpawnLocation();
         player.teleport(spawn);
 
@@ -143,6 +145,7 @@ public class PlayerEventListener implements Listener {
                     };
                     int randomIndex = random.nextInt(locations.size()); // Zufälliger Index: 0 bis locations.size() - 1
                     Location location = locations.get(randomIndex);
+                    player.setGameMode(GameMode.SURVIVAL);
                     player.teleport(location);
                     frozenPlayers.add(player);                    
                     locations.remove(randomIndex);
@@ -176,6 +179,7 @@ public class PlayerEventListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         frozenPlayers.remove(player);
+        player.setGameMode(GameMode.SPECTATOR);
         plugin.getLogger().info(player.getName() + " hat das Spiel verlassen.");
     }
 
@@ -208,36 +212,16 @@ public class PlayerEventListener implements Listener {
 
 @EventHandler
 public void onPlayerInteract(PlayerInteractEvent event) {
-    Player player = event.getPlayer();
-    ItemStack item = event.getItem();
+         Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItemInMainHand();
 
-    // Sicherstellen, dass das Item nicht null ist und ein ItemMeta hat
-    if (item == null || !item.hasItemMeta()) {
-        return; // Kein Item oder kein ItemMeta vorhanden
-    }
-
-    // Sicherstellen, dass das ItemMeta einen Displaynamen hat
-    String itemName = item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : "";
-    ItemStack newItem;
-  
-        switch (itemName) {
-            case "§7Speed":
-                newItem = createItem(Material.TIPPED_ARROW, "§bSpeed", List.of(
-                    "§7Klicke mit dem Pfeil in der Hand, um",
-                    "§7die Geschwindigkeit zu ändern."
-                ));
-                player.getInventory().setItem(6, newItem);
-                player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.3);
-                break;
-
-            default:
-                return; // Kein gültiges Item
+        // Überprüfe, ob der Spieler einen Crossbow hält
+        if (item != null && item.getType() == Material.CROSSBOW) {
+            // Beschleunigtes Nachladen simulieren
+                loadCrossbow(item);
+            
         }
-
-        
-
-    
-}
+    }
 
     @EventHandler
     public void onItemDrop(PlayerDropItemEvent event) {
@@ -295,6 +279,40 @@ public void onPlayerInteract(PlayerInteractEvent event) {
             event.setCancelled(true);
         }
     }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+
+        Player killedPlayer = event.getEntity();
+        Player killer = killedPlayer.getKiller();
+
+        killedPlayer.setGameMode(GameMode.SPECTATOR);
+        if (killer == null || !killer.isOnline()) {
+            killedPlayer.teleport(killedPlayer.getWorld().getSpawnLocation());
+        } else killedPlayer.setSpectatorTarget(killer);
+
+         // Nachricht an den getöteten Spieler
+            killedPlayer.sendTitle(
+                ChatColor.RED + "Du bist gestorben!",
+                ChatColor.YELLOW + "Zuschauen: " + killer.getName() + "oder /lobby.",
+                10, // Fade-in (Ticks)
+                70, // Anzeigezeit (Ticks)
+                20  // Fade-out (Ticks)
+            );
+
+        World world = Bukkit.getWorld(gameworld); // Hole die Welt anhand des Namens
+        if (world == null) {
+            return; // Falls die Welt nicht existiert
+        }
+
+        // Filtere die Spieler in der Welt, die im Survival-Modus sind und beendet Spiel bei einer Person verbleibend
+        if((int) world.getPlayers().stream()
+                .filter(player -> player.getGameMode() == GameMode.SURVIVAL)
+                .count() <=1 ){
+            gameFinished();
+        }
+    }
+    
 
     
 
@@ -442,6 +460,20 @@ protected List<Location> findAndLogBlocks(String targetWorldName, Material mater
                 block.getWorld().spawnParticle(org.bukkit.Particle.END_ROD, block.getLocation().add(0.5, 0.5, 0.5), 10);
             }
         }
+    }
+
+    private void gameFinished() {
+       gameStarted = false;
+       Location spawn = Bukkit.getWorld(this.hubworld).getSpawnLocation();
+       for(Player player : Bukkit.getWorld(this.gameworld).getPlayers()){
+            player.teleport(spawn);
+            player.setGameMode(GameMode.SPECTATOR);
+       }
+
+    }
+
+    private void loadCrossbow(ItemStack item) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     
