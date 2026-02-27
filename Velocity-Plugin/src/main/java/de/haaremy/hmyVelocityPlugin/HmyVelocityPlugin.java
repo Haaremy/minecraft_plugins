@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -23,7 +24,8 @@ import net.luckperms.api.LuckPerms;
     id = "hmyvelocityplugin",
     name = "hmyVelocity",
     version = "1.1",
-    authors = {"Haaremy"}
+    authors = {"Haaremy"},
+    dependencies = {@Dependency(id = "luckperms")}
 )
 public class HmyVelocityPlugin {
 
