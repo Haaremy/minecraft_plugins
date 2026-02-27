@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.nio.file.Path;
 
-import javax.inject.Inject;
+import com.google.inject.Inject;
 
 import org.slf4j.Logger;
 
