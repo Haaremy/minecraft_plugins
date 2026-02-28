@@ -20,6 +20,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 import de.haaremy.hmypaper.utils.WorldSettings;
+import net.luckperms.api.LuckPerms;
 
 public class HmyAntiBuild implements Listener {
     private final HmyPaperPlugin plugin;
@@ -27,7 +28,7 @@ public class HmyAntiBuild implements Listener {
     private Map<String, WorldSettings> worldSettings;
     private static final WorldSettings DEFAULT_SETTINGS = new WorldSettings(List.of(), List.of(), List.of());
 
-    public HmyAntiBuild(HmyPaperPlugin plugin) {
+    public HmyAntiBuild(HmyPaperPlugin plugin, LuckPerms luckperms) {
         this.plugin = plugin;
         loadAntiBuildWorldSettings();
         
@@ -112,41 +113,47 @@ private List<String> extractGlobalSection(String data, String section) {
 
 
 
-    @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
-        Player player = event.getPlayer();
-        String worldName = event.getBlock().getWorld().getName();
+@EventHandler
+public void onBlockPlace(BlockPlaceEvent event) {
+    Player player = event.getPlayer();
+    String worldName = event.getBlock().getWorld().getName();
 
-        if (!worlds.contains(worldName)) return;
-        
-        Material block = event.getBlock().getType();
-        WorldSettings settings = worldSettings.getOrDefault(worldName, DEFAULT_SETTINGS);
+    // 1. Wenn die Welt nicht geschützt ist, ignorieren wir das Event
+    if (!worlds.contains(worldName)) return;
 
-        plugin.getLogger().info("Blockname: " + block.name());
-        plugin.getLogger().info("Erlaubte Blöcke für Welt " + worldName + ": " + settings.getAllowedBreak());
+    // 2. Wenn der Spieler die Admin-Permission hat, darf er IMMER bauen
+    if (player.hasPermission("hmy.world.edit")) return;
 
+    Material block = event.getBlock().getType();
+    WorldSettings settings = worldSettings.getOrDefault(worldName, DEFAULT_SETTINGS);
 
-
-        if (!settings.getAllowedPlace().contains(block.name().toUpperCase())) {
-            event.setCancelled(true);
-            player.sendMessage(ChatColor.RED + "Du darfst diesen Block hier nicht platzieren!");
-        }
+    // 3. Whitelist-Check für normale Spieler
+    if (!settings.getAllowedPlace().contains(block.name().toUpperCase())) {
+        event.setCancelled(true);
+        player.sendMessage("&4Du darfst diesen Block hier nicht platzieren!");
     }
+}
 
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        String worldName = event.getBlock().getWorld().getName();
+@EventHandler
+public void onBlockBreak(BlockBreakEvent event) {
+    Player player = event.getPlayer();
+    String worldName = event.getBlock().getWorld().getName();
 
-        if (!worlds.contains(worldName)) return;
+    // 1. Welt-Check
+    if (!worlds.contains(worldName)) return;
 
-        Material block = event.getBlock().getType();
-        WorldSettings settings = this.worldSettings.getOrDefault(worldName, DEFAULT_SETTINGS);
-        if (!settings.getAllowedBreak().contains(block.name().toUpperCase())) {
-            event.setCancelled(true);
-            player.sendMessage(ChatColor.RED + "Du darfst diesen Block hier nicht abbauen!");
-        }
+    // 2. Admin-Check (Wichtig: Das fehlte bei dir noch!)
+    if (player.hasPermission("hmy.world.edit")) return;
+
+    Material block = event.getBlock().getType();
+    WorldSettings settings = this.worldSettings.getOrDefault(worldName, DEFAULT_SETTINGS);
+
+    // 3. Whitelist-Check
+    if (!settings.getAllowedBreak().contains(block.name().toUpperCase())) {
+        event.setCancelled(true);
+        player.sendMessage( "&4Du darfst diesen Block hier nicht abbauen!");
     }
+}
 
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
@@ -162,7 +169,6 @@ private List<String> extractGlobalSection(String data, String section) {
 
         if (settings.getDisabledDamageTypes().contains(disabledDamageType)) {
             event.setCancelled(true);
-            player.sendMessage(ChatColor.RED + "Dieser Schadenstyp ist in dieser Welt deaktiviert!");
         }
     }
 

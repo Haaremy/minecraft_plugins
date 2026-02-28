@@ -17,7 +17,6 @@ public class HmyLobby {
     private final ProxyServer server;
     private final Logger logger;
     private final HmyLanguageManager language;
-    private final Map<String, String> placeholders;
 
     private final LuckPerms luckPerms;
     private final Map<String, SimpleCommand> commands = new HashMap<>();
@@ -27,7 +26,6 @@ public class HmyLobby {
         this.logger = logger;
         this.language = languageManager;
         this.luckPerms = luckPerms;
-        this.placeholders = new HashMap<>();
 
 
         registerCommands();

@@ -8,18 +8,15 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 
-import net.kyori.adventure.text.Component;
 
 public class PlayerJoinListener {
 
     private final ProxyServer server;
     private final String defaultServerName;
-    private final HmyLanguageManager languageManager;
 
     public PlayerJoinListener(ProxyServer server, String defaultServerName, HmyLanguageManager languageManager) {
         this.server = server;
         this.defaultServerName = defaultServerName;
-        this.languageManager = languageManager;
     }
 
     @Subscribe
@@ -32,8 +29,5 @@ public class PlayerJoinListener {
             player.createConnectionRequest(defaultServer.get()).connect();
         }
 
-        // Nachricht basierend auf Spieler-Sprache senden
-        String welcomeMessage = languageManager.getMessage(player, "welcome_message", "Willkommen auf dem Server!");
-        player.sendMessage(Component.text(welcomeMessage));
     }
 }

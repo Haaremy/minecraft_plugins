@@ -12,6 +12,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
+
+import net.luckperms.api.LuckPerms;
+
 import de.haaremy.hmypaper.commands.ComBroadcast;
 import de.haaremy.hmypaper.commands.ComDirectMessage;
 import de.haaremy.hmypaper.commands.ComFly;
@@ -34,7 +38,6 @@ import de.haaremy.hmypaper.commands.ComTime;
 import de.haaremy.hmypaper.commands.ComVanish;
 import de.haaremy.hmypaper.commands.ComWeather;
 import de.haaremy.hmypaper.commands.ComWorld;
-import net.luckperms.api.LuckPerms;
 
 
 public class HmyPaperPlugin extends JavaPlugin {
@@ -91,9 +94,13 @@ public class HmyPaperPlugin extends JavaPlugin {
 
     private void registerCommands() {
         registerCommand("triggervelocity", this);
+        
+        List<String> helpPages = loadHelpPagesFromConfig();
+        String helpTitle = "§6Server Hilfe"; // Standardwerte, falls Config leer
+        String helpAuthor = "Haaremy";
 
         // Basics
-        registerCommand("help", new ComHelp());
+        registerCommand("help", new ComHelp(helpPages, helpTitle, helpAuthor));
         registerCommand("rules", new ComRules());
         registerCommand("spawn", new ComSpawn());
 
@@ -123,7 +130,7 @@ public class HmyPaperPlugin extends JavaPlugin {
 
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new HmySpawn(this), this);
-        getServer().getPluginManager().registerEvents(new HmyAntiBuild(this), this);
+        getServer().getPluginManager().registerEvents(new HmyAntiBuild(this, luckPerms), this);
         getServer().getPluginManager().registerEvents(new HmyChat(luckPerms), this);
 
         HmyTab hmyTab = new HmyTab(luckPerms);
@@ -177,5 +184,36 @@ public class HmyPaperPlugin extends JavaPlugin {
 
     public LuckPerms getLuckPerms() {
         return luckPerms;
+    }
+    
+    
+ // Hilfsmethode zum Laden der Buchseiten
+    private List<String> loadHelpPagesFromConfig() {
+        // Hier greifen wir auf die Datei zu, die du auch in HmyAntiBuild nutzt
+        java.io.File configFile = new java.io.File(getDataFolder().getParentFile(), "hmySettings/hmyServer.conf");
+        if (configFile.exists()) {
+            try {
+                String data = String.join("", java.nio.file.Files.readAllLines(configFile.toPath())).trim();
+                // Wir nutzen dein bestehendes extractGlobalSection System (angepasst auf helpbook_pages)
+                // In der Config: helpbook_pages = {"Seite 1", "Seite 2"}
+                return extractList(data, "helpbook_pages");
+            } catch (Exception e) {
+                getLogger().warning("Konnte Hilfe-Seiten nicht laden: " + e.getMessage());
+            }
+        }
+        return List.of("§cKeine Hilfe-Seiten konfiguriert.");
+    }
+
+    // Kleine Utility zum Parsen einfacher Listen
+    private List<String> extractList(String data, String section) {
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\b" + section + "\\s*=\\s*\\{([^}]*)}");
+        java.util.regex.Matcher matcher = pattern.matcher(data);
+        if (matcher.find()) {
+            String value = matcher.group(1).trim();
+            if (!value.isEmpty()) {
+                return java.util.Arrays.asList(value.replace("\"", "").split("\\s*,\\s*"));
+            }
+        }
+        return List.of();
     }
 }
