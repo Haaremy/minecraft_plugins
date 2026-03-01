@@ -15,6 +15,36 @@ public class HmyConfigManager {
         this.dataDirectory = dataDirectory;
     }
 
+    public String getLobbyWorld() {
+        return getRawValue("Lobby.world", "lobby");
+    }
+
+    public boolean getLobbyRule(String key, boolean defaultValue) {
+        String raw = getRawValue("Lobby.Rules." + key, String.valueOf(defaultValue));
+        return Boolean.parseBoolean(raw);
+    }
+
+    // Hilfsmethode – rohen Wert aus hmyServer.conf lesen
+    private String getRawValue(String key, String defaultValue) {
+        Path configFile = dataDirectory.resolve("hmySettings/hmyServer.conf");
+        try {
+            if (Files.exists(configFile)) {
+                List<String> lines = Files.readAllLines(configFile);
+                for (String line : lines) {
+                    line = line.trim();
+                    if (line.startsWith(key)) {
+                        String[] parts = line.split("=", 2);
+                        if (parts.length == 2) {
+                            return parts[1].trim().replace("\"", "");
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.severe("Fehler beim Lesen der Config: " + e.getMessage());
+        }
+        return defaultValue;
+    }
 
 
 

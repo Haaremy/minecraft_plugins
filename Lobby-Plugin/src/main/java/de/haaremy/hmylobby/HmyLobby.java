@@ -20,6 +20,8 @@ public class HmyLobby extends JavaPlugin {
     @Override
     public void onEnable() {
         getLogger().info("Haaremy: hmyLobby Plugin wird aktiviert...");
+        
+        saveDefaultConfig();
 
         // LuckPerms laden
         RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);

@@ -1,0 +1,30 @@
+Lobby:
+  world: "lobby"
+  Rules:
+    weather: false
+    daylight-cycle: false
+    mob-spawning: false
+    fire-tick: false
+    pvp: false
+    hunger: false
+    fall-damage: false
+
+ServerSelector:
+  enabled: true
+  entries:
+    survival:
+      x: 4
+      y: 1
+      blocktype: "GRASS_BLOCK"
+      name: "§aSurvival-Server"
+      lore:
+        - "§7Klicke zum Wechseln"
+      server: "vanilla"
+    creative:
+      x: 6
+      y: 1
+      blocktype: "WHITE_WOOL"
+      name: "§fCreative-Server"
+      lore:
+        - "§7Klicke zum Wechseln"
+      server: "creative"
