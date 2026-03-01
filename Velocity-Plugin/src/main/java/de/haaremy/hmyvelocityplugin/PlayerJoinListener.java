@@ -1,13 +1,12 @@
 package de.haaremy.hmyvelocityplugin;
 
-import java.util.Optional;
-
 import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.connection.PostLoginEvent;
+import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 
+import java.util.Optional;
 
 public class PlayerJoinListener {
 
@@ -20,14 +19,19 @@ public class PlayerJoinListener {
     }
 
     @Subscribe
-    public void onPlayerPostLogin(PostLoginEvent event) {
+    public void onServerConnected(ServerConnectedEvent event) {
+        // Nur beim ersten Join (kein vorheriger Server)
+        if (event.getPreviousServer().isPresent()) return;
+
         Player player = event.getPlayer();
+        String connectedServer = event.getServer().getServerInfo().getName();
+
+        // Bereits auf dem Zielserver → nichts tun
+        if (connectedServer.equalsIgnoreCase(defaultServerName)) return;
+
         Optional<RegisteredServer> defaultServer = server.getServer(defaultServerName);
-
-        // Verbinde den Spieler mit dem Standardserver, falls keine Verbindung besteht
-        if (defaultServer.isPresent() && player.getCurrentServer().isEmpty()) {
-            player.createConnectionRequest(defaultServer.get()).connect();
-        }
-
+        defaultServer.ifPresent(target ->
+            player.createConnectionRequest(target).fireAndForget()
+        );
     }
 }

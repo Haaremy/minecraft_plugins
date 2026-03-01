@@ -181,21 +181,41 @@ public class PlayerEventListener implements Listener {
             
             // Falls das Inventar das Lobby-Menü ist, Logik ausführen
             String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
-            if (title.contains("Menü") && event.getCurrentItem() != null) {
-                if (event.getCurrentItem().getType() == Material.GRASS_BLOCK) {
-                    player.performCommand("triggervelocity hmy server survival");
-                    player.closeInventory();
+            if (title.equals("§6Lobby-Menü")) {
+                event.setCancelled(true);
+
+                if (event.getClickedInventory() == null
+                    || !event.getClickedInventory().equals(event.getView().getTopInventory())) return;
+                if (event.getCurrentItem() == null
+                    || event.getCurrentItem().getType() == Material.AIR) return;
+
+                // Config-Einträge durchsuchen
+                int clickedSlot = event.getSlot();
+                for (ServerSelectorConfig.SelectorEntry entry : plugin.getServerSelectorConfig().getEntries()) {
+                    if (entry.slot() == clickedSlot) {
+                        player.closeInventory();
+                        player.performCommand("triggervelocity hmy server " + entry.server());
+                        break;
+                    }
                 }
+                return;
             }
+
         }
     }
 
     private void openLobbyMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 45, Component.text("§6Lobby-Menü"));
+        Inventory inv = Bukkit.createInventory(null, 45,
+            LegacyComponentSerializer.legacySection().deserialize("§6Lobby-Menü"));
         fillGlass(inv);
-        inv.setItem(13, createItem(Material.GRASS_BLOCK, "§aSurvival-Server", List.of("§7Wechseln")));
+
+        for (ServerSelectorConfig.SelectorEntry entry : plugin.getServerSelectorConfig().getEntries()) {
+            inv.setItem(entry.slot(), createItem(entry.material(), entry.name(), entry.lore()));
+        }
+
         player.openInventory(inv);
     }
+
 
     private void openHeadMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 45, Component.text("§bMy-Menü"));
@@ -233,7 +253,7 @@ public class PlayerEventListener implements Listener {
     }
 
     public void openBook(Player player) {
-    	player.performCommand("triggervelocity help");
+    	player.performCommand("help");
     }
 
     @EventHandler

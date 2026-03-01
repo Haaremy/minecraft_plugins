@@ -1,6 +1,10 @@
-de\haaremy\hmylobby\HmyConfigManager.class
-de\haaremy\hmylobby\ComHmyLanguage.class
 de\haaremy\hmylobby\utils\PermissionUtils.class
+de\haaremy\hmylobby\ServerSelectorConfig.class
 de\haaremy\hmylobby\HmyLanguageManager.class
-de\haaremy\hmylobby\HmyLobby.class
 de\haaremy\hmylobby\PlayerEventListener.class
+de\haaremy\hmylobby\HmyConfigManager.class
+de\haaremy\hmylobby\ServerSelectorConfig$SelectorEntry.class
+de\haaremy\hmylobby\ComHmyLanguage.class
+de\haaremy\hmylobby\LobbyWorldManager.class
+de\haaremy\hmylobby\HmyLobby.class
+de\haaremy\hmylobby\DoorSignListener.class

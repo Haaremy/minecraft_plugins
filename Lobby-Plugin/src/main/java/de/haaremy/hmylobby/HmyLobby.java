@@ -12,6 +12,9 @@ public class HmyLobby extends JavaPlugin {
     private LuckPerms luckPerms;
     private HmyLanguageManager language;
     private HmyConfigManager configManager;
+    private ServerSelectorConfig serverSelectorConfig;
+
+
 
     @Override
 public void onEnable() {
@@ -21,8 +24,14 @@ public void onEnable() {
     if (provider != null) {
         this.luckPerms = provider.getProvider();
     } else {
+        LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this); // NEU
+
         getLogger().severe("Haaremy: LuckPerms konnte nicht geladen werden! Lobby wird deaktiviert.");
         getServer().getPluginManager().disablePlugin(this);
+        getServer().getPluginManager().registerEvents(new DoorSignListener(this), this); // NEU
+        getServer().getPluginManager().registerEvents(lobbyWorldManager, this);               // NEU
+
+
         return;
     }
 
@@ -30,9 +39,11 @@ public void onEnable() {
         var logger = getLogger();
         Path dataDirectory = getDataFolder().toPath().getParent();
         this.configManager = new HmyConfigManager(logger,dataDirectory);
+        this.serverSelectorConfig = new ServerSelectorConfig(this);
         logger.info("Haaremy: Paper Config wird initialisiert.");
         this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
         logger.info("Haaremy: Paper Sprachen initialisiert.");
+        
 
 
     // Event-Listener registrieren
@@ -47,5 +58,9 @@ public void onEnable() {
 
     public LuckPerms getLuckPerms() {
         return luckPerms;
+    }
+    
+    public ServerSelectorConfig getServerSelectorConfig() {
+        return serverSelectorConfig;
     }
 }
