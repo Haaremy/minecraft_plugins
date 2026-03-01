@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+
 import net.luckperms.api.LuckPerms;
 
 public class HmyLobby extends JavaPlugin {
@@ -17,40 +18,40 @@ public class HmyLobby extends JavaPlugin {
 
 
     @Override
-public void onEnable() {
-    getLogger().info("Haaremy: hmyLobby Plugin wird aktiviert...");
+    public void onEnable() {
+        getLogger().info("Haaremy: hmyLobby Plugin wird aktiviert...");
 
-    RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
-    if (provider != null) {
-        this.luckPerms = provider.getProvider();
-    } else {
-        LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this); // NEU
+        // LuckPerms laden
+        RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
+        if (provider != null) {
+            this.luckPerms = provider.getProvider();
+        } else {
+            getLogger().severe("Haaremy: LuckPerms konnte nicht geladen werden! Lobby wird deaktiviert.");
+            getServer().getPluginManager().disablePlugin(this);
+            return; // ← Nur return, sonst nichts
+        }
 
-        getLogger().severe("Haaremy: LuckPerms konnte nicht geladen werden! Lobby wird deaktiviert.");
-        getServer().getPluginManager().disablePlugin(this);
-        getServer().getPluginManager().registerEvents(new DoorSignListener(this), this); // NEU
-        getServer().getPluginManager().registerEvents(lobbyWorldManager, this);               // NEU
-
-
-        return;
-    }
-
-    // Datenverzeichnis und Konfigurationsmanager initialisieren
+        // Config & Manager initialisieren
         var logger = getLogger();
         Path dataDirectory = getDataFolder().toPath().getParent();
-        this.configManager = new HmyConfigManager(logger,dataDirectory);
+        this.configManager = new HmyConfigManager(logger, dataDirectory);
         this.serverSelectorConfig = new ServerSelectorConfig(this);
         logger.info("Haaremy: Paper Config wird initialisiert.");
         this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
         logger.info("Haaremy: Paper Sprachen initialisiert.");
-        
 
+        // LobbyWorldManager ✅ HIER – nach der Config!
+        LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this);
 
-    // Event-Listener registrieren
-    getServer().getPluginManager().registerEvents(new PlayerEventListener(this, language), this);
+        // Event-Listener registrieren
+        getServer().getPluginManager().registerEvents(new PlayerEventListener(this, language), this);
+        getServer().getPluginManager().registerEvents(new DoorSignListener(this), this);
+        getServer().getPluginManager().registerEvents(lobbyWorldManager, this); // ✅
 
-    getLogger().info("Haaremy: Alle Lobby Funktionen wurden erfolgreich aktiviert!");
-}
+        getLogger().info("Haaremy: Alle Lobby Funktionen wurden erfolgreich aktiviert!");
+    }
+
+    
     @Override
     public void onDisable() {
         getLogger().info("Haaremy: hmyLobby deaktiviert!");
