@@ -3,9 +3,11 @@ package de.haaremy.hmyvelocityplugin;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
-
 import org.slf4j.Logger;
 
 import com.velocitypowered.api.event.Subscribe;
@@ -16,6 +18,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 
 import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPerms;
@@ -37,7 +40,9 @@ public class HmyVelocityPlugin {
     private HmyLanguageManager languageManager;
     private HmyConfigManager configManager;
 
-    private static final MinecraftChannelIdentifier CHANNEL = MinecraftChannelIdentifier.create("hmy", "trigger");
+    // Channels
+    private static final MinecraftChannelIdentifier TRIGGER_CHANNEL = MinecraftChannelIdentifier.create("hmy", "trigger");
+    private static final MinecraftChannelIdentifier STATUS_CHANNEL = MinecraftChannelIdentifier.create("hmy", "status");
 
     @Inject
     public HmyVelocityPlugin(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
@@ -54,78 +59,87 @@ public class HmyVelocityPlugin {
             logger.info("LuckPerms erfolgreich eingebunden.");
         } catch (IllegalStateException e) {
             logger.error("LuckPerms-Integration fehlgeschlagen: " + e.getMessage());
-            logger.error("Plugin wird eingeschränkt funktionieren.");
             return;
         }
 
-        // Initialisiere Sprach- und Konfigurationsmanager
-        
+        // Manager initialisieren
         this.configManager = new HmyConfigManager(logger, dataDirectory);
-        configManager.getLang();
-        logger.info("Haaremy: Velocity Config geladen.");
         this.languageManager = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
-        logger.info("Haaremy: Velocity Sprachen initialisiert.");
-
-        // Sprachdateien laden
         languageManager.loadAllLanguageFiles();
-        logger.info("Haaremy: Velocity Sprachen geladen.");
 
         // Listener und Commands registrieren
         registerListeners();
         initializePluginFeatures();
+
+        // --- NEU: Status Update Task starten ---
+        startStatusUpdateTask();
     }
 
-    private void registerListeners() { // "lobby" ist der default server beim beitreten
+    private void registerListeners() {
+        // Bestehende Listener
         server.getEventManager().register(this, new PlayerJoinListener(server, "lobby", languageManager));
-        server.getChannelRegistrar().register(CHANNEL);
-        logger.info("Haaremy: Velocity Listeners geladen.");
+        
+        // NEU: Ping/MOTD Listener (für dynamische Slots/MOTD)
+        server.getEventManager().register(this, new PingListener(server));
+
+        // Kanäle registrieren
+        server.getChannelRegistrar().register(TRIGGER_CHANNEL);
+        server.getChannelRegistrar().register(STATUS_CHANNEL);
+        
+        logger.info("Haaremy: Velocity Listeners & Channels geladen.");
     }
 
     private void initializePluginFeatures() {
-        // HmyLobby initialisieren
-        this.hmyLobby = new HmyLobby(server, logger, languageManager,luckPerms);
-        logger.info("Haaremy: Velocity HmyLobby geladen.");
+        this.hmyLobby = new HmyLobby(server, logger, languageManager, luckPerms);
 
-        // Broadcast-Befehl registrieren
+        // Commands registrieren
         server.getCommandManager().register(
             server.getCommandManager().metaBuilder("broadcast").build(),
             new ComBroadcast(server, languageManager)
         );
 
-         // Broadcast-Befehl registrieren
-        server.getCommandManager().register(
-            server.getCommandManager().metaBuilder("ban").build(),
-            new ComBroadcast(server, languageManager)
-        );
-
-        // Sprachen-Befehl registrieren
         server.getCommandManager().register(
             server.getCommandManager().metaBuilder("hmy language").build(),
-            new ComHmyLanguage(luckPerms,languageManager)
+            new ComHmyLanguage(luckPerms, languageManager)
         );
+    }
 
+    // --- NEU: Der Task, der die Schilder in der Lobby füttert ---
+    private void startStatusUpdateTask() {
+        server.getScheduler().buildTask(this, () -> {
+            // Wir suchen den Lobby-Server (muss in velocity.toml so heißen)
+            server.getServer("lobby").ifPresent(lobby -> {
+                // Nur senden, wenn jemand da ist (Plugin Messages brauchen Spieler als Träger)
+                if (lobby.getPlayersConnected().isEmpty()) return;
+
+                for (RegisteredServer rs : server.getAllServers()) {
+                    String name = rs.getServerInfo().getName();
+                    int online = rs.getPlayersConnected().size();
+                    int max = 100; // Hier könntest du einen Wert aus deiner Config nehmen
+
+                    ByteArrayDataOutput out = ByteStreams.newDataOutput();
+                    out.writeUTF(name);
+                    out.writeInt(online);
+                    out.writeInt(max);
+
+                    lobby.sendPluginMessage(STATUS_CHANNEL, out.toByteArray());
+                }
+            });
+        }).repeat(5, TimeUnit.SECONDS).schedule();
+        
+        logger.info("Haaremy: Status-Update-Task (5s) gestartet.");
     }
 
     @Subscribe
     public void onPluginMessage(PluginMessageEvent event) {
-        if (!event.getIdentifier().equals(CHANNEL)) {
-            return;
-        }
+        if (!event.getIdentifier().equals(TRIGGER_CHANNEL)) return;
 
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(event.getData()))) {
             String playerName = in.readUTF();
             String command = in.readUTF();
 
-            logger.info("Nachricht empfangen: Spieler = " + playerName + ", Befehl = " + command);
-
-            server.getPlayer(playerName).ifPresentOrElse(player -> {
-                server.getCommandManager().executeAsync(player, command).whenComplete((result, throwable) -> {
-                    if (throwable != null) {
-                        player.sendMessage(Component.text("Fehler beim Ausführen des Befehls: " + command));
-                    }
-                });
-            }, () -> {
-                logger.warn("Spieler nicht gefunden: " + playerName);
+            server.getPlayer(playerName).ifPresent(player -> {
+                server.getCommandManager().executeAsync(player, command);
             });
         } catch (Exception e) {
             logger.error("Fehler beim Lesen der Plugin-Nachricht: ", e);

@@ -1,11 +1,13 @@
 package de.haaremy.hmylobby;
 
 import java.nio.file.Path;
-
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-
-
 import net.luckperms.api.LuckPerms;
 
 public class HmyLobby extends JavaPlugin {
@@ -14,56 +16,73 @@ public class HmyLobby extends JavaPlugin {
     private HmyLanguageManager language;
     private HmyConfigManager configManager;
     private ServerSelectorConfig serverSelectorConfig;
-
-
+    private ServerInfoListener serverInfoListener; // NEU
 
     @Override
     public void onEnable() {
         getLogger().info("Haaremy: hmyLobby Plugin wird aktiviert...");
-        
         saveDefaultConfig();
 
-        // LuckPerms laden
+        // LuckPerms
         RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             this.luckPerms = provider.getProvider();
         } else {
             getLogger().severe("Haaremy: LuckPerms konnte nicht geladen werden! Lobby wird deaktiviert.");
             getServer().getPluginManager().disablePlugin(this);
-            return; // ← Nur return, sonst nichts
+            return;
         }
 
-        // Config & Manager initialisieren
+        // Manager
         var logger = getLogger();
         Path dataDirectory = getDataFolder().toPath().getParent();
         this.configManager = new HmyConfigManager(logger, dataDirectory);
         this.serverSelectorConfig = new ServerSelectorConfig(this);
-        logger.info("Haaremy: Paper Config wird initialisiert.");
         this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
-        logger.info("Haaremy: Paper Sprachen initialisiert.");
 
-        // LobbyWorldManager ✅ HIER – nach der Config!
+        // --- NEU: Server Status Logik ---
+        this.serverInfoListener = new ServerInfoListener(this);
+        getServer().getMessenger().registerIncomingPluginChannel(this, "hmy:status", serverInfoListener);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "hmy:status");
+
+        // LobbyWorldManager
         LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this);
 
-        // Event-Listener registrieren
+        // Event-Listener
         getServer().getPluginManager().registerEvents(new PlayerEventListener(this, language), this);
         getServer().getPluginManager().registerEvents(new DoorSignListener(this), this);
-        getServer().getPluginManager().registerEvents(lobbyWorldManager, this); // ✅
+        getServer().getPluginManager().registerEvents(lobbyWorldManager, this);
+
+        // --- NEU: Scan für bestehende Schilder nach 5 Sekunden ---
+        Bukkit.getScheduler().runTaskLater(this, this::scanForSigns, 100L);
 
         getLogger().info("Haaremy: Alle Lobby Funktionen wurden erfolgreich aktiviert!");
     }
 
-    
+    private void scanForSigns() {
+        NamespacedKey key = new NamespacedKey(this, "target_server");
+        int count = 0;
+        for (org.bukkit.World world : Bukkit.getWorlds()) {
+            for (org.bukkit.Chunk chunk : world.getLoadedChunks()) {
+                for (BlockState state : chunk.getTileEntities()) {
+                    if (state instanceof Sign sign) {
+                        if (sign.getPersistentDataContainer().has(key, PersistentDataType.STRING)) {
+                            serverInfoListener.registerSign(sign);
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        getLogger().info("Haaremy: " + count + " Server-Schilder im Speicher registriert.");
+    }
+
     @Override
     public void onDisable() {
         getLogger().info("Haaremy: hmyLobby deaktiviert!");
     }
 
-    public LuckPerms getLuckPerms() {
-        return luckPerms;
-    }
-    
-    public ServerSelectorConfig getServerSelectorConfig() {
-        return serverSelectorConfig;
-    }
+    public ServerInfoListener getServerInfoListener() { return serverInfoListener; }
+    public LuckPerms getLuckPerms() { return luckPerms; }
+    public ServerSelectorConfig getServerSelectorConfig() { return serverSelectorConfig; }
 }
