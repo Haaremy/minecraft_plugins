@@ -16,8 +16,9 @@ public class HmyLobby extends JavaPlugin {
     private HmyLanguageManager language;
     private HmyConfigManager configManager;
     private ServerSelectorConfig serverSelectorConfig;
-    private ServerInfoListener serverInfoListener; // NEU
+    private ServerInfoListener serverInfoListener;
 	private CosmeticMenuListener cosmeticMenuListener;
+	private EffectManager effectManager;
 
     @Override
     public void onEnable() {
@@ -40,6 +41,11 @@ public class HmyLobby extends JavaPlugin {
         this.configManager = new HmyConfigManager(logger, dataDirectory);
         this.serverSelectorConfig = new ServerSelectorConfig(this);
         this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
+        
+        CosmeticMenuListener cosmeticListener = new CosmeticMenuListener(this);
+        getServer().getPluginManager().registerEvents(cosmeticListener, this);
+        this.cosmeticMenuListener = cosmeticListener; // Getter erstellen!
+        this.effectManager = new EffectManager(this);
 
         // --- NEU: Server Status Logik ---
         this.serverInfoListener = new ServerInfoListener(this);
@@ -55,9 +61,8 @@ public class HmyLobby extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new DoorSignListener(this), this);
         getServer().getPluginManager().registerEvents(lobbyWorldManager, this);
         
-        CosmeticMenuListener cosmeticListener = new CosmeticMenuListener(this);
-        getServer().getPluginManager().registerEvents(cosmeticListener, this);
-        this.cosmeticMenuListener = cosmeticListener; // Getter erstellen!
+       
+        
 
         // --- NEU: Scan für bestehende Schilder nach 5 Sekunden ---
         Bukkit.getScheduler().runTaskLater(this, this::scanForSigns, 100L);
@@ -95,4 +100,6 @@ public class HmyLobby extends JavaPlugin {
 	public CosmeticMenuListener getCosmeticMenuListener() {
 		return cosmeticMenuListener;
 	}
+	
+	public EffectManager getEffectManager() { return effectManager; }
 }

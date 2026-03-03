@@ -9,4 +9,5 @@ de\haaremy\hmylobby\ComHmyLanguage.class
 de\haaremy\hmylobby\LobbyWorldManager.class
 de\haaremy\hmylobby\HmyLobby.class
 de\haaremy\hmylobby\ServerInfoListener.class
+de\haaremy\hmylobby\EffectManager.class
 de\haaremy\hmylobby\DoorSignListener.class

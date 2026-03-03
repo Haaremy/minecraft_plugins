@@ -110,84 +110,59 @@ public class PlayerEventListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         
-        // Globaler Schutz: Niemand darf Items im Inventar verschieben (außer mit Admin-Recht)
+        // Globaler Schutz: Niemand darf Items verschieben
         if (!PermissionUtils.hasPermission(player, "hmy.lobby.inventory.edit")) {
             event.setCancelled(true);
         }
 
         String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
+        int slot = event.getRawSlot();
+        ItemStack clicked = event.getCurrentItem();
 
-        // LOGIK FÜR DAS LOBBY-MENÜ
+        // 1. LOBBY-MENÜ (Serverauswahl)
         if (title.equals("§6Lobby-Menü")) {
-        	event.setCancelled(true);
-            ItemStack clickedItem = event.getCurrentItem();
-            if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
-
-            int clickedSlot = event.getRawSlot();
+            if (clicked == null || clicked.getType() == Material.AIR) return;
             for (ServerSelectorConfig.SelectorEntry entry : plugin.getServerSelectorConfig().getEntries()) {
-                if (entry.slot() == clickedSlot) {
+                if (entry.slot() == slot) {
                     player.closeInventory();
                     player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f);
                     connectToServer(player, entry.server());
                     break;
                 }
             }
-        }
+        } 
         
-        // LOGIK FÜR DAS MY-MENÜ
-        if (title.equals("§bMy-Menü")) {
-        	event.setCancelled(true);
-            int slot = event.getRawSlot();
-            
+        // 2. MY-MENÜ (Hauptzentrale)
+        else if (title.contains("MY-MENÜ")) {
+            // Da CosmeticMenuListener ein eigener Listener ist, fängt er Mounts/Partikel selbst ab.
+            // Hier im PlayerEventListener regeln wir nur die Navigation aus dem Hauptmenü heraus:
             switch (slot) {
-            case 10 -> plugin.getCosmeticMenuListener().openParticleMenu(player);
-            case 11 -> player.sendMessage("§dCosmetics kommen bald!");
-            case 13 -> openLanguageMenu(player);
-            case 15 -> player.sendMessage("§aKöpfe kommen bald!");
-            case 16 -> plugin.getCosmeticMenuListener().openMountMenu(player);
-            case 22 -> player.sendMessage("§7Einstellungen kommen bald!");
-        }
-            if (slot != -1) player.playSound(player, Sound.UI_BUTTON_CLICK, 0.5f, 1f);
-        }
-
-        if (title.contains("Wähle deine Sprache")) {
-            event.setCancelled(true);
-            if (event.getRawSlot() == 18) { openHeadMenu(player); return; }
-            
-            ItemStack clicked = event.getCurrentItem();
-            if (clicked == null || !clicked.hasItemMeta()) return;
-            
-            String name = LegacyComponentSerializer.legacySection().serialize(clicked.getItemMeta().displayName());
-            if (name.contains("Deutsch")) {
-                player.performCommand("hmy language de");
-                player.closeInventory();
-            } else if (name.contains("English")) {
-                player.performCommand("hmy language en");
-                player.closeInventory();
+                case 10 -> plugin.getCosmeticMenuListener().openParticleMenu(player);
+                case 13 -> openLanguageMenu(player);
+                case 16 -> plugin.getCosmeticMenuListener().openMountMenu(player);
+                case 11, 15, 22 -> player.sendMessage("§cDieses Feature kommt bald!");
             }
+            if (slot >= 0 && slot < 27) player.playSound(player, Sound.UI_BUTTON_CLICK, 0.5f, 1f);
+        } 
+        
+        // 3. SPRACHMENÜ
+        else if (title.contains("Wähle deine Sprache")) {
+            handleLanguageClick(player, clicked, slot);
         }
+    }
     
+    private void handleLanguageClick(Player player, ItemStack clicked, int slot) {
+        if (slot == 18) { openHeadMenu(player); return; }
+        if (clicked == null || !clicked.hasItemMeta()) return;
 
-        // --- Logik für das neue Sprach-Menü ---
-        if (title.equals("§bWähle deine Sprache")) {
-            event.setCancelled(true);
-            ItemStack clicked = event.getCurrentItem();
-            if (clicked == null || clicked.getType() != Material.PLAYER_HEAD) return;
-
-            String name = LegacyComponentSerializer.legacySection().serialize(clicked.getItemMeta().displayName());
-
-            if (name.contains("Deutsch")) {
-                // Hier deine Logik zum Sprache setzen (z.B. über LuckPerms oder Config)
-                player.performCommand("hmy language de"); 
-                player.closeInventory();
-                player.sendMessage("§aSprache auf Deutsch gestellt!");
-            } else if (name.contains("English")) {
-                player.performCommand("hmy language en");
-                player.closeInventory();
-                player.sendMessage("§aLanguage set to English!");
-            }
-            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
+        String name = LegacyComponentSerializer.legacySection().serialize(clicked.getItemMeta().displayName());
+        if (name.contains("Deutsch")) {
+            player.performCommand("hmy language de");
+        } else if (name.contains("English")) {
+            player.performCommand("hmy language en");
         }
+        player.closeInventory();
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
     }
     
     private void openLanguageMenu(Player player) {
@@ -303,8 +278,8 @@ public class PlayerEventListener implements Listener {
 
     private void playFeedbackEffects(Player player) {
         player.showTitle(Title.title(Component.text("§6Willkommen"), Component.text("§b" + player.getName())));
-        player.getWorld().spawnParticle(Particle.DRAGON_BREATH, player.getLocation(), 20, 0.2, 0.2, 0.2, 0.05);
-        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1f);
+        player.getWorld().spawnParticle(Particle.DRAGON_BREATH, player.getLocation(), 100, 0.5, 0.5, 0.5, 0.05);
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
     }
 
     @EventHandler public void onQuit(PlayerQuitEvent e) { activeBossBars.remove(e.getPlayer().getUniqueId()); }

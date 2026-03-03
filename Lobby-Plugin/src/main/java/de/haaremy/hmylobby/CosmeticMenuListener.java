@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Pig;
@@ -55,13 +56,42 @@ public class CosmeticMenuListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) return;
         String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
 
-        if (title.contains("Mounts")) {
+        // Verhindert Editieren in ALLEN Cosmetic-Untermenüs
+        if (title.contains("Mounts") || title.contains("Partikel")) {
             event.setCancelled(true);
-            handleMountClick(player, event.getCurrentItem());
-        } else if (title.contains("Partikel")) {
-            event.setCancelled(true);
-            handleParticleClick(player, event.getCurrentItem());
+            
+            ItemStack item = event.getCurrentItem();
+            if (item == null || item.getType() == Material.AIR) return;
+
+            // Reset-Logik (Slot 22 ist meistens gut für "Ausschalten")
+            if (item.getType() == Material.RED_DYE) {
+                handleReset(player, title);
+                return;
+            }
+
+            if (title.contains("Mounts")) {
+                handleMountClick(player, item);
+            } else if (title.contains("Partikel")) {
+                handleParticleClick(player, item);
+            }
         }
+    }
+
+    private void handleReset(Player player, String title) {
+        if (title.contains("Partikel")) {
+            plugin.getEffectManager().remove(player);
+            player.sendMessage("§cPartikel deaktiviert!");
+        } else if (title.contains("Mounts")) {
+            // Korrekte Syntax für das Entfernen des Fahrzeugs
+            if (player.getVehicle() != null) {
+                player.getVehicle().remove();
+                player.sendMessage("§cMount entfernt!");
+            } else {
+                player.sendMessage("§7Du sitzt aktuell auf keinem Mount.");
+            }
+        }
+        player.closeInventory();
+        player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BASS, 0.5f, 1f);
     }
 
     private void handleMountClick(Player player, ItemStack item) {
@@ -87,10 +117,26 @@ public class CosmeticMenuListener implements Listener {
         player.closeInventory();
     }
 
+ // In CosmeticMenuListener.java (Auszug der handleParticleClick)
     private void handleParticleClick(Player player, ItemStack item) {
-        // Ähnliche Logik wie Mounts: Permission prüfen, dann Effekt in einer Map speichern
-        // (Effekte müssen in einem BukkitRunnable abgespielt werden)
-        player.sendMessage("§aPartikel ausgewählt!");
+        if (item == null || !item.hasItemMeta()) return;
+        String name = LegacyComponentSerializer.legacySection().serialize(item.getItemMeta().displayName());
+
+        // Permission dynamisch: hmy.lobby.particle.fire, etc.
+        String suffix = name.contains("Flammen") ? "fire" : name.contains("Wasser") ? "water" : "happy";
+        String perm = "hmy.lobby.particle." + suffix;
+
+        if (!player.hasPermission(perm)) {
+            player.sendMessage("§cKeine Rechte! §7(" + perm + ")");
+            return;
+        }
+
+        if (name.contains("Flammen")) plugin.getEffectManager().setParticle(player, Particle.FLAME);
+        else if (name.contains("Wasser")) plugin.getEffectManager().setParticle(player, Particle.WATER_WAKE);
+        else if (name.contains("Happy")) plugin.getEffectManager().setParticle(player, Particle.VILLAGER_HAPPY);
+
+        player.sendMessage("§aEffekt aktiviert!");
+        player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
         player.closeInventory();
     }
 
