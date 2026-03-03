@@ -17,6 +17,7 @@ public class HmyLobby extends JavaPlugin {
     private HmyConfigManager configManager;
     private ServerSelectorConfig serverSelectorConfig;
     private ServerInfoListener serverInfoListener; // NEU
+	private CosmeticMenuListener cosmeticMenuListener;
 
     @Override
     public void onEnable() {
@@ -44,6 +45,7 @@ public class HmyLobby extends JavaPlugin {
         this.serverInfoListener = new ServerInfoListener(this);
         getServer().getMessenger().registerIncomingPluginChannel(this, "hmy:status", serverInfoListener);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "hmy:status");
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
         // LobbyWorldManager
         LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this);
@@ -52,6 +54,10 @@ public class HmyLobby extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerEventListener(this, language), this);
         getServer().getPluginManager().registerEvents(new DoorSignListener(this), this);
         getServer().getPluginManager().registerEvents(lobbyWorldManager, this);
+        
+        CosmeticMenuListener cosmeticListener = new CosmeticMenuListener(this);
+        getServer().getPluginManager().registerEvents(cosmeticListener, this);
+        this.cosmeticMenuListener = cosmeticListener; // Getter erstellen!
 
         // --- NEU: Scan für bestehende Schilder nach 5 Sekunden ---
         Bukkit.getScheduler().runTaskLater(this, this::scanForSigns, 100L);
@@ -85,4 +91,8 @@ public class HmyLobby extends JavaPlugin {
     public ServerInfoListener getServerInfoListener() { return serverInfoListener; }
     public LuckPerms getLuckPerms() { return luckPerms; }
     public ServerSelectorConfig getServerSelectorConfig() { return serverSelectorConfig; }
+
+	public CosmeticMenuListener getCosmeticMenuListener() {
+		return cosmeticMenuListener;
+	}
 }
