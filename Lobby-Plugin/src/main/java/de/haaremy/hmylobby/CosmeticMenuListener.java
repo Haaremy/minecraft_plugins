@@ -98,22 +98,18 @@ public class CosmeticMenuListener implements Listener {
         if (item == null || !item.hasItemMeta()) return;
         String name = LegacyComponentSerializer.legacySection().serialize(item.getItemMeta().displayName());
 
-        // Permission Abfrage
+        // Permission Check
         String perm = "hmy.lobby.mount." + name.toLowerCase().replace("§", "").substring(1);
         if (!player.hasPermission(perm)) {
-            player.sendMessage("§cDu hast keine Berechtigung für dieses Mount!");
-            player.playSound(player, Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+            player.sendMessage("§cKeine Rechte!");
             return;
         }
 
-        // Mount Logik (Beispiel Schwein)
-        if (name.contains("Schwein")) {
-            Pig pig = (Pig) player.getWorld().spawnEntity(player.getLocation(), EntityType.PIG);
-            pig.setSaddle(true);
-            pig.setAI(false); // Damit es nicht wegläuft
-            pig.addPassenger(player);
-            player.sendMessage("§aViel Spaß auf deinem Schwein!");
-        }
+        if (name.contains("Schwein")) spawnMount(player, EntityType.PIG, "Schwein");
+        else if (name.contains("Spinne")) spawnMount(player, EntityType.SPIDER, "Spinne");
+        else if (name.contains("Pferd")) spawnMount(player, EntityType.HORSE, "Pferd");
+        else if (name.contains("Kuh")) spawnMount(player, EntityType.COW, "Kuh");
+
         player.closeInventory();
     }
 
@@ -152,4 +148,110 @@ public class CosmeticMenuListener implements Listener {
         item.setItemMeta(meta);
         return item;
     }
+    
+ // In CosmeticMenuListener.java
+
+    @EventHandler
+    public void onDismount(org.bukkit.event.vehicle.VehicleExitEvent event) {
+        if (event.getExited() instanceof Player) {
+            // Das Fahrzeug (Schwein/Pferd) sofort entfernen, wenn der Spieler absteigt
+            event.getVehicle().remove();
+        }
+    }
+    
+    public void openPlaceholderMenu(Player player, String featureName) {
+        Inventory inv = Bukkit.createInventory(null, 27, Component.text("§8» " + featureName));
+        
+        // Wir nutzen die fillGlass Methode aus der Hauptklasse oder definieren sie hier kurz:
+        ItemStack glass = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta m = glass.getItemMeta();
+        m.displayName(Component.text(" "));
+        glass.setItemMeta(m);
+        for (int i = 0; i < 27; i++) inv.setItem(i, glass);
+
+        // Info-Item in der Mitte
+        ItemStack info = new ItemStack(Material.BARRIER);
+        ItemMeta meta = info.getItemMeta();
+        meta.displayName(Component.text("§c§lIn Arbeit..."));
+        meta.lore(List.of(Component.text("§7Dieses Feature wird aktuell"), Component.text("§7noch entwickelt.")));
+        info.setItemMeta(meta);
+        
+        inv.setItem(13, info);
+        inv.setItem(22, createGuiItem(Material.ARROW, "§7Zurück", ""));
+
+        player.openInventory(inv);
+    }
+    
+    private void spawnMount(Player player, EntityType type, String name) {
+        // 1. Altes Mount entfernen
+        if (player.getVehicle() != null) {
+            player.getVehicle().remove();
+        }
+
+        // 2. Entity spawnen
+        org.bukkit.entity.Entity mount = player.getWorld().spawnEntity(player.getLocation(), type);
+        
+        // 3. Universelle Eigenschaften (für alle Tiere)
+        if (mount instanceof org.bukkit.entity.LivingEntity living) {
+            living.setAI(true); 
+            living.setInvulnerable(true);
+            living.setCustomNameVisible(false);
+            
+            // Speziell für Schweine/Pferde
+            if (living instanceof org.bukkit.entity.Steerable steerable) {
+                steerable.setSaddle(true);
+            }
+            if (living instanceof org.bukkit.entity.AbstractHorse horse) {
+                horse.setTamed(true);
+                horse.getInventory().setSaddle(new ItemStack(Material.SADDLE));
+            }
+        }
+
+        // 4. Spieler draufsetzen
+        mount.addPassenger(player);
+        player.sendMessage("§aDu reitest nun auf einem §e" + name + "§a!");
+        
+        // 5. Steuerung aktivieren (Task)
+        startMountControlTask(player, mount);
+    }
+    
+    private void startMountControlTask(Player player, org.bukkit.entity.Entity mount) {
+        new org.bukkit.scheduler.BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!mount.isValid() || mount.getPassengers().isEmpty() || !player.isOnline()) {
+                    this.cancel();
+                    if (mount.isValid()) mount.remove();
+                    return;
+                }
+
+                // Geschwindigkeit setzen basierend auf Blickrichtung
+                org.bukkit.util.Vector direction = player.getLocation().getDirection().setY(0).normalize();
+                
+                // Nur bewegen, wenn der Spieler sich umschaut/bewegt (kleiner Schwellenwert)
+                if (player.isSprinting()) {
+                    mount.setVelocity(direction.multiply(0.5).setY(-0.1));
+                } else {
+                    mount.setVelocity(direction.multiply(0.25).setY(-0.1));
+                }
+                
+                // Mount in Blickrichtung drehen
+                mount.setRotation(player.getLocation().getYaw(), player.getLocation().getPitch());
+            }
+        }.runTaskTimer(plugin, 1L, 2L);
+    }
+    
+    @EventHandler
+    public void onMountExit(org.bukkit.event.vehicle.VehicleExitEvent event) {
+        if (event.getExited() instanceof Player) {
+            // Das Mount (Vehicle) sofort entfernen
+            event.getVehicle().remove();
+            
+            if (event.getExited() instanceof Player p) {
+                p.sendMessage("§7Dein Mount wurde in den Stall geschickt.");
+                p.playSound(p.getLocation(), Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+            }
+        }
+    }
+
 }

@@ -136,12 +136,14 @@ public class PlayerEventListener implements Listener {
         else if (title.contains("MY-MENÜ")) {
             // Da CosmeticMenuListener ein eigener Listener ist, fängt er Mounts/Partikel selbst ab.
             // Hier im PlayerEventListener regeln wir nur die Navigation aus dem Hauptmenü heraus:
-            switch (slot) {
-                case 10 -> plugin.getCosmeticMenuListener().openParticleMenu(player);
-                case 13 -> openLanguageMenu(player);
-                case 16 -> plugin.getCosmeticMenuListener().openMountMenu(player);
-                case 11, 15, 22 -> player.sendMessage("§cDieses Feature kommt bald!");
-            }
+        	switch (slot) {
+            case 10 -> plugin.getCosmeticMenuListener().openParticleMenu(player);
+            case 11 -> plugin.getCosmeticMenuListener().openPlaceholderMenu(player, "§d§lCosmetics");
+            case 13 -> openLanguageMenu(player);
+            case 15 -> plugin.getCosmeticMenuListener().openPlaceholderMenu(player, "§a§lKöpfe");
+            case 16 -> plugin.getCosmeticMenuListener().openMountMenu(player);
+            case 22 -> plugin.getCosmeticMenuListener().openPlaceholderMenu(player, "§7§lEinstellungen");
+        }
             if (slot >= 0 && slot < 27) player.playSound(player, Sound.UI_BUTTON_CLICK, 0.5f, 1f);
         } 
         
@@ -277,9 +279,40 @@ public class PlayerEventListener implements Listener {
     }
 
     private void playFeedbackEffects(Player player) {
-        player.showTitle(Title.title(Component.text("§6Willkommen"), Component.text("§b" + player.getName())));
-        player.getWorld().spawnParticle(Particle.DRAGON_BREATH, player.getLocation(), 100, 0.5, 0.5, 0.5, 0.05);
-        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+        // 10 Ticks (0,5s) warten, bis der Spieler wirklich "da" ist
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!player.isOnline()) return;
+
+            Location loc = player.getLocation();
+
+            // --- OPTIK ---
+            // Ein riesiger Ring aus Drachenatem
+            player.getWorld().spawnParticle(Particle.DRAGON_BREATH, loc.add(0, 1, 0), 200, 0.5, 1.0, 0.5, 0.1);
+            
+            // Ein kleiner "Flash" (Explosion ohne Blockschaden)
+            player.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, loc, 1);
+            
+            // Ein paar aufsteigende Sterne (Witch-Partikel)
+            player.getWorld().spawnParticle(Particle.SPELL_WITCH, loc, 100, 1.0, 2.0, 1.0, 0.1);
+
+            // --- SOUND ---
+            // LevelUp direkt "im Ohr" (Volume 2f erhöht die Reichweite/Priorität)
+            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 2.0f, 1.0f);
+            
+            // Ein tiefer "Wumms" für die Landung
+            player.playSound(player, Sound.ENTITY_GENERIC_EXPLODE, 0.8f, 1.5f);
+            
+            // Ein magisches Glitzern
+            player.playSound(player, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, 1.0f);
+
+            // --- TITEL ---
+            player.showTitle(Title.title(
+                Component.text("§6§lHAAREMY §e§lNETWORK"), 
+                Component.text("§bWillkommen zurück, " + player.getName() + "!"),
+                Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500))
+            ));
+
+        }, 15L); // 15 Ticks Verzögerung sind ideal (0,75s)
     }
 
     @EventHandler public void onQuit(PlayerQuitEvent e) { activeBossBars.remove(e.getPlayer().getUniqueId()); }
