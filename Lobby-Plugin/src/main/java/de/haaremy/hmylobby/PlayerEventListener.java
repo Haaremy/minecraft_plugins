@@ -49,7 +49,7 @@ public class PlayerEventListener implements Listener {
         giveLobbyItems(player);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (player.isOnline()) playFeedbackEffects(player);
+            playFeedbackEffects(player);
         }, 20L);
     }
 
@@ -203,7 +203,7 @@ public class PlayerEventListener implements Listener {
         player.openInventory(inv);
     }
 
-    private void openHeadMenu(Player player) {
+    void openHeadMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27, Component.text("§b§lMY-MENÜ §8» §7Profile"));
         fillGlass(inv); // Füllt alles mit grauem Glas
 
@@ -279,40 +279,9 @@ public class PlayerEventListener implements Listener {
     }
 
     private void playFeedbackEffects(Player player) {
-        // 10 Ticks (0,5s) warten, bis der Spieler wirklich "da" ist
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (!player.isOnline()) return;
-
-            Location loc = player.getLocation();
-
-            // --- OPTIK ---
-            // Ein riesiger Ring aus Drachenatem
-            player.getWorld().spawnParticle(Particle.DRAGON_BREATH, loc.add(0, 1, 0), 200, 0.5, 1.0, 0.5, 0.1);
-            
-            // Ein kleiner "Flash" (Explosion ohne Blockschaden)
-            player.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, loc, 1);
-            
-            // Ein paar aufsteigende Sterne (Witch-Partikel)
-            player.getWorld().spawnParticle(Particle.SPELL_WITCH, loc, 100, 1.0, 2.0, 1.0, 0.1);
-
-            // --- SOUND ---
-            // LevelUp direkt "im Ohr" (Volume 2f erhöht die Reichweite/Priorität)
-            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 2.0f, 1.0f);
-            
-            // Ein tiefer "Wumms" für die Landung
-            player.playSound(player, Sound.ENTITY_GENERIC_EXPLODE, 0.8f, 1.5f);
-            
-            // Ein magisches Glitzern
-            player.playSound(player, Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, 1.0f);
-
-            // --- TITEL ---
-            player.showTitle(Title.title(
-                Component.text("§6§lHAAREMY §e§lNETWORK"), 
-                Component.text("§bWillkommen zurück, " + player.getName() + "!"),
-                Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500))
-            ));
-
-        }, 15L); // 15 Ticks Verzögerung sind ideal (0,75s)
+        player.showTitle(Title.title(Component.text("§6Willkommen"), Component.text("§b" + player.getName())));
+        player.getWorld().spawnParticle(Particle.DRAGON_BREATH, player.getLocation(), 1000, 1, 0, 1, 0.05);
+        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 0.4f);
     }
 
     @EventHandler public void onQuit(PlayerQuitEvent e) { activeBossBars.remove(e.getPlayer().getUniqueId()); }

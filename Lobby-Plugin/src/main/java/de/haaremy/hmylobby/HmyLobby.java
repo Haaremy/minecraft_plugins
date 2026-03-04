@@ -19,6 +19,7 @@ public class HmyLobby extends JavaPlugin {
     private ServerInfoListener serverInfoListener;
 	private CosmeticMenuListener cosmeticMenuListener;
 	private EffectManager effectManager;
+	private PlayerEventListener playerEventListener;
 
     @Override
     public void onEnable() {
@@ -42,6 +43,9 @@ public class HmyLobby extends JavaPlugin {
         this.serverSelectorConfig = new ServerSelectorConfig(this);
         this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
         
+        this.playerEventListener = new PlayerEventListener(this, language);
+        getServer().getPluginManager().registerEvents(this.playerEventListener, this);
+        
         CosmeticMenuListener cosmeticListener = new CosmeticMenuListener(this);
         getServer().getPluginManager().registerEvents(cosmeticListener, this);
         this.cosmeticMenuListener = cosmeticListener; // Getter erstellen!
@@ -56,8 +60,7 @@ public class HmyLobby extends JavaPlugin {
         // LobbyWorldManager
         LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this);
 
-        // Event-Listener
-        getServer().getPluginManager().registerEvents(new PlayerEventListener(this, language), this);
+        
         getServer().getPluginManager().registerEvents(new DoorSignListener(this), this);
         getServer().getPluginManager().registerEvents(lobbyWorldManager, this);
         
@@ -99,6 +102,11 @@ public class HmyLobby extends JavaPlugin {
 
 	public CosmeticMenuListener getCosmeticMenuListener() {
 		return cosmeticMenuListener;
+	}
+	
+	public PlayerEventListener getPlayerEventListener() {
+		
+		return playerEventListener;
 	}
 	
 	public EffectManager getEffectManager() { return effectManager; }

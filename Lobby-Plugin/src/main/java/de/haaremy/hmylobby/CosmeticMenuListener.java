@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
@@ -57,11 +58,19 @@ public class CosmeticMenuListener implements Listener {
         String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
 
         // Verhindert Editieren in ALLEN Cosmetic-Untermenüs
-        if (title.contains("Mounts") || title.contains("Partikel")) {
-            event.setCancelled(true);
+        if (title.contains("Mounts") || title.contains("Partikel") || title.contains("Köpfe")) {
+        	event.setCancelled(true);
             
             ItemStack item = event.getCurrentItem();
             if (item == null || item.getType() == Material.AIR) return;
+            
+            if (item.getType() == Material.ARROW) {
+                // Hier rufen wir die Methode aus dem PlayerEventListener auf 
+                // oder öffnen das Hauptmenü direkt neu:
+                plugin.getPlayerEventListener().openHeadMenu(player); 
+                player.playSound(player, Sound.UI_BUTTON_CLICK, 1f, 1f);
+                return;
+            }
 
             // Reset-Logik (Slot 22 ist meistens gut für "Ausschalten")
             if (item.getType() == Material.RED_DYE) {
@@ -225,20 +234,30 @@ public class CosmeticMenuListener implements Listener {
                     return;
                 }
 
-                // Geschwindigkeit setzen basierend auf Blickrichtung
-                org.bukkit.util.Vector direction = player.getLocation().getDirection().setY(0).normalize();
+                // Wir nehmen die Blickrichtung des Spielers als Basis
+                org.bukkit.util.Vector dir = player.getLocation().getDirection().setY(0).normalize();
                 
-                // Nur bewegen, wenn der Spieler sich umschaut/bewegt (kleiner Schwellenwert)
-                if (player.isSprinting()) {
-                    mount.setVelocity(direction.multiply(0.5).setY(-0.1));
-                } else {
-                    mount.setVelocity(direction.multiply(0.25).setY(-0.1));
+                // WICHTIG: Wir prüfen, ob der Spieler sich bewegt. 
+                // Da der Spieler auf dem Mob sitzt, ist seine eigene Velocity oft 0.
+                // Wir nutzen daher einen "Input-Check":
+                
+                double speed = 0.25;
+                if (player.isSprinting()) speed = 0.5;
+
+                // Wir bewegen den Mob immer leicht in die Richtung, in die der Spieler schaut,
+                // ABER nur wenn der Spieler nach vorne "drückt". 
+                // In der Lobby reicht meistens die Blickrichtung-Steuerung ("Look-to-drive").
+                Block ahead = mount.getLocation().add(dir.multiply(1.0)).getBlock();
+                if (ahead.getType().isSolid() && mount.isOnGround()) {
+                    mount.setVelocity(mount.getVelocity().setY(0.5));
                 }
                 
-                // Mount in Blickrichtung drehen
-                mount.setRotation(player.getLocation().getYaw(), player.getLocation().getPitch());
+                mount.setVelocity(dir.multiply(speed).setY(-0.1));
+                
+                // Mount drehen
+                mount.setRotation(player.getLocation().getYaw(), 0);
             }
-        }.runTaskTimer(plugin, 1L, 2L);
+        }.runTaskTimer(plugin, 1L, 1L); // Alle 1 Tick für flüssige Bewegung
     }
     
     @EventHandler

@@ -109,9 +109,14 @@ public class DoorSignListener implements Listener {
             return;
         }
 
-        // Teleport-Befehl ausführen
-        plugin.getLogger().info(player.getName() + " wechselt zu Server: " + targetServer);
-        player.performCommand("triggervelocity hmy server " + targetServer);
+        // --- NEUE LOGIK (wie im ServerSelector) ---
+        event.setCancelled(true); // Tür-Animation/Öffnen stoppen
+        
+        player.sendMessage("§aVerbinde zu §e" + targetServer + "§7...");
+        player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f);
+        
+        // Direkt über BungeeCord verbinden statt per Command
+        connectToServer(player, targetServer);
         event.setCancelled(true); // Verhindert das normale Öffnen der Tür für Nicht-Admins (optional)
     }
 
@@ -144,5 +149,12 @@ public class DoorSignListener implements Listener {
     private String serialize(Component component) {
         if (component == null) return "";
         return PlainTextComponentSerializer.plainText().serialize(component).trim();
+    }
+    
+    private void connectToServer(Player player, String server) {
+        com.google.common.io.ByteArrayDataOutput out = com.google.common.io.ByteStreams.newDataOutput();
+        out.writeUTF("Connect");
+        out.writeUTF(server);
+        player.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
     }
 }
