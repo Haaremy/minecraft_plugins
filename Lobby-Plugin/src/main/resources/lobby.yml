@@ -1,6 +1,9 @@
-Lobby:
+# Haaremy Lobby - Lobby-Einstellungen
+# Pfad: minecraftServers/hmySettings/lobby.yml
+
+lobby:
   world: "lobby"
-  Rules:
+  rules:
     weather: false
     daylight-cycle: false
     mob-spawning: false
@@ -8,8 +11,9 @@ Lobby:
     pvp: false
     hunger: false
     fall-damage: false
+    all-damage: false
 
-ServerSelector:
+server-selector:
   enabled: true
   entries:
     survival:

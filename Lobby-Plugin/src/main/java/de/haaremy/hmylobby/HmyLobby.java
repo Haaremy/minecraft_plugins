@@ -17,14 +17,13 @@ public class HmyLobby extends JavaPlugin {
     private HmyConfigManager configManager;
     private ServerSelectorConfig serverSelectorConfig;
     private ServerInfoListener serverInfoListener;
-	private CosmeticMenuListener cosmeticMenuListener;
-	private EffectManager effectManager;
-	private PlayerEventListener playerEventListener;
+    private CosmeticMenuListener cosmeticMenuListener;
+    private EffectManager effectManager;
+    private PlayerEventListener playerEventListener;
 
     @Override
     public void onEnable() {
         getLogger().info("Haaremy: hmyLobby Plugin wird aktiviert...");
-        saveDefaultConfig();
 
         // LuckPerms
         RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
@@ -36,38 +35,30 @@ public class HmyLobby extends JavaPlugin {
             return;
         }
 
-        // Manager
-        var logger = getLogger();
-        Path dataDirectory = getDataFolder().toPath().getParent();
-        this.configManager = new HmyConfigManager(logger, dataDirectory);
-        this.serverSelectorConfig = new ServerSelectorConfig(this);
-        this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
-        
+        // pluginsDir = minecraftServers/subserver/plugins/
+        // HmyConfigManager berechnet daraus: pluginsDir/../../hmySettings = minecraftServers/hmySettings/
+        Path pluginsDir = getDataFolder().toPath().getParent();
+        this.configManager = new HmyConfigManager(getLogger(), pluginsDir);
+        this.serverSelectorConfig = new ServerSelectorConfig(configManager, getLogger());
+        this.language = new HmyLanguageManager(getLogger(), pluginsDir, configManager, luckPerms);
+
         this.playerEventListener = new PlayerEventListener(this, language);
         getServer().getPluginManager().registerEvents(this.playerEventListener, this);
-        
+
         CosmeticMenuListener cosmeticListener = new CosmeticMenuListener(this);
         getServer().getPluginManager().registerEvents(cosmeticListener, this);
-        this.cosmeticMenuListener = cosmeticListener; // Getter erstellen!
+        this.cosmeticMenuListener = cosmeticListener;
         this.effectManager = new EffectManager(this);
 
-        // --- NEU: Server Status Logik ---
         this.serverInfoListener = new ServerInfoListener(this);
         getServer().getMessenger().registerIncomingPluginChannel(this, "hmy:status", serverInfoListener);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "hmy:status");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
-        // LobbyWorldManager
-        LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this);
-
-        
+        LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this, configManager);
         getServer().getPluginManager().registerEvents(new DoorSignListener(this), this);
         getServer().getPluginManager().registerEvents(lobbyWorldManager, this);
-        
-       
-        
 
-        // --- NEU: Scan für bestehende Schilder nach 5 Sekunden ---
         Bukkit.getScheduler().runTaskLater(this, this::scanForSigns, 100L);
 
         getLogger().info("Haaremy: Alle Lobby Funktionen wurden erfolgreich aktiviert!");
@@ -97,17 +88,16 @@ public class HmyLobby extends JavaPlugin {
     }
 
     public ServerInfoListener getServerInfoListener() { return serverInfoListener; }
-    public LuckPerms getLuckPerms() { return luckPerms; }
+    public LuckPerms getLuckPerms()                   { return luckPerms; }
     public ServerSelectorConfig getServerSelectorConfig() { return serverSelectorConfig; }
 
-	public CosmeticMenuListener getCosmeticMenuListener() {
-		return cosmeticMenuListener;
-	}
-	
-	public PlayerEventListener getPlayerEventListener() {
-		
-		return playerEventListener;
-	}
-	
-	public EffectManager getEffectManager() { return effectManager; }
+    public CosmeticMenuListener getCosmeticMenuListener() {
+        return cosmeticMenuListener;
+    }
+
+    public PlayerEventListener getPlayerEventListener() {
+        return playerEventListener;
+    }
+
+    public EffectManager getEffectManager() { return effectManager; }
 }

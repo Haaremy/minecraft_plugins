@@ -13,11 +13,13 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 public class LobbyWorldManager implements Listener {
 
     private final HmyLobby plugin;
+    private final HmyConfigManager configManager;
     private final String lobbyWorldName;
 
-    public LobbyWorldManager(HmyLobby plugin) {
+    public LobbyWorldManager(HmyLobby plugin, HmyConfigManager configManager) {
         this.plugin = plugin;
-        this.lobbyWorldName = plugin.getConfig().getString("Lobby.world", "world");
+        this.configManager = configManager;
+        this.lobbyWorldName = configManager.getLobbyWorld();
         applyGameRules();
     }
 
@@ -25,20 +27,15 @@ public class LobbyWorldManager implements Listener {
         World world = plugin.getServer().getWorld(lobbyWorldName);
         if (world == null) return;
 
-        // Config Werte laden
-        boolean weather       = plugin.getConfig().getBoolean("Lobby.Rules.weather", false);
-        boolean daylightCycle = plugin.getConfig().getBoolean("Lobby.Rules.daylight-cycle", false);
-        boolean mobSpawning   = plugin.getConfig().getBoolean("Lobby.Rules.mob-spawning", false);
-        
-        world.setGameRule(GameRule.DO_WEATHER_CYCLE, weather);
-        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, daylightCycle);
-        world.setGameRule(GameRule.DO_MOB_SPAWNING, mobSpawning);
-        world.setGameRule(GameRule.FALL_DAMAGE, plugin.getConfig().getBoolean("Lobby.Rules.fall-damage", false));
-        
-        world.setDifficulty(Difficulty.PEACEFUL);
-        world.setPVP(plugin.getConfig().getBoolean("Lobby.Rules.pvp", false));
+        world.setGameRule(GameRule.DO_WEATHER_CYCLE,  configManager.getLobbyRule("weather",       false));
+        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, configManager.getLobbyRule("daylight-cycle", false));
+        world.setGameRule(GameRule.DO_MOB_SPAWNING,   configManager.getLobbyRule("mob-spawning",   false));
+        world.setGameRule(GameRule.FALL_DAMAGE,        configManager.getLobbyRule("fall-damage",    false));
 
-        if (!daylightCycle) {
+        world.setDifficulty(Difficulty.PEACEFUL);
+        world.setPVP(configManager.getLobbyRule("pvp", false));
+
+        if (!configManager.getLobbyRule("daylight-cycle", false)) {
             world.setTime(6000);
         }
     }
@@ -48,8 +45,7 @@ public class LobbyWorldManager implements Listener {
         if (!(event.getEntity() instanceof Player player)) return;
         if (!isLobbyWorld(player)) return;
 
-        // Wenn Hunger in der Config FALSE ist -> Event abbrechen
-        if (!plugin.getConfig().getBoolean("Lobby.Rules.hunger", false)) {
+        if (!configManager.getLobbyRule("hunger", false)) {
             event.setCancelled(true);
             player.setFoodLevel(20);
         }
@@ -62,25 +58,21 @@ public class LobbyWorldManager implements Listener {
 
         EntityDamageEvent.DamageCause cause = event.getCause();
 
-        // 1. Fallschaden prüfen
         if (cause == EntityDamageEvent.DamageCause.FALL) {
-            if (!plugin.getConfig().getBoolean("Lobby.Rules.fall-damage", false)) {
+            if (!configManager.getLobbyRule("fall-damage", false)) {
                 event.setCancelled(true);
             }
             return;
         }
 
-        // 2. PvP prüfen
         if (cause == EntityDamageEvent.DamageCause.ENTITY_ATTACK || cause == EntityDamageEvent.DamageCause.PROJECTILE) {
-            if (!plugin.getConfig().getBoolean("Lobby.Rules.pvp", false)) {
+            if (!configManager.getLobbyRule("pvp", false)) {
                 event.setCancelled(true);
             }
             return;
         }
 
-        // 3. ALLE ANDEREN SCHADENSARTEN (Lava, Feuer, Ertrinken, Erstickung, etc.)
-        // Wenn du in der Lobby generell keinen Schaden willst, brechen wir hier alles ab.
-        if (!plugin.getConfig().getBoolean("Lobby.Rules.all-damage", false)) {
+        if (!configManager.getLobbyRule("all-damage", false)) {
             event.setCancelled(true);
         }
     }
@@ -88,7 +80,7 @@ public class LobbyWorldManager implements Listener {
     @EventHandler
     public void onWeatherChange(WeatherChangeEvent event) {
         if (!event.getWorld().getName().equals(lobbyWorldName)) return;
-        if (!plugin.getConfig().getBoolean("Lobby.Rules.weather", false)) {
+        if (!configManager.getLobbyRule("weather", false)) {
             if (event.toWeatherState()) event.setCancelled(true);
         }
     }

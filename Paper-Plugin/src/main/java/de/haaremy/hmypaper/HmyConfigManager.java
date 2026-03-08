@@ -1,5 +1,7 @@
 package de.haaremy.hmypaper;
 
+import org.bukkit.configuration.file.YamlConfiguration;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -7,70 +9,76 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Lädt Konfigurationsdateien aus minecraftServers/hmySettings/.
+ *
+ * Pfad-Berechnung (Plugin liegt in minecraftServers/subserver/plugins/):
+ *   pluginsDir  = minecraftServers/subserver/plugins/
+ *   hmySettings = pluginsDir/../../hmySettings
+ *             = minecraftServers/hmySettings/
+ */
 public class HmyConfigManager {
+
     private final Logger logger;
-    private final Path dataDirectory;
+    private final Path hmySettingsDir;
 
-    public HmyConfigManager(Logger logger, Path dataDirectory) {
+    private YamlConfiguration generalConfig;
+    private YamlConfiguration helpBookConfig;
+
+    public HmyConfigManager(Logger logger, Path pluginsDir) {
         this.logger = logger;
-        this.dataDirectory = dataDirectory;
-        createDefaultConfig();
+        this.hmySettingsDir = pluginsDir.getParent().getParent().resolve("hmySettings");
+        load();
     }
 
-
-    public void createDefaultConfig() {
+    private void load() {
         try {
-            Path targetPath = dataDirectory.resolve("./hmySettings/hmyServer.conf").normalize();
+            Files.createDirectories(hmySettingsDir);
+        } catch (IOException e) {
+            logger.severe("Konnte hmySettings-Verzeichnis nicht erstellen: " + e.getMessage());
+        }
+        generalConfig  = loadOrCreate("general.yml");
+        helpBookConfig = loadOrCreate("helpBook.yml");
+    }
 
-            // Prüfen, ob die Datei bereits existiert
-                try (InputStream inputStream = getClass().getResourceAsStream("/hmyServer.conf")) {
-                    if (inputStream == null) {
-                        throw new IOException("Resource not found: hmyServer.conf");
-                    }
-
-                    // Zielverzeichnis erstellen, falls nicht vorhanden
-                    Files.createDirectories(targetPath.getParent());
-
-                    // Datei kopieren
-                    Files.copy(inputStream, targetPath);
-                    logger.info("Config File Updated.");
-                } catch (IOException e) {
-                    logger.severe("Error on copy: " + e.getMessage());
+    /**
+     * Lädt eine YAML-Datei aus hmySettings/. Existiert sie noch nicht,
+     * wird die mitgelieferte Standarddatei aus dem JAR kopiert.
+     */
+    private YamlConfiguration loadOrCreate(String filename) {
+        Path file = hmySettingsDir.resolve(filename);
+        if (!Files.exists(file)) {
+            try (InputStream in = getClass().getResourceAsStream("/" + filename)) {
+                if (in != null) {
+                    Files.copy(in, file);
+                    logger.info("Standard-Config erstellt: hmySettings/" + filename);
+                } else {
+                    logger.warning("Keine eingebettete Standard-Config gefunden für: " + filename);
                 }
-        
-    } catch (Exception e) {
-        logger.severe("Error on creating files: " + e.getMessage());
-    }
-
-        
-    }
-
-public String getLang() {
-    Path configFile = dataDirectory.resolve("hmyServer.conf");
-    if (!Files.exists(configFile)){
-        createDefaultConfig();
-        configFile = dataDirectory.resolve("hmyServer.conf");
-    }
-    String defaultLanguage = "de"; // Standardwert
-
-    try {
-        // Prüfen, ob die Konfigurationsdatei existiert
-        if (Files.exists(configFile)) {
-            // Zeilen der Konfigurationsdatei lesen
-            List<String> configLines = Files.readAllLines(configFile);
-            for (String line : configLines) {
-                // Zeile für "ServerLanguage" suchen
-                if (line.startsWith("ServerLanguage")) {
-                    // Wert extrahieren und zurückgeben
-                    return line.split("=")[1].trim().replace("\"", "");
-                }
+            } catch (IOException e) {
+                logger.severe("Fehler beim Erstellen von " + filename + ": " + e.getMessage());
             }
         }
-    } catch (IOException e) {
-        logger.severe("Fehler beim Lesen der Konfigurationsdatei: " + e.getMessage());
+        return YamlConfiguration.loadConfiguration(file.toFile());
     }
 
-    // Fallback auf Standardwert
-    return defaultLanguage;
-}
+    // ── general.yml ─────────────────────────────────────────────────────────
+
+    public String getLang() {
+        return generalConfig.getString("language", "de");
+    }
+
+    // ── helpBook.yml ─────────────────────────────────────────────────────────
+
+    public List<String> getHelpBookPages() {
+        return helpBookConfig.getStringList("help-book.pages");
+    }
+
+    public String getHelpBookTitle() {
+        return helpBookConfig.getString("help-book.title", "§6Server Hilfe");
+    }
+
+    public String getHelpBookAuthor() {
+        return helpBookConfig.getString("help-book.author", "Haaremy");
+    }
 }

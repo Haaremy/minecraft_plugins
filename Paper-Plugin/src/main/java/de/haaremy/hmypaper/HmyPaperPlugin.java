@@ -60,11 +60,12 @@ public class HmyPaperPlugin extends JavaPlugin {
         var logger = getLogger();
         logger.info("Haaremy: hmyPaper Plugin wird aktiviert...");
 
-        // Datenverzeichnis und Konfigurationsmanager initialisieren
-        Path dataDirectory = getDataFolder().toPath().getParent();
-        this.configManager = new HmyConfigManager(logger,dataDirectory);
-        logger.info("Haaremy: Paper Config mit initialisiert.");
-        this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
+        // pluginsDir = minecraftServers/subserver/plugins/
+        // HmyConfigManager berechnet daraus: pluginsDir/../../hmySettings = minecraftServers/hmySettings/
+        Path pluginsDir = getDataFolder().toPath().getParent();
+        this.configManager = new HmyConfigManager(logger, pluginsDir);
+        logger.info("Haaremy: Paper Config initialisiert.");
+        this.language = new HmyLanguageManager(logger, pluginsDir, configManager, luckPerms);
         logger.info("Haaremy: Paper Sprachen initialisiert.");
 
         // PluginChannel registrieren
@@ -94,10 +95,10 @@ public class HmyPaperPlugin extends JavaPlugin {
 
     private void registerCommands() {
         registerCommand("triggervelocity", this);
-        
-        List<String> helpPages = loadHelpPagesFromConfig();
-        String helpTitle = "§6Server Hilfe"; // Standardwerte, falls Config leer
-        String helpAuthor = "Haaremy";
+
+        List<String> helpPages  = configManager.getHelpBookPages();
+        String       helpTitle  = configManager.getHelpBookTitle();
+        String       helpAuthor = configManager.getHelpBookAuthor();
 
         // Basics
         registerCommand("help", new ComHelp(helpPages, helpTitle, helpAuthor));
@@ -184,36 +185,5 @@ public class HmyPaperPlugin extends JavaPlugin {
 
     public LuckPerms getLuckPerms() {
         return luckPerms;
-    }
-    
-    
- // Hilfsmethode zum Laden der Buchseiten
-    private List<String> loadHelpPagesFromConfig() {
-        // Hier greifen wir auf die Datei zu, die du auch in HmyAntiBuild nutzt
-        java.io.File configFile = new java.io.File(getDataFolder().getParentFile(), "hmySettings/hmyServer.conf");
-        if (configFile.exists()) {
-            try {
-                String data = String.join("", java.nio.file.Files.readAllLines(configFile.toPath())).trim();
-                // Wir nutzen dein bestehendes extractGlobalSection System (angepasst auf helpbook_pages)
-                // In der Config: helpbook_pages = {"Seite 1", "Seite 2"}
-                return extractList(data, "helpbook_pages");
-            } catch (Exception e) {
-                getLogger().warning("Konnte Hilfe-Seiten nicht laden: " + e.getMessage());
-            }
-        }
-        return List.of("§cKeine Hilfe-Seiten konfiguriert.");
-    }
-
-    // Kleine Utility zum Parsen einfacher Listen
-    private List<String> extractList(String data, String section) {
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\b" + section + "\\s*=\\s*\\{([^}]*)}");
-        java.util.regex.Matcher matcher = pattern.matcher(data);
-        if (matcher.find()) {
-            String value = matcher.group(1).trim();
-            if (!value.isEmpty()) {
-                return java.util.Arrays.asList(value.replace("\"", "").split("\\s*,\\s*"));
-            }
-        }
-        return List.of();
     }
 }
