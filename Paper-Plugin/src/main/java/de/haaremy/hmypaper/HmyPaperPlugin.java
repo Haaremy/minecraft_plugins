@@ -62,7 +62,7 @@ public class HmyPaperPlugin extends JavaPlugin {
 
         // pluginsDir = minecraftServers/subserver/plugins/
         // HmyConfigManager berechnet daraus: pluginsDir/../../hmySettings = minecraftServers/hmySettings/
-        Path pluginsDir = getDataFolder().toPath().getParent();
+        Path pluginsDir = getDataFolder().toPath().toAbsolutePath().getParent();
         this.configManager = new HmyConfigManager(logger, pluginsDir);
         logger.info("Haaremy: Paper Config initialisiert.");
         this.language = new HmyLanguageManager(logger, pluginsDir, configManager, luckPerms);

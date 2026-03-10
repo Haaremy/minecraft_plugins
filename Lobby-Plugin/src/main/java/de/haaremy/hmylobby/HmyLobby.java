@@ -37,7 +37,7 @@ public class HmyLobby extends JavaPlugin {
 
         // pluginsDir = minecraftServers/subserver/plugins/
         // HmyConfigManager berechnet daraus: pluginsDir/../../hmySettings = minecraftServers/hmySettings/
-        Path pluginsDir = getDataFolder().toPath().getParent();
+        Path pluginsDir = getDataFolder().toPath().toAbsolutePath().getParent();
         this.configManager = new HmyConfigManager(getLogger(), pluginsDir);
         this.serverSelectorConfig = new ServerSelectorConfig(configManager, getLogger());
         this.language = new HmyLanguageManager(getLogger(), pluginsDir, configManager, luckPerms);
