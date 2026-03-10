@@ -1,12 +1,15 @@
 package de.haaremy.hmypaper;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -66,6 +69,25 @@ public class HmyConfigManager {
 
     public String getLang() {
         return generalConfig.getString("language", "de");
+    }
+
+    public List<String> getAntiBuildWorlds() {
+        return generalConfig.getStringList("anti-build.worlds");
+    }
+
+    /** Gibt die per-Welt AntiBuild-Settings zurück: Map<welt, Map<schlüssel, Liste>> */
+    public Map<String, Map<String, List<String>>> getAntiBuildWorldSettings() {
+        Map<String, Map<String, List<String>>> result = new HashMap<>();
+        ConfigurationSection worlds = generalConfig.getConfigurationSection("anti-build.world-settings");
+        if (worlds == null) return result;
+        for (String world : worlds.getKeys(false)) {
+            Map<String, List<String>> settings = new HashMap<>();
+            settings.put("disabled-damage-types", worlds.getStringList(world + ".disabled-damage-types"));
+            settings.put("allowed-place",         worlds.getStringList(world + ".allowed-place"));
+            settings.put("allowed-break",          worlds.getStringList(world + ".allowed-break"));
+            result.put(world, settings);
+        }
+        return result;
     }
 
     // ── helpBook.yml ─────────────────────────────────────────────────────────

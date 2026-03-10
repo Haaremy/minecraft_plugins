@@ -66,6 +66,7 @@ public class HmyPaperPlugin extends JavaPlugin {
         this.configManager = new HmyConfigManager(logger, pluginsDir);
         logger.info("Haaremy: Paper Config initialisiert.");
         this.language = new HmyLanguageManager(logger, pluginsDir, configManager, luckPerms);
+        this.language.loadAllLanguageFiles();
         logger.info("Haaremy: Paper Sprachen initialisiert.");
 
         // PluginChannel registrieren
@@ -186,4 +187,7 @@ public class HmyPaperPlugin extends JavaPlugin {
     public LuckPerms getLuckPerms() {
         return luckPerms;
     }
+
+    public HmyConfigManager getConfigManager()   { return configManager; }
+    public HmyLanguageManager getLanguageManager() { return language; }
 }

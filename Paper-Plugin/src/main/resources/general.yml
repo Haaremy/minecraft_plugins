@@ -2,3 +2,22 @@
 # Diese Datei gilt für alle hmy-Plugins auf diesem Server.
 
 language: de
+
+anti-build:
+  worlds:
+    - lobby
+    - world2
+  world-settings:
+    lobby:
+      disabled-damage-types:
+        - FALL
+        - FIRE
+        - LAVA
+      allowed-place:
+        - STONE
+        - GRASS_BLOCK
+        - OAK_LOG
+      allowed-break:
+        - DIRT
+        - SAND
+        - STONE

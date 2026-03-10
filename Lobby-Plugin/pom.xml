@@ -5,7 +5,7 @@
 
     <groupId>de.haaremy</groupId>
     <artifactId>hmyLobby</artifactId>
-    <version>10</version>
+    <version>11</version>
     <packaging>jar</packaging>
 
     <name>hmyLobby</name>

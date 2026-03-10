@@ -4,14 +4,24 @@
 lobby:
   world: "lobby"
   rules:
-    weather: false
-    daylight-cycle: false
-    mob-spawning: false
-    fire-tick: false
-    pvp: false
-    hunger: false
-    fall-damage: false
-    all-damage: false
+    weather: false           # Wetter deaktivieren
+    daylight-cycle: false    # Tag/Nacht-Zyklus deaktivieren
+    mob-spawning: false      # Mob-Spawning verhindern
+    fire-tick: false         # Feuer-Tick deaktivieren (GameRule)
+    pvp: false               # PvP deaktivieren
+    hunger: false            # Hunger deaktivieren
+    fall-damage: false       # Fallschaden deaktivieren
+    all-damage: false        # Alle anderen Schadensarten deaktivieren
+    block-protection: true   # Block-Abbauen/Platzieren verhindern
+    void-protection: true    # Spieler aus dem Void retten
+    fire-spread: true        # Feuer-Ausbreitung auf Blöcke verhindern
+    leaf-decay: false        # Blätter-Verfall verhindern
+    item-drop: false         # Item-Droppen verhindern
+    item-pickup: false       # Item-Aufheben verhindern
+    interaction-block: false # Kisten/Türen-Interaktion sperren
+    explosion-protection: true  # Explosionen verhindern
+    crop-trampling: true     # Farmland-Zertrampeln verhindern
+    anti-wdl: true           # World Downloader-Mod erkennen und kicken
 
 server-selector:
   enabled: true

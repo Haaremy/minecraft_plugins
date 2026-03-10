@@ -41,6 +41,7 @@ public class HmyLobby extends JavaPlugin {
         this.configManager = new HmyConfigManager(getLogger(), pluginsDir);
         this.serverSelectorConfig = new ServerSelectorConfig(configManager, getLogger());
         this.language = new HmyLanguageManager(getLogger(), pluginsDir, configManager, luckPerms);
+        this.language.loadAllLanguageFiles();
 
         this.playerEventListener = new PlayerEventListener(this, language);
         getServer().getPluginManager().registerEvents(this.playerEventListener, this);
@@ -55,7 +56,7 @@ public class HmyLobby extends JavaPlugin {
         getServer().getMessenger().registerOutgoingPluginChannel(this, "hmy:status");
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
-        LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this, configManager);
+        LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this, configManager, language);
         getServer().getPluginManager().registerEvents(new DoorSignListener(this), this);
         getServer().getPluginManager().registerEvents(lobbyWorldManager, this);
 
@@ -99,5 +100,6 @@ public class HmyLobby extends JavaPlugin {
         return playerEventListener;
     }
 
-    public EffectManager getEffectManager() { return effectManager; }
+    public EffectManager getEffectManager()         { return effectManager; }
+    public HmyLanguageManager getLanguageManager()  { return language; }
 }
