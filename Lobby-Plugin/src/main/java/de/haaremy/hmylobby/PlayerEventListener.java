@@ -2,7 +2,6 @@ package de.haaremy.hmylobby;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import de.haaremy.hmylobby.utils.PermissionUtils;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -13,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -39,6 +39,7 @@ public class PlayerEventListener implements Listener {
         this.plugin = plugin;
         this.language = language;
         Bukkit.getScheduler().runTaskTimer(plugin, this::handleLavaDamage, 20L, 10L);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::updateBossBars,   20L, 100L);
     }
 
     // ── Join / Quit ───────────────────────────────────────────────────────────
@@ -53,7 +54,12 @@ public class PlayerEventListener implements Listener {
         player.setWalkSpeed(SPEED_VALUES[0]);
         giveLobbyItems(player);
 
-        // Hide this player from those who have hidden-mode active
+        // BossBar anzeigen
+        BossBar bar = BossBar.bossBar(buildBossBarText(), 1.0f, BossBar.Color.YELLOW, BossBar.Overlay.PROGRESS);
+        activeBossBars.put(player.getUniqueId(), bar);
+        player.showBossBar(bar);
+
+        // Neuen Spieler vor denjenigen mit Spieler-ausgeblendet verbergen
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (!online.equals(player) && hiddenPlayers.contains(online.getUniqueId())) {
                 online.hidePlayer(plugin, player);
@@ -66,35 +72,71 @@ public class PlayerEventListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Player p = event.getPlayer();
-        activeBossBars.remove(p.getUniqueId());
+        BossBar bar = activeBossBars.remove(p.getUniqueId());
+        if (bar != null) p.hideBossBar(bar);
         playerSpeedLevel.remove(p.getUniqueId());
         hiddenPlayers.remove(p.getUniqueId());
         p.setWalkSpeed(SPEED_VALUES[0]);
+        plugin.getCosmeticMenuListener().removeAllCosmetics(p);
+    }
+
+    // ── BossBar ───────────────────────────────────────────────────────────────
+
+    private Component buildBossBarText() {
+        return Component.text("§6Haaremy Network §8| §a" + Bukkit.getOnlinePlayers().size() + " §7Spieler online");
+    }
+
+    private void updateBossBars() {
+        Component text = buildBossBarText();
+        activeBossBars.values().forEach(bar -> bar.name(text));
     }
 
     // ── Hotbar items ──────────────────────────────────────────────────────────
+    //
+    // Slot-Layout:
+    //   0 = My-Menü (Spielerkopf, immer sichtbar)
+    //   1 = Rakete      (hmy.lobby.rocket)
+    //   2 = Ender-Perle (hmy.lobby.visibility)
+    //   4 = Lobby-Menü  (hmy.lobby.selector)
+    //   7 = Feder       (hmy.lobby.speed)
+    //   8 = Infos       (immer sichtbar)
 
     private void giveLobbyItems(Player player) {
         player.getInventory().clear();
         player.getInventory().setItem(0, getPlayerHead(player, "§bMy-Menü"));
-        player.getInventory().setItem(1, buildSpeedItem(player));
-        player.getInventory().setItem(2, buildVisibilityItem(player));
-        player.getInventory().setItem(4, createItem(Material.NETHER_STAR, "§6Lobby-Menü",       List.of("§7Serverauswahl")));
-        player.getInventory().setItem(7, createItem(Material.FIREWORK_ROCKET, "§bRakete",        List.of("§7Abflug!")));
-        player.getInventory().setItem(8, createItem(Material.ENCHANTED_BOOK, "§bInfos",          List.of("§7Hilfe & Befehle")));
+
+        if (player.hasPermission("hmy.lobby.rocket"))
+            player.getInventory().setItem(1, createItem(Material.FIREWORK_ROCKET, "§bRakete",
+                    List.of("§7Abflug!", "§8Berechtigung: §ehmy.lobby.rocket")));
+
+        if (player.hasPermission("hmy.lobby.visibility"))
+            player.getInventory().setItem(2, buildVisibilityItem(player));
+
+        if (player.hasPermission("hmy.lobby.selector"))
+            player.getInventory().setItem(4, createItem(Material.NETHER_STAR, "§6Lobby-Menü",
+                    List.of("§7Serverauswahl", "§8Berechtigung: §ehmy.lobby.selector")));
+
+        if (player.hasPermission("hmy.lobby.speed"))
+            player.getInventory().setItem(7, buildSpeedItem(player));
+
+        player.getInventory().setItem(8, createItem(Material.ENCHANTED_BOOK, "§bInfos",
+                List.of("§7Hilfe & Befehle")));
     }
 
     private ItemStack buildSpeedItem(Player player) {
         int lvl = playerSpeedLevel.getOrDefault(player.getUniqueId(), 0);
         return createItem(Material.FEATHER, "§eGeschwindigkeit §8| " + SPEED_LABELS[lvl],
-                List.of("§7Klicke zum Wechseln", "§8Stufe: §e" + (lvl + 1) + "/" + SPEED_VALUES.length));
+                List.of("§7Klicke zum Wechseln",
+                        "§8Stufe: §e" + (lvl + 1) + "/" + SPEED_VALUES.length,
+                        "§8Berechtigung: §ehmy.lobby.speed"));
     }
 
     private ItemStack buildVisibilityItem(Player player) {
         boolean hidden = hiddenPlayers.contains(player.getUniqueId());
         return createItem(Material.ENDER_PEARL,
                 hidden ? "§bSpieler §8| §cAusgeblendet" : "§bSpieler §8| §aSichtbar",
-                List.of("§7Klicke zum Wechseln"));
+                List.of("§7Klicke zum Wechseln",
+                        "§8Berechtigung: §ehmy.lobby.visibility"));
     }
 
     // ── Speed / Visibility toggle ─────────────────────────────────────────────
@@ -103,8 +145,9 @@ public class PlayerEventListener implements Listener {
         int next = (playerSpeedLevel.getOrDefault(player.getUniqueId(), 0) + 1) % SPEED_VALUES.length;
         playerSpeedLevel.put(player.getUniqueId(), next);
         player.setWalkSpeed(SPEED_VALUES[next]);
-        player.getInventory().setItem(1, buildSpeedItem(player));
-        player.sendActionBar(Component.text(language.getMessage(player, "speed_changed", "§eGeschwindigkeit: {speed}", Map.of("speed", SPEED_LABELS[next]))));
+        player.getInventory().setItem(7, buildSpeedItem(player));
+        player.sendActionBar(Component.text(language.getMessage(player, "speed_changed",
+                "§eGeschwindigkeit: {speed}", Map.of("speed", SPEED_LABELS[next]))));
         player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f + next * 0.3f);
     }
 
@@ -138,33 +181,39 @@ public class PlayerEventListener implements Listener {
 
         String name = LegacyComponentSerializer.legacySection().serialize(item.getItemMeta().displayName());
 
-        if      (name.equals("§6Lobby-Menü"))                               openLobbyMenu(player);
-        else if (name.equals("§bMy-Menü"))                                  openHeadMenu(player);
-        else if (name.equals("§bRakete"))                                   handleRocketLaunch(player);
-        else if (name.equals("§bInfos"))                                    player.performCommand("help");
-        else if (item.getType() == Material.FEATHER
-                && name.startsWith("§eGeschwindigkeit"))                    toggleSpeed(player);
-        else if (item.getType() == Material.ENDER_PEARL
-                && name.startsWith("§bSpieler §8|"))                       togglePlayerVisibility(player);
+        if (name.equals("§6Lobby-Menü")) {
+            event.setCancelled(true); openLobbyMenu(player);
+        } else if (name.equals("§bMy-Menü")) {
+            event.setCancelled(true); openHeadMenu(player);
+        } else if (name.equals("§bRakete")) {
+            handleRocketLaunch(player);
+        } else if (name.equals("§bInfos")) {
+            event.setCancelled(true); player.performCommand("help");
+        } else if (item.getType() == Material.FEATHER && name.startsWith("§eGeschwindigkeit")) {
+            event.setCancelled(true); toggleSpeed(player);
+        } else if (item.getType() == Material.ENDER_PEARL && name.startsWith("§bSpieler §8|")) {
+            event.setCancelled(true); // Verhindert das Werfen der Ender-Perle
+            togglePlayerVisibility(player);
+        }
     }
 
-    // ── Inventory Click ───────────────────────────────────────────────────────
+    // ── Inventory Click & Drag ────────────────────────────────────────────────
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
-        if (!PermissionUtils.hasPermission(player, "hmy.lobby.inventory.edit")) {
-            event.setCancelled(true);
-        }
+        String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
+        if (!isCustomMenu(title)) return;
 
-        String title  = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
-        int    slot   = event.getRawSlot();
+        // Alle Klicks in eigenen Menüs sperren – kein Item darf bewegt werden
+        event.setCancelled(true);
+
+        int       slot    = event.getRawSlot();
         ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || clicked.getType() == Material.AIR || !clicked.hasItemMeta()) return;
 
-        // 1. Lobby-Menü (Serverauswahl)
         if (title.equals("§6Lobby-Menü")) {
-            if (clicked == null || clicked.getType() == Material.AIR) return;
             for (ServerSelectorConfig.SelectorEntry entry : plugin.getServerSelectorConfig().getEntries()) {
                 if (entry.slot() == slot) {
                     player.closeInventory();
@@ -173,30 +222,36 @@ public class PlayerEventListener implements Listener {
                     break;
                 }
             }
-        }
-
-        // 2. My-Menü
-        else if (title.contains("MY-MENÜ")) {
+        } else if (title.contains("MY-MENÜ")) {
             switch (slot) {
                 case 10 -> plugin.getCosmeticMenuListener().openParticleMenu(player);
-                case 11 -> plugin.getCosmeticMenuListener().openPlaceholderMenu(player, "§d§lCosmetics");
+                case 11 -> plugin.getCosmeticMenuListener().openCosmeticsMenu(player);
                 case 13 -> openLanguageMenu(player);
                 case 15 -> plugin.getCosmeticMenuListener().openHeadsMenu(player);
                 case 16 -> plugin.getCosmeticMenuListener().openMountMenu(player);
                 case 22 -> openUserSettingsMenu(player);
             }
             if (slot >= 0 && slot < 27) player.playSound(player, Sound.UI_BUTTON_CLICK, 0.5f, 1f);
-        }
-
-        // 3. Sprachmenü
-        else if (title.contains("Wähle deine Sprache")) {
+        } else if (title.contains("Sprache")) {
             handleLanguageClick(player, clicked, slot);
-        }
-
-        // 4. Einstellungen
-        else if (title.contains("Einstellungen")) {
+        } else if (title.contains("Einstellungen")) {
             handleUserSettingsClick(player, slot);
         }
+    }
+
+    /** Verhindert das Verschieben von Items via Drag in eigenen Menüs. */
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
+        if (isCustomMenu(title)) event.setCancelled(true);
+    }
+
+    private boolean isCustomMenu(String title) {
+        return title.contains("MY-MENÜ") || title.contains("Lobby-Menü")
+                || title.contains("Einstellungen") || title.contains("Sprache")
+                || title.contains("Mounts") || title.contains("Partikel")
+                || title.contains("Köpfe") || title.contains("Cosmetics");
     }
 
     // ── User Settings ─────────────────────────────────────────────────────────
@@ -230,10 +285,10 @@ public class PlayerEventListener implements Listener {
 
     private void handleLanguageClick(Player player, ItemStack clicked, int slot) {
         if (slot == 18) { openHeadMenu(player); return; }
-        if (clicked == null || !clicked.hasItemMeta()) return;
+        if (!clicked.hasItemMeta()) return;
 
         String name = LegacyComponentSerializer.legacySection().serialize(clicked.getItemMeta().displayName());
-        if (name.contains("Deutsch"))  player.performCommand("hmy language de");
+        if      (name.contains("Deutsch")) player.performCommand("hmy language de");
         else if (name.contains("English")) player.performCommand("hmy language en");
         player.closeInventory();
         player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
@@ -279,18 +334,19 @@ public class PlayerEventListener implements Listener {
         fillGlass(inv);
 
         inv.setItem(4,  getPlayerHead(player, "§6§lDein Profil §8(§7" + player.getName() + "§8)"));
-        inv.setItem(10, createItem(Material.BLAZE_POWDER,     "§e§lPartikel",
+        inv.setItem(10, createItem(Material.BLAZE_POWDER,       "§e§lPartikel",
                 List.of("§7Wähle einen Effekt,", "§7der dir folgt.", "", "§aKlicke zum Öffnen!")));
         inv.setItem(11, createItem(Material.LEATHER_CHESTPLATE, "§d§lCosmetics",
-                List.of("§7Coole Accessoires.", "", "§aKlicke zum Öffnen!")));
-        inv.setItem(13, createItem(Material.DIAMOND,           "§b§lSprache §8| §7Language",
-                List.of("§7Deine Sprache: §b" + language.getPlayerLanguage(player), "", "§e» Klicke zum Ändern!")));
-        inv.setItem(15, createItem(Material.ZOMBIE_HEAD,       "§a§lKöpfe",
+                List.of("§7Auren & Status-Effekte.", "", "§aKlicke zum Öffnen!")));
+        inv.setItem(13, createItem(Material.DIAMOND,            "§b§lSprache §8| §7Language",
+                List.of("§7Deine Sprache: §b" + language.getPlayerLanguage(player),
+                        "", "§e» Klicke zum Ändern!")));
+        inv.setItem(15, createItem(Material.ZOMBIE_HEAD,        "§a§lKöpfe",
                 List.of("§7Setze dir einen Kopf auf.", "", "§aKlicke zum Öffnen!")));
-        inv.setItem(16, createItem(Material.SADDLE,            "§c§lMounts",
+        inv.setItem(16, createItem(Material.SADDLE,             "§c§lMounts",
                 List.of("§7Reite auf coolen Tieren.", "", "§aKlicke zum Öffnen!")));
-        inv.setItem(22, createItem(Material.REDSTONE_TORCH,    "§7§lEinstellungen",
-                List.of("§7Geschwindigkeit, Sichtbarkeit.")));
+        inv.setItem(22, createItem(Material.REDSTONE_TORCH,     "§7§lEinstellungen",
+                List.of("§7Geschwindigkeit & Sichtbarkeit.")));
 
         player.openInventory(inv);
         player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1.2f);
@@ -309,7 +365,7 @@ public class PlayerEventListener implements Listener {
                 } else {
                     player.teleport(player.getWorld().getSpawnLocation());
                     player.setHealth(20.0);
-                    player.sendMessage("§cPass auf die Lava auf!");
+                    player.sendMessage(language.getMessage(player, "lava_warning", "§cPass auf die Lava auf!"));
                 }
             }
         }
@@ -321,7 +377,6 @@ public class PlayerEventListener implements Listener {
                 Component.text("§b" + player.getName()),
                 Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(2500), Duration.ofMillis(500))));
         player.getWorld().spawnParticle(Particle.DRAGON_BREATH, player.getLocation(), 1000, 1, 0, 1, 0.05, 1.0f);
-        // Entity-based sound – spielt immer am Spieler, egal wo er sich befindet
         player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
     }
 

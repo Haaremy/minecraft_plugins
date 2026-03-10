@@ -66,8 +66,8 @@ public class HmySpawn implements Listener {
         Player player = event.getPlayer();
         World world = player.getWorld();
 
-        // Spieler nur teleportieren, wenn die Welt in der Liste ist
-        if (worlds.contains(world.getName())) {
+        // Spieler nur teleportieren, wenn die Welt in der Liste ist und nicht mit "survival" beginnt
+        if (worlds.contains(world.getName()) && !world.getName().startsWith("survival")) {
             Location worldSpawn = world.getSpawnLocation().add(0.5, 0, 0.5); // Spawn-Koordinaten anpassen
             player.teleport(worldSpawn);
         }

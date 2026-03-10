@@ -1,18 +1,30 @@
 package de.haaremy.hmylobby;
 
-import org.bukkit.*;
+import org.bukkit.GameRule;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.Tag;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockSpreadEvent;
+import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
 public class LobbyWorldManager implements Listener {
@@ -40,7 +52,7 @@ public class LobbyWorldManager implements Listener {
         world.setGameRule(GameRule.DO_FIRE_TICK,       config.getLobbyRule("fire-tick",      false));
         world.setGameRule(GameRule.FALL_DAMAGE,        config.getLobbyRule("fall-damage",    false));
 
-        world.setDifficulty(Difficulty.PEACEFUL);
+        //world.setDifficulty(Difficulty.PEACEFUL);
         world.setPVP(config.getLobbyRule("pvp", false));
 
         if (!config.getLobbyRule("daylight-cycle", false)) {

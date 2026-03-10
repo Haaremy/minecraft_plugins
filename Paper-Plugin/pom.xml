@@ -5,7 +5,7 @@
 
     <groupId>de.haaremy</groupId>
     <artifactId>hmyPaper</artifactId>
-    <version>11</version>
+    <version>12</version>
     <packaging>jar</packaging>
 
     <name>hmyPaper</name>
