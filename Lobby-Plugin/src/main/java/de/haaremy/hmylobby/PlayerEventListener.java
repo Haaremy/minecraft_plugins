@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -35,11 +36,15 @@ public class PlayerEventListener implements Listener {
     private static final float[]  SPEED_VALUES = {0.2f, 0.3f, 0.4f};
     private static final String[] SPEED_LABELS = {"§7Normal", "§aSchnell §8(+50%)", "§6Sehr Schnell §8(+100%)"};
 
+    // XP-Bar-Animation
+    private double xpTick = 0;
+
     public PlayerEventListener(HmyLobby plugin, HmyLanguageManager language) {
         this.plugin = plugin;
         this.language = language;
         Bukkit.getScheduler().runTaskTimer(plugin, this::handleLavaDamage, 20L, 10L);
         Bukkit.getScheduler().runTaskTimer(plugin, this::updateBossBars,   20L, 100L);
+        Bukkit.getScheduler().runTaskTimer(plugin, this::animateXpBar,     1L,  2L);
     }
 
     // ── Join / Quit ───────────────────────────────────────────────────────────
@@ -55,7 +60,7 @@ public class PlayerEventListener implements Listener {
         giveLobbyItems(player);
 
         // BossBar anzeigen
-        BossBar bar = BossBar.bossBar(buildBossBarText(), 1.0f, BossBar.Color.YELLOW, BossBar.Overlay.PROGRESS);
+        BossBar bar = BossBar.bossBar(buildBossBarText(), 1.0f, BossBar.Color.PINK, BossBar.Overlay.PROGRESS);
         activeBossBars.put(player.getUniqueId(), bar);
         player.showBossBar(bar);
 
@@ -78,12 +83,22 @@ public class PlayerEventListener implements Listener {
         hiddenPlayers.remove(p.getUniqueId());
         p.setWalkSpeed(SPEED_VALUES[0]);
         plugin.getCosmeticMenuListener().removeAllCosmetics(p);
+        plugin.getSocialListener().removeOpenGUI(p.getUniqueId());
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player p)) return;
+        String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
+        if (title.contains("Freundesliste")) {
+            plugin.getSocialListener().removeOpenGUI(p.getUniqueId());
+        }
     }
 
     // ── BossBar ───────────────────────────────────────────────────────────────
 
     private Component buildBossBarText() {
-        return Component.text("§6Haaremy Network §8| §a" + Bukkit.getOnlinePlayers().size() + " §7Spieler online");
+        return Component.text("§dmc.haaremy.de §8| §a" + Bukkit.getOnlinePlayers().size() + " §7Spieler online");
     }
 
     private void updateBossBars() {
@@ -91,36 +106,47 @@ public class PlayerEventListener implements Listener {
         activeBossBars.values().forEach(bar -> bar.name(text));
     }
 
+    // ── XP-Bar-Animation ──────────────────────────────────────────────────────
+
+    private void animateXpBar() {
+        xpTick += 0.04;
+        float progress = (float) ((Math.sin(xpTick) + 1.0) / 2.0);
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.setExp(progress);
+            p.setLevel(0);
+        }
+    }
+
     // ── Hotbar items ──────────────────────────────────────────────────────────
     //
     // Slot-Layout:
-    //   0 = My-Menü (Spielerkopf, immer sichtbar)
-    //   1 = Rakete      (hmy.lobby.rocket)
-    //   2 = Ender-Perle (hmy.lobby.visibility)
-    //   4 = Lobby-Menü  (hmy.lobby.selector)
-    //   7 = Feder       (hmy.lobby.speed)
-    //   8 = Infos       (immer sichtbar)
+    //   0 = My-Menü        (Spielerkopf, immer sichtbar)
+    //   1 = Infos           (immer sichtbar)
+    //   2 = Freunde         (immer sichtbar)
+    //   4 = Navigator       (hmy.lobby.selector)
+    //   7 = Feder           (hmy.lobby.speed)
+    //   8 = Sprung Boost    (hmy.lobby.rocket)
 
     private void giveLobbyItems(Player player) {
         player.getInventory().clear();
         player.getInventory().setItem(0, getPlayerHead(player, "§bMy-Menü"));
 
-        if (player.hasPermission("hmy.lobby.rocket"))
-            player.getInventory().setItem(1, createItem(Material.FIREWORK_ROCKET, "§bRakete",
-                    List.of("§7Abflug!", "§8Berechtigung: §ehmy.lobby.rocket")));
+        player.getInventory().setItem(1, createItem(Material.ENCHANTED_BOOK, "§bInfos",
+                List.of("§7Hilfe & Befehle")));
 
-        if (player.hasPermission("hmy.lobby.visibility"))
-            player.getInventory().setItem(2, buildVisibilityItem(player));
+        player.getInventory().setItem(2, createItem(Material.PAPER, "§aFreunde",
+                List.of("§7Deine Freundesliste", "§8/friend add <Spieler> zum Hinzufügen")));
 
         if (player.hasPermission("hmy.lobby.selector"))
-            player.getInventory().setItem(4, createItem(Material.NETHER_STAR, "§6Lobby-Menü",
-                    List.of("§7Serverauswahl", "§8Berechtigung: §ehmy.lobby.selector")));
+            player.getInventory().setItem(4, createItem(Material.NETHER_STAR, "§6Navigator",
+                    List.of("§7Serverauswahl & Teleport", "§8Berechtigung: §ehmy.lobby.selector")));
 
         if (player.hasPermission("hmy.lobby.speed"))
             player.getInventory().setItem(7, buildSpeedItem(player));
 
-        player.getInventory().setItem(8, createItem(Material.ENCHANTED_BOOK, "§bInfos",
-                List.of("§7Hilfe & Befehle")));
+        if (player.hasPermission("hmy.lobby.rocket"))
+            player.getInventory().setItem(8, createItem(Material.FIREWORK_ROCKET, "§bSprung Boost",
+                    List.of("§7Abflug!", "§8Berechtigung: §ehmy.lobby.rocket")));
     }
 
     private ItemStack buildSpeedItem(Player player) {
@@ -164,7 +190,6 @@ public class PlayerEventListener implements Listener {
                 if (!other.equals(player)) player.hidePlayer(plugin, other);
             }
         }
-        player.getInventory().setItem(2, buildVisibilityItem(player));
         player.sendActionBar(Component.text(wasHidden
                 ? language.getMessage(player, "players_visible", "§aSpieler §7sichtbar")
                 : language.getMessage(player, "players_hidden", "§cSpieler §7ausgeblendet")));
@@ -181,19 +206,18 @@ public class PlayerEventListener implements Listener {
 
         String name = LegacyComponentSerializer.legacySection().serialize(item.getItemMeta().displayName());
 
-        if (name.equals("§6Lobby-Menü")) {
-            event.setCancelled(true); openLobbyMenu(player);
+        if (name.equals("§6Navigator")) {
+            event.setCancelled(true); openNavigatorMenu(player);
         } else if (name.equals("§bMy-Menü")) {
             event.setCancelled(true); openHeadMenu(player);
-        } else if (name.equals("§bRakete")) {
+        } else if (name.equals("§aFreunde")) {
+            event.setCancelled(true); requestFriendsList(player);
+        } else if (name.equals("§bSprung Boost")) {
             handleRocketLaunch(player);
         } else if (name.equals("§bInfos")) {
             event.setCancelled(true); player.performCommand("help");
         } else if (item.getType() == Material.FEATHER && name.startsWith("§eGeschwindigkeit")) {
             event.setCancelled(true); toggleSpeed(player);
-        } else if (item.getType() == Material.ENDER_PEARL && name.startsWith("§bSpieler §8|")) {
-            event.setCancelled(true); // Verhindert das Werfen der Ender-Perle
-            togglePlayerVisibility(player);
         }
     }
 
@@ -206,22 +230,17 @@ public class PlayerEventListener implements Listener {
         String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
         if (!isCustomMenu(title)) return;
 
-        // Alle Klicks in eigenen Menüs sperren – kein Item darf bewegt werden
+        // Alle Klicks in eigenen Menüs sperren
         event.setCancelled(true);
 
         int       slot    = event.getRawSlot();
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || clicked.getType() == Material.AIR || !clicked.hasItemMeta()) return;
 
-        if (title.equals("§6Lobby-Menü")) {
-            for (ServerSelectorConfig.SelectorEntry entry : plugin.getServerSelectorConfig().getEntries()) {
-                if (entry.slot() == slot) {
-                    player.closeInventory();
-                    player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f);
-                    connectToServer(player, entry.server());
-                    break;
-                }
-            }
+        if (title.equals("§6Navigator")) {
+            handleNavigatorClick(player, clicked, slot);
+        } else if (title.contains("TP-Punkte")) {
+            handleTeleportMenuClick(player, clicked);
         } else if (title.contains("MY-MENÜ")) {
             switch (slot) {
                 case 10 -> plugin.getCosmeticMenuListener().openParticleMenu(player);
@@ -236,6 +255,8 @@ public class PlayerEventListener implements Listener {
             handleLanguageClick(player, clicked, slot);
         } else if (title.contains("Einstellungen")) {
             handleUserSettingsClick(player, slot);
+        } else if (title.contains("Freundesliste")) {
+            handleFriendsGUIClick(player, clicked, slot);
         }
     }
 
@@ -248,10 +269,89 @@ public class PlayerEventListener implements Listener {
     }
 
     private boolean isCustomMenu(String title) {
-        return title.contains("MY-MENÜ") || title.contains("Lobby-Menü")
+        return title.contains("MY-MENÜ") || title.equals("§6Navigator")
                 || title.contains("Einstellungen") || title.contains("Sprache")
                 || title.contains("Mounts") || title.contains("Partikel")
-                || title.contains("Köpfe") || title.contains("Cosmetics");
+                || title.contains("Köpfe") || title.contains("Cosmetics")
+                || title.contains("TP-Punkte") || title.contains("Freundesliste");
+    }
+
+    // ── Navigator ─────────────────────────────────────────────────────────────
+
+    private void openNavigatorMenu(Player player) {
+        Inventory inv = Bukkit.createInventory(null, 45, Component.text("§6Navigator"));
+        fillGlass(inv);
+
+        for (ServerSelectorConfig.SelectorEntry entry : plugin.getServerSelectorConfig().getEntries()) {
+            inv.setItem(entry.slot(), createItem(entry.material(), entry.name(), entry.lore()));
+        }
+
+        // Kompass in der Mitte (Slot 22) – überschreibt ggf. einen Server-Eintrag
+        List<HmyConfigManager.TeleportPoint> tpPoints = plugin.getConfigManager().getTeleportPoints();
+        if (!tpPoints.isEmpty()) {
+            inv.setItem(22, createItem(Material.COMPASS, "§eTP-Punkte",
+                    List.of("§7Lobby-Teleportpunkte", "§8" + tpPoints.size() + " Ziele verfügbar")));
+        }
+
+        player.openInventory(inv);
+    }
+
+    private void handleNavigatorClick(Player player, ItemStack clicked, int slot) {
+        if (clicked.getType() == Material.COMPASS) {
+            openTeleportMenu(player);
+            return;
+        }
+        for (ServerSelectorConfig.SelectorEntry entry : plugin.getServerSelectorConfig().getEntries()) {
+            if (entry.slot() == slot) {
+                player.closeInventory();
+                player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f);
+                connectToServer(player, entry.server());
+                return;
+            }
+        }
+    }
+
+    // ── TP-Punkte Menü ────────────────────────────────────────────────────────
+
+    private void openTeleportMenu(Player player) {
+        List<HmyConfigManager.TeleportPoint> points = plugin.getConfigManager().getTeleportPoints();
+        int rows = Math.max(3, (int) Math.ceil((points.size() + 9) / 9.0));
+        int size = rows * 9;
+        Inventory inv = Bukkit.createInventory(null, size, Component.text("§6» §eTP-Punkte"));
+        fillGlass(inv);
+
+        int[] displaySlots = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25};
+        for (int i = 0; i < Math.min(points.size(), displaySlots.length); i++) {
+            HmyConfigManager.TeleportPoint tp = points.get(i);
+            inv.setItem(displaySlots[i], createItem(Material.COMPASS, tp.name(),
+                    List.of("§7Klicke zum Teleportieren!")));
+        }
+
+        inv.setItem(size - 5, createItem(Material.ARROW, "§cZurück", List.of("§7Zum Navigator")));
+        player.openInventory(inv);
+    }
+
+    private void handleTeleportMenuClick(Player player, ItemStack clicked) {
+        String name = LegacyComponentSerializer.legacySection().serialize(clicked.getItemMeta().displayName());
+
+        if (clicked.getType() == Material.ARROW) {
+            openNavigatorMenu(player);
+            return;
+        }
+        if (clicked.getType() != Material.COMPASS) return;
+
+        for (HmyConfigManager.TeleportPoint tp : plugin.getConfigManager().getTeleportPoints()) {
+            if (tp.name().equals(name)) {
+                player.closeInventory();
+                World world = Bukkit.getWorld(tp.world());
+                if (world != null) {
+                    Location loc = new Location(world, tp.x(), tp.y(), tp.z(), tp.yaw(), tp.pitch());
+                    player.teleport(loc);
+                    player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f);
+                }
+                return;
+            }
+        }
     }
 
     // ── User Settings ─────────────────────────────────────────────────────────
@@ -307,7 +407,36 @@ public class PlayerEventListener implements Listener {
         player.openInventory(inv);
     }
 
-    // ── Rocket ────────────────────────────────────────────────────────────────
+    // ── Friends ───────────────────────────────────────────────────────────────
+
+    private void requestFriendsList(Player player) {
+        try {
+            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            java.io.DataOutputStream dos = new java.io.DataOutputStream(bos);
+            dos.writeUTF("GET_FRIENDS");
+            dos.writeUTF(player.getUniqueId().toString());
+            player.sendPluginMessage(plugin, "hmy:social", bos.toByteArray());
+        } catch (Exception e) {
+            plugin.getLogger().warning("Fehler beim Senden von GET_FRIENDS: " + e.getMessage());
+        }
+    }
+
+    private void handleFriendsGUIClick(Player player, ItemStack clicked, int slot) {
+        String name = LegacyComponentSerializer.legacySection().serialize(clicked.getItemMeta().displayName());
+        // Close button
+        if (slot == 49 || clicked.getType() == Material.ARROW) {
+            player.closeInventory();
+            return;
+        }
+        // Online friend (PLAYER_HEAD) → join their server
+        if (clicked.getType() == Material.PLAYER_HEAD && !name.startsWith("§7")) {
+            String friendName = name.replace("§a", "");
+            player.closeInventory();
+            player.performCommand("friend join " + friendName);
+        }
+    }
+
+    // ── Sprung Boost ──────────────────────────────────────────────────────────
 
     private void handleRocketLaunch(Player player) {
         long now = System.currentTimeMillis();
@@ -319,15 +448,6 @@ public class PlayerEventListener implements Listener {
     }
 
     // ── Menus ─────────────────────────────────────────────────────────────────
-
-    private void openLobbyMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 45, Component.text("§6Lobby-Menü"));
-        fillGlass(inv);
-        for (ServerSelectorConfig.SelectorEntry entry : plugin.getServerSelectorConfig().getEntries()) {
-            inv.setItem(entry.slot(), createItem(entry.material(), entry.name(), entry.lore()));
-        }
-        player.openInventory(inv);
-    }
 
     void openHeadMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27, Component.text("§b§lMY-MENÜ §8» §7Profile"));

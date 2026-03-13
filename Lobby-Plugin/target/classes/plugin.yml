@@ -7,10 +7,17 @@ description: Ein Plugin von @Haaremy zur Verwaltung eines Lobby-Servers.
 author: Haaremy
 website: https://haaremy.de
 commands:
-  server: 
+  server:
     description: "Teleportiert dich zum gewählten Server."
     usage: "/hmy server <name>"
     permission: hmy.server.<name>
+  hmy:
+    description: "Hauptbefehl des Haaremy-Plugins."
+    usage: "/hmy <language|lobbygame> [args...]"
+  lobbygame:
+    description: "Erstellt und verwaltet Lobby-Minispiele."
+    usage: "/lobbygame <create> <tiktaktoe> <name> <feld-id>"
+    permission: hmy.lobby.gamecreator
 permissions:
   hmy.lobby.message.none:
     description: Deaktiviert die Willkommensnachricht beim Betreten der Lobby.
@@ -24,3 +31,18 @@ permissions:
   hmy.lobby.inventory.edit:
     description: Erlaubt das editieren der Inventory Slots.
     default: false
+  hmy.lobby.gamecreator:
+    description: Erlaubt das Erstellen von Lobby-Minispielen.
+    default: op
+  hmy.lobby.rocket:
+    description: Erlaubt die Nutzung des Sprung Boosts.
+    default: true
+  hmy.lobby.visibility:
+    description: Erlaubt das Ausblenden anderer Spieler.
+    default: true
+  hmy.lobby.selector:
+    description: Erlaubt die Nutzung des Navigators.
+    default: true
+  hmy.lobby.speed:
+    description: Erlaubt das Ändern der Laufgeschwindigkeit.
+    default: true

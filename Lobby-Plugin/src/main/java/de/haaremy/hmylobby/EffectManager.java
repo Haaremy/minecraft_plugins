@@ -17,7 +17,7 @@ public class EffectManager {
             for (Map.Entry<UUID, Particle> entry : activeParticles.entrySet()) {
                 Player player = Bukkit.getPlayer(entry.getKey());
                 if (player != null && player.isOnline()) {
-                    player.getWorld().spawnParticle(entry.getValue(), player.getLocation().add(0, 0.2, 0), 3, 0.2, 0.1, 0.2, 0.02);
+                    player.getWorld().spawnParticle(entry.getValue(), player.getLocation().add(0, 1.0, 0), 5, 0.4, 0.3, 0.4, 0.02);
                 }
             }
         }, 20L, 2L);

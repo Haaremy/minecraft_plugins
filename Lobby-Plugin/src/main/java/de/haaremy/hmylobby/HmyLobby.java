@@ -1,5 +1,10 @@
 package de.haaremy.hmylobby;
 
+import de.haaremy.hmylobby.minigames.LobbyGameListener;
+import de.haaremy.hmylobby.minigames.LobbyGameManager;
+import de.haaremy.hmylobby.minigames.LobbyGameSelector;
+import de.haaremy.hmylobby.minigames.LobbyGamesConfig;
+
 import java.nio.file.Path;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -20,6 +25,9 @@ public class HmyLobby extends JavaPlugin {
     private CosmeticMenuListener cosmeticMenuListener;
     private EffectManager effectManager;
     private PlayerEventListener playerEventListener;
+    private LobbyGameManager lobbyGameManager;
+    private LotteryCrateListener lotteryCrateListener;
+    private SocialListener socialListener;
 
     @Override
     public void onEnable() {
@@ -36,7 +44,6 @@ public class HmyLobby extends JavaPlugin {
         }
 
         // pluginsDir = minecraftServers/subserver/plugins/
-        // HmyConfigManager berechnet daraus: pluginsDir/../../hmySettings = minecraftServers/hmySettings/
         Path pluginsDir = getDataFolder().toPath().toAbsolutePath().getParent();
         this.configManager = new HmyConfigManager(getLogger(), pluginsDir);
         this.serverSelectorConfig = new ServerSelectorConfig(configManager, getLogger());
@@ -59,6 +66,30 @@ public class HmyLobby extends JavaPlugin {
         LobbyWorldManager lobbyWorldManager = new LobbyWorldManager(this, configManager, language);
         getServer().getPluginManager().registerEvents(new DoorSignListener(this), this);
         getServer().getPluginManager().registerEvents(lobbyWorldManager, this);
+
+        // Minigames
+        Path hmySettingsDir = pluginsDir.getParent().getParent().resolve("hmySettings");
+        LobbyGamesConfig gamesConfig = new LobbyGamesConfig(hmySettingsDir, getLogger());
+        LobbyGameSelector selector = new LobbyGameSelector();
+        this.lotteryCrateListener = new LotteryCrateListener(this);
+        this.lobbyGameManager = new LobbyGameManager(this, gamesConfig, selector, lotteryCrateListener);
+
+        getServer().getPluginManager().registerEvents(selector, this);
+        getServer().getPluginManager().registerEvents(new LobbyGameListener(lobbyGameManager), this);
+        getServer().getPluginManager().registerEvents(lotteryCrateListener, this);
+        getCommand("lobbygame").setExecutor(lobbyGameManager);
+
+        // Social / Economy channels
+        this.socialListener = new SocialListener(this);
+        getServer().getMessenger().registerIncomingPluginChannel(this, "hmy:social",   socialListener);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "hmy:social");
+        getServer().getMessenger().registerIncomingPluginChannel(this, "hmy:economy",
+                new EconomyMessageListener(this));
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "hmy:economy");
+
+        // Commands
+        if (getCommand("hmy") != null)
+            getCommand("hmy").setExecutor(new ComHmyLanguage(luckPerms, language));
 
         Bukkit.getScheduler().runTaskLater(this, this::scanForSigns, 100L);
 
@@ -88,18 +119,14 @@ public class HmyLobby extends JavaPlugin {
         getLogger().info("Haaremy: hmyLobby deaktiviert!");
     }
 
-    public ServerInfoListener getServerInfoListener() { return serverInfoListener; }
-    public LuckPerms getLuckPerms()                   { return luckPerms; }
-    public ServerSelectorConfig getServerSelectorConfig() { return serverSelectorConfig; }
-
-    public CosmeticMenuListener getCosmeticMenuListener() {
-        return cosmeticMenuListener;
-    }
-
-    public PlayerEventListener getPlayerEventListener() {
-        return playerEventListener;
-    }
-
-    public EffectManager getEffectManager()         { return effectManager; }
-    public HmyLanguageManager getLanguageManager()  { return language; }
+    public ServerInfoListener getServerInfoListener()          { return serverInfoListener; }
+    public LuckPerms getLuckPerms()                            { return luckPerms; }
+    public ServerSelectorConfig getServerSelectorConfig()      { return serverSelectorConfig; }
+    public CosmeticMenuListener getCosmeticMenuListener()      { return cosmeticMenuListener; }
+    public PlayerEventListener getPlayerEventListener()        { return playerEventListener; }
+    public EffectManager getEffectManager()                    { return effectManager; }
+    public HmyLanguageManager getLanguageManager()             { return language; }
+    public HmyConfigManager getConfigManager()                 { return configManager; }
+    public LobbyGameManager getLobbyGameManager()              { return lobbyGameManager; }
+    public SocialListener getSocialListener()                  { return socialListener; }
 }

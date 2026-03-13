@@ -52,7 +52,7 @@ public class LobbyWorldManager implements Listener {
         world.setGameRule(GameRule.DO_FIRE_TICK,       config.getLobbyRule("fire-tick",      false));
         world.setGameRule(GameRule.FALL_DAMAGE,        config.getLobbyRule("fall-damage",    false));
 
-        //world.setDifficulty(Difficulty.PEACEFUL);
+        world.setDifficulty(org.bukkit.Difficulty.EASY);
         world.setPVP(config.getLobbyRule("pvp", false));
 
         if (!config.getLobbyRule("daylight-cycle", false)) {

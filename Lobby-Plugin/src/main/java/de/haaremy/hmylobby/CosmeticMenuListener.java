@@ -153,7 +153,7 @@ public class CosmeticMenuListener implements Listener {
         // Zurück-Pfeil
         if (item.getType() == Material.ARROW) {
             plugin.getPlayerEventListener().openHeadMenu(player);
-            player.playSound(player, Sound.UI_BUTTON_CLICK, 1f, 1f);
+            player.playSound(player, Sound.ITEM_BOOK_PAGE_TURN, 1f, 1f);
             return;
         }
 
@@ -277,7 +277,7 @@ public class CosmeticMenuListener implements Listener {
         if      (name.contains("Glühen"))      applyCosmeticPotion(player, PotionEffectType.GLOWING,       "glow");
         else if (name.contains("Nachtsicht"))   applyCosmeticPotion(player, PotionEffectType.NIGHT_VISION,  "nightvision");
         else if (name.contains("Federfall"))    applyCosmeticPotion(player, PotionEffectType.SLOW_FALLING,  "slowfall");
-        else if (name.contains("Froschsprung")) applyCosmeticPotion(player, PotionEffectType.JUMP,          "jumpboost");
+        else if (name.contains("Froschsprung")) applyCosmeticPotion(player, PotionEffectType.JUMP, "jumpboost", 4);
         else if (name.contains("Eis-Aura"))     applyCosmeticParticle(player, Particle.SNOWBALL,            "iceaura");
         else if (name.contains("Magie-Aura"))   applyCosmeticParticle(player, Particle.END_ROD,             "magicaura");
         else return;
@@ -287,13 +287,16 @@ public class CosmeticMenuListener implements Listener {
     }
 
     private void applyCosmeticPotion(Player player, PotionEffectType type, String permKey) {
+        applyCosmeticPotion(player, type, permKey, 0);
+    }
+
+    private void applyCosmeticPotion(Player player, PotionEffectType type, String permKey, int amplifier) {
         if (!player.hasPermission("hmy.lobby.cosmetic." + permKey)) {
             player.sendMessage(plugin.getLanguageManager().getMessage(player,
                     "no_permission_cosmetic", "§cKeine Rechte fuer diesen Cosmetic!"));
             return;
         }
-        // Amplifier 0, dauerhaft, keine Partikel (damit Spieler nicht überschwemmt wird)
-        player.addPotionEffect(new PotionEffect(type, Integer.MAX_VALUE, 0, true, false));
+        player.addPotionEffect(new PotionEffect(type, Integer.MAX_VALUE, amplifier, true, false));
         activePotionCosmetics.computeIfAbsent(player.getUniqueId(), k -> new HashSet<>()).add(type);
         player.sendMessage(plugin.getLanguageManager().getMessage(player,
                 "cosmetic_activated", "§aCosmetic aktiviert!"));

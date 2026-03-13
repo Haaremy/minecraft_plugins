@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -80,5 +82,29 @@ public class HmyConfigManager {
 
     public ConfigurationSection getServerSelectorSection() {
         return lobbyConfig.getConfigurationSection("server-selector.entries");
+    }
+
+    // ── Teleport-Punkte ──────────────────────────────────────────────────────
+
+    public record TeleportPoint(String name, String world, double x, double y, double z, float yaw, float pitch) {}
+
+    public List<TeleportPoint> getTeleportPoints() {
+        List<TeleportPoint> result = new ArrayList<>();
+        ConfigurationSection section = lobbyConfig.getConfigurationSection("teleport-points");
+        if (section == null) return result;
+        for (String key : section.getKeys(false)) {
+            ConfigurationSection entry = section.getConfigurationSection(key);
+            if (entry == null) continue;
+            result.add(new TeleportPoint(
+                    entry.getString("name", key),
+                    entry.getString("world", "lobby"),
+                    entry.getDouble("x", 0),
+                    entry.getDouble("y", 64),
+                    entry.getDouble("z", 0),
+                    (float) entry.getDouble("yaw", 0),
+                    (float) entry.getDouble("pitch", 0)
+            ));
+        }
+        return result;
     }
 }
