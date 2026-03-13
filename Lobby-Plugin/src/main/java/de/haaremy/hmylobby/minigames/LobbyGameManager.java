@@ -54,8 +54,8 @@ public class LobbyGameManager implements CommandExecutor {
         }
 
         if (args.length >= 1 && args[0].equalsIgnoreCase("create")) {
-            if (args.length >= 2 && args[1].equalsIgnoreCase("tiktaktoe") && args.length >= 4) {
-                createTicTacToe(player, args[2], args[3]);
+            if (args.length >= 3 && args[1].equalsIgnoreCase("tiktaktoe")) {
+                createTicTacToe(player, args[2]);
                 return true;
             }
             if (args.length >= 2 && args[1].equalsIgnoreCase("crate")) {
@@ -65,7 +65,8 @@ public class LobbyGameManager implements CommandExecutor {
         }
 
         player.sendMessage(Component.text("§cVerwendung:"));
-        player.sendMessage(Component.text("§e/lobbygame create tiktaktoe <name> <feld-id>"));
+        player.sendMessage(Component.text("§e/lobbygame create tiktaktoe <feld-id>"));
+        player.sendMessage(Component.text("§7Danach Schild platzieren: §eZeile 1: §f[g: tiktaktoe] §eZeile 2: §f<Anzeigename> §eZeile 3: §f<feld-id>"));
         player.sendMessage(Component.text("§e/lobbygame create crate §7(Truhe anvisieren)"));
         return true;
     }
@@ -84,7 +85,8 @@ public class LobbyGameManager implements CommandExecutor {
         }
     }
 
-    private void createTicTacToe(Player player, String name, String fieldId) {
+    private void createTicTacToe(Player player, String fieldId) {
+        String name = fieldId;
         Location[] sel = selector.getSelection(player);
         if (sel[0] == null || sel[1] == null) {
             player.sendMessage(Component.text("§cBitte zuerst zwei Punkte mit dem §eGoldenen Schwert §cmarkieren."));

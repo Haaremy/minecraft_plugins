@@ -105,12 +105,8 @@ public class HmyVelocityPlugin {
             new ComBroadcast(server, languageManager));
 
         server.getCommandManager().register(
-            server.getCommandManager().metaBuilder("hmy language").build(),
-            new ComHmyLanguage(luckPerms, languageManager));
-
-        server.getCommandManager().register(
-            server.getCommandManager().metaBuilder("hmy coins").build(),
-            new ComCoins(currencyManager));
+            server.getCommandManager().metaBuilder("hmy").build(),
+            new ComHmy(new ComHmyLanguage(luckPerms, languageManager), new ComCoins(currencyManager)));
 
         server.getCommandManager().register(
             server.getCommandManager().metaBuilder("friend").build(),

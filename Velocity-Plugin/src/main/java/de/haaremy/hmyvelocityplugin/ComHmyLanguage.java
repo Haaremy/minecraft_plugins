@@ -31,11 +31,9 @@ public class ComHmyLanguage implements SimpleCommand {
             return;
         }
 
-        if (args[0].contains("language")) {
-            if ((args.length != 2)) {
-                        source.sendMessage(Component.text("Fehler: Ungültiges Argument. Verwende: /hmy language <language>"));
-                        return;
-            }
+        if (args.length < 1) {
+            source.sendMessage(Component.text("§cVerwendung: §e/hmy language <de|en>"));
+            return;
         }
 
         String language = args[0].toLowerCase();

@@ -112,7 +112,8 @@ public class LobbyGameListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title());
+        String title = LegacyComponentSerializer.legacySection().serialize(event.getView().title())
+                .replaceAll("§[0-9a-fk-orA-FK-OR]", "");
         if (!title.contains("TicTacToe") || !title.contains("Modus")) return;
 
         event.setCancelled(true);
@@ -120,7 +121,8 @@ public class LobbyGameListener implements Listener {
         if (!event.getCurrentItem().hasItemMeta()) return;
 
         String name = LegacyComponentSerializer.legacySection()
-                .serialize(event.getCurrentItem().getItemMeta().displayName());
+                .serialize(event.getCurrentItem().getItemMeta().displayName())
+                .replaceAll("§[0-9a-fk-orA-FK-OR]", "");
 
         // Find the game this player is in (choosing mode)
         for (TicTacToeGame game : gameManager.getAllTTTGames()) {
