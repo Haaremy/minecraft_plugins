@@ -5,7 +5,7 @@
 
     <groupId>de.haaremy</groupId>
     <artifactId>hmyVelocity</artifactId>
-    <version>14</version>
+    <version>15</version>
     <packaging>jar</packaging>
 
     <name>hmyVelocity</name>

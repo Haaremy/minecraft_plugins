@@ -11,6 +11,8 @@ import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.util.GameProfile;
 import de.haaremy.hmyvelocityplugin.friends.FriendManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.group.Group;
 
@@ -79,25 +81,18 @@ public class VelocityTabManager {
 
         // Lobby-Nachricht: wenn Spieler die Lobby verlässt → alle Lobby-Spieler informieren
         if (prevServer != null && isLobby(prevServer) && !isLobby(newServer)) {
-            Component msg = Component.text("§8» §e" + joined.getUsername()
-                    + " §8→ §a" + capitalize(newServer));
-            for (Player lobbyPlayer : proxy.getAllPlayers()) {
-                String srv = playerTracker.getPlayerServer(lobbyPlayer.getUniqueId()).orElse("");
-                if (isLobby(srv) && !lobbyPlayer.getUniqueId().equals(joined.getUniqueId())) {
-                    lobbyPlayer.sendMessage(msg);
-                }
-            }
+            Component msg = Component.text("§8» ")
+                    .append(clickableName(joined.getUsername()))
+                    .append(Component.text(" §8→ §a" + capitalize(newServer)));
+            broadcastToLobby(msg, joined.getUniqueId());
         }
 
-        // Netz-Join-Nachricht: Spieler betritt das Netzwerk zum ersten Mal (vorheriger Server = leer)
+        // Netz-Join-Nachricht: Spieler betritt das Netzwerk zum ersten Mal
         if (prevServer == null && isLobby(newServer)) {
-            Component joinMsg = Component.text("§8» §e" + joined.getUsername() + " §7hat das Netzwerk betreten.");
-            for (Player lobbyPlayer : proxy.getAllPlayers()) {
-                String srv = playerTracker.getPlayerServer(lobbyPlayer.getUniqueId()).orElse("");
-                if (isLobby(srv) && !lobbyPlayer.getUniqueId().equals(joined.getUniqueId())) {
-                    lobbyPlayer.sendMessage(joinMsg);
-                }
-            }
+            Component joinMsg = Component.text("§8» ")
+                    .append(clickableName(joined.getUsername()))
+                    .append(Component.text(" §7hat das Netzwerk betreten."));
+            broadcastToLobby(joinMsg, joined.getUniqueId());
         }
 
         // Delay ~300 ms so the backend's initial PlayerList packets arrive first,
@@ -320,6 +315,21 @@ public class VelocityTabManager {
         String      profName = id.length() > 16 ? id.substring(id.length() - 16) : id;
         GameProfile profile  = new GameProfile(uuid, profName, List.of());
         return new TabEntryData(uuid, profile, Component.text(text), 0);
+    }
+
+    private void broadcastToLobby(Component msg, java.util.UUID excludeUUID) {
+        for (Player p : proxy.getAllPlayers()) {
+            String srv = playerTracker.getPlayerServer(p.getUniqueId()).orElse("");
+            if (isLobby(srv) && !p.getUniqueId().equals(excludeUUID)) {
+                p.sendMessage(msg);
+            }
+        }
+    }
+
+    private Component clickableName(String username) {
+        return Component.text("§e" + username)
+                .clickEvent(ClickEvent.suggestCommand("/dm " + username + " "))
+                .hoverEvent(HoverEvent.showText(Component.text("§7Klicke für eine DM")));
     }
 
     private boolean isLobby(String serverName) {

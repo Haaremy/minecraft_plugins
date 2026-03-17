@@ -115,6 +115,17 @@ public class HmyVelocityPlugin {
         server.getCommandManager().register(
             server.getCommandManager().metaBuilder("friend").build(),
             new ComFriend(server, friendManager, playerTracker));
+
+        ComDm dm = new ComDm(server, false);
+        server.getCommandManager().register(
+            server.getCommandManager().metaBuilder("dm").aliases("msg", "w").build(), dm);
+        server.getCommandManager().register(
+            server.getCommandManager().metaBuilder("r").aliases("reply").build(),
+            new ComDm(server, true));
+
+        server.getCommandManager().register(
+            server.getCommandManager().metaBuilder("report").build(),
+            new ComReport(server, logger, dataDirectory));
     }
 
     // ── Status Update Task ────────────────────────────────────────────────────
@@ -182,9 +193,34 @@ public class HmyVelocityPlugin {
     private void handleSocial(PluginMessageEvent event) {
         try (DataInputStream in = new DataInputStream(new ByteArrayInputStream(event.getData()))) {
             String action = in.readUTF();
-            if (action.equals("GET_FRIENDS")) {
-                UUID uuid = UUID.fromString(in.readUTF());
-                sendFriendsData(uuid);
+            switch (action) {
+                case "GET_FRIENDS" -> sendFriendsData(UUID.fromString(in.readUTF()));
+                case "FRIEND_JOIN" -> {
+                    UUID requesterUUID = UUID.fromString(in.readUTF());
+                    String friendName  = in.readUTF();
+                    server.getPlayer(requesterUUID).ifPresent(requester -> {
+                        var target = server.getPlayer(friendName);
+                        if (target.isEmpty()) {
+                            requester.sendMessage(net.kyori.adventure.text.Component.text(
+                                    "§8[§6Freunde§8] §c" + friendName + " §7ist nicht online."));
+                            return;
+                        }
+                        if (!friendManager.areFriends(requesterUUID, target.get().getUniqueId())) {
+                            requester.sendMessage(net.kyori.adventure.text.Component.text(
+                                    "§8[§6Freunde§8] §cIhr seid keine Freunde."));
+                            return;
+                        }
+                        playerTracker.getPlayerServer(target.get().getUniqueId()).ifPresentOrElse(
+                            srv -> server.getServer(srv).ifPresent(s -> {
+                                requester.createConnectionRequest(s).connectWithIndication();
+                                requester.sendMessage(net.kyori.adventure.text.Component.text(
+                                        "§8[§6Freunde§8] §7Verbinde zu §e" + friendName + " §7auf §b" + srv + "§7..."));
+                            }),
+                            () -> requester.sendMessage(net.kyori.adventure.text.Component.text(
+                                    "§8[§6Freunde§8] §cServer von §e" + friendName + " §cnicht gefunden."))
+                        );
+                    });
+                }
             }
         } catch (Exception e) { logger.error("Social-Channel Fehler: ", e); }
     }

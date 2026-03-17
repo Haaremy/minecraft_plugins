@@ -86,7 +86,7 @@ public class HmyConfigManager {
 
     // ── Teleport-Punkte ──────────────────────────────────────────────────────
 
-    public record TeleportPoint(String name, String world, double x, double y, double z, float yaw, float pitch) {}
+    public record TeleportPoint(String id, String name, String world, double x, double y, double z, float yaw, float pitch) {}
 
     public List<TeleportPoint> getTeleportPoints() {
         List<TeleportPoint> result = new ArrayList<>();
@@ -96,6 +96,7 @@ public class HmyConfigManager {
             ConfigurationSection entry = section.getConfigurationSection(key);
             if (entry == null) continue;
             result.add(new TeleportPoint(
+                    key,
                     entry.getString("name", key),
                     entry.getString("world", "lobby"),
                     entry.getDouble("x", 0),

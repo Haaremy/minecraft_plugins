@@ -4,6 +4,8 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
@@ -11,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -121,21 +124,14 @@ public class PlayerEventListener implements Listener {
     //
     // Slot-Layout:
     //   0 = My-Menü        (Spielerkopf, immer sichtbar)
-    //   1 = Infos           (immer sichtbar)
-    //   2 = Freunde         (immer sichtbar)
-    //   4 = Navigator       (hmy.lobby.selector)
+    //   4 = Navigator       (hmy.lobby.selector)  – enthält Compass für Lobby-Teleports
     //   7 = Feder           (hmy.lobby.speed)
     //   8 = Sprung Boost    (hmy.lobby.rocket)
+    //   Infos + Freunde befinden sich im My-Menü (Slot 26 bzw. 20)
 
     private void giveLobbyItems(Player player) {
         player.getInventory().clear();
         player.getInventory().setItem(0, getPlayerHead(player, "§bMy-Menü"));
-
-        player.getInventory().setItem(1, createItem(Material.ENCHANTED_BOOK, "§bInfos",
-                List.of("§7Hilfe & Befehle")));
-
-        player.getInventory().setItem(2, createItem(Material.PAPER, "§aFreunde",
-                List.of("§7Deine Freundesliste", "§8/friend add <Spieler> zum Hinzufügen")));
 
         if (player.hasPermission("hmy.lobby.selector"))
             player.getInventory().setItem(4, createItem(Material.NETHER_STAR, "§6Navigator",
@@ -210,12 +206,8 @@ public class PlayerEventListener implements Listener {
             event.setCancelled(true); openNavigatorMenu(player);
         } else if (name.equals("§bMy-Menü")) {
             event.setCancelled(true); openHeadMenu(player);
-        } else if (name.equals("§aFreunde")) {
-            event.setCancelled(true); requestFriendsList(player);
         } else if (name.equals("§bSprung Boost")) {
             handleRocketLaunch(player);
-        } else if (name.equals("§bInfos")) {
-            event.setCancelled(true); player.performCommand("help");
         } else if (item.getType() == Material.FEATHER && name.startsWith("§eGeschwindigkeit")) {
             event.setCancelled(true); toggleSpeed(player);
         }
@@ -248,7 +240,9 @@ public class PlayerEventListener implements Listener {
                 case 13 -> openLanguageMenu(player);
                 case 15 -> plugin.getCosmeticMenuListener().openHeadsMenu(player);
                 case 16 -> plugin.getCosmeticMenuListener().openMountMenu(player);
+                case 20 -> requestFriendsList(player);
                 case 22 -> openUserSettingsMenu(player);
+                case 26 -> { player.closeInventory(); player.performCommand("help"); }
             }
             if (slot >= 0 && slot < 27) player.playSound(player, Sound.UI_BUTTON_CLICK, 0.5f, 1f);
         } else if (title.contains("Sprache")) {
@@ -256,7 +250,7 @@ public class PlayerEventListener implements Listener {
         } else if (title.contains("Einstellungen")) {
             handleUserSettingsClick(player, slot);
         } else if (title.contains("Freundesliste")) {
-            handleFriendsGUIClick(player, clicked, slot);
+            handleFriendsGUIClick(player, clicked, slot, event.getClick());
         }
     }
 
@@ -286,12 +280,11 @@ public class PlayerEventListener implements Listener {
             inv.setItem(entry.slot(), createItem(entry.material(), entry.name(), entry.lore()));
         }
 
-        // Kompass in der Mitte (Slot 22) – überschreibt ggf. einen Server-Eintrag
+        // Kompass immer in Slot 22 – öffnet Lobby-Teleportpunkte
         List<HmyConfigManager.TeleportPoint> tpPoints = plugin.getConfigManager().getTeleportPoints();
-        if (!tpPoints.isEmpty()) {
-            inv.setItem(22, createItem(Material.COMPASS, "§eTP-Punkte",
-                    List.of("§7Lobby-Teleportpunkte", "§8" + tpPoints.size() + " Ziele verfügbar")));
-        }
+        inv.setItem(22, createItem(Material.COMPASS, "§6Lobby Teleports",
+                List.of("§7Schnellreise innerhalb der Lobby",
+                        "§8" + tpPoints.size() + " Ziele verfügbar")));
 
         player.openInventory(inv);
     }
@@ -342,10 +335,18 @@ public class PlayerEventListener implements Listener {
 
         for (HmyConfigManager.TeleportPoint tp : plugin.getConfigManager().getTeleportPoints()) {
             if (tp.name().equals(name)) {
+                if (!player.hasPermission("hmy.lobby.tp." + tp.id())) {
+                    player.sendActionBar(Component.text("§cDu hast keine Berechtigung für diesen Teleportpunkt."));
+                    player.playSound(player, Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+                    return;
+                }
                 player.closeInventory();
                 World world = Bukkit.getWorld(tp.world());
                 if (world != null) {
-                    Location loc = new Location(world, tp.x(), tp.y(), tp.z(), tp.yaw(), tp.pitch());
+                    // Auf Blockmitte (.5) zentrieren
+                    double x = Math.floor(tp.x()) + 0.5;
+                    double z = Math.floor(tp.z()) + 0.5;
+                    Location loc = new Location(world, x, tp.y(), z, tp.yaw(), tp.pitch());
                     player.teleport(loc);
                     player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1.2f);
                 }
@@ -421,18 +422,42 @@ public class PlayerEventListener implements Listener {
         }
     }
 
-    private void handleFriendsGUIClick(Player player, ItemStack clicked, int slot) {
+    private void handleFriendsGUIClick(Player player, ItemStack clicked, int slot, ClickType clickType) {
         String name = LegacyComponentSerializer.legacySection().serialize(clicked.getItemMeta().displayName());
-        // Close button
+
         if (slot == 49 || clicked.getType() == Material.ARROW) {
             player.closeInventory();
             return;
         }
-        // Online friend (PLAYER_HEAD) → join their server
-        if (clicked.getType() == Material.PLAYER_HEAD && !name.startsWith("§7")) {
-            String friendName = name.replace("§a", "");
+
+        boolean isOnlineFriend = clicked.getType() == Material.PLAYER_HEAD && !name.startsWith("§7");
+        String friendName = name.replace("§a", "").replace("§7", "").trim();
+
+        if (clickType == ClickType.SHIFT_LEFT || clickType == ClickType.SHIFT_RIGHT) {
+            // Shift-Klick → DM-Vorschlag im Chat
             player.closeInventory();
-            player.performCommand("friend join " + friendName);
+            player.sendMessage(Component.text("§8[§6DM§8] ")
+                    .append(Component.text("§a[Nachricht an §e" + friendName + " §asenden]")
+                            .clickEvent(ClickEvent.suggestCommand("/dm " + friendName + " "))
+                            .hoverEvent(HoverEvent.showText(
+                                    Component.text("§7Klicke um §e/dm " + friendName + " §7einzugeben")))));
+        } else if (isOnlineFriend) {
+            // Links-Klick auf Online-Freund → Server joinen
+            player.closeInventory();
+            sendFriendJoinRequest(player, friendName);
+        }
+    }
+
+    private void sendFriendJoinRequest(Player player, String friendName) {
+        try {
+            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            java.io.DataOutputStream dos = new java.io.DataOutputStream(bos);
+            dos.writeUTF("FRIEND_JOIN");
+            dos.writeUTF(player.getUniqueId().toString());
+            dos.writeUTF(friendName);
+            player.sendPluginMessage(plugin, "hmy:social", bos.toByteArray());
+        } catch (Exception e) {
+            plugin.getLogger().warning("Fehler beim Senden von FRIEND_JOIN: " + e.getMessage());
         }
     }
 
@@ -465,8 +490,13 @@ public class PlayerEventListener implements Listener {
                 List.of("§7Setze dir einen Kopf auf.", "", "§aKlicke zum Öffnen!")));
         inv.setItem(16, createItem(Material.SADDLE,             "§c§lMounts",
                 List.of("§7Reite auf coolen Tieren.", "", "§aKlicke zum Öffnen!")));
+        inv.setItem(20, createItem(Material.PAPER,              "§a§lMeine Freunde",
+                List.of("§7Freundesliste & Verwaltung.", "", "§aKlicke zum Öffnen!",
+                        "§8Shift+Klick im Menü = DM senden")));
         inv.setItem(22, createItem(Material.REDSTONE_TORCH,     "§7§lEinstellungen",
                 List.of("§7Geschwindigkeit & Sichtbarkeit.")));
+        inv.setItem(26, createItem(Material.ENCHANTED_BOOK,     "§b§lInfos",
+                List.of("§7Hilfe & Befehle.", "", "§aKlicke zum Öffnen!")));
 
         player.openInventory(inv);
         player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1.2f);

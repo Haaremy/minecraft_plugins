@@ -46,3 +46,6 @@ permissions:
   hmy.lobby.speed:
     description: Erlaubt das Ändern der Laufgeschwindigkeit.
     default: true
+  hmy.lobby.tp.*:
+    description: Erlaubt alle Lobby-Teleportpunkte (Kompass im Navigator).
+    default: true

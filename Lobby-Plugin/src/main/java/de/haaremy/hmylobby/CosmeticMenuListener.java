@@ -351,12 +351,14 @@ public class CosmeticMenuListener implements Listener {
 
     // ── Mount spawning / control ──────────────────────────────────────────────
 
+    private static final Set<EntityType> FLYING_MOUNTS = Set.of(EntityType.BEE);
+
     private void spawnMount(Player player, EntityType type, String name) {
         if (player.getVehicle() != null) player.getVehicle().remove();
 
         org.bukkit.entity.Entity mount = player.getWorld().spawnEntity(player.getLocation(), type);
         if (mount instanceof org.bukkit.entity.LivingEntity living) {
-            living.setAI(true);
+            living.setAI(false);            // Kein automatisches Laufen – Steuerung via PlayerInput-Task
             living.setInvulnerable(true);
             living.setCustomNameVisible(false);
             if (living instanceof org.bukkit.entity.Steerable s) s.setSaddle(true);
@@ -369,10 +371,10 @@ public class CosmeticMenuListener implements Listener {
         player.sendMessage(plugin.getLanguageManager().getMessage(player,
                 "mount_riding", "§aDu reitest auf einem §e{mount}§a!",
                 Map.of("mount", name)));
-        startMountControlTask(player, mount);
+        startMountControlTask(player, mount, FLYING_MOUNTS.contains(type));
     }
 
-    private void startMountControlTask(Player player, org.bukkit.entity.Entity mount) {
+    private void startMountControlTask(Player player, org.bukkit.entity.Entity mount, boolean flying) {
         new org.bukkit.scheduler.BukkitRunnable() {
             @Override public void run() {
                 if (!mount.isValid() || mount.getPassengers().isEmpty() || !player.isOnline()) {
@@ -380,13 +382,20 @@ public class CosmeticMenuListener implements Listener {
                     if (mount.isValid()) mount.remove();
                     return;
                 }
-                org.bukkit.util.Vector dir = player.getLocation().getDirection().setY(0).normalize();
+
                 double speed = player.isSprinting() ? 0.5 : 0.25;
-                org.bukkit.block.Block ahead = mount.getLocation().add(dir.clone().multiply(1.0)).getBlock();
-                if (ahead.getType().isSolid() && mount.isOnGround()) {
-                    mount.setVelocity(mount.getVelocity().setY(0.5));
+
+                if (flying) {
+                    // Vollständige 3D-Steuerung: Spieler schaut in Richtung Ziel
+                    org.bukkit.util.Vector dir = player.getLocation().getDirection().normalize();
+                    mount.setVelocity(dir.multiply(speed));
+                } else {
+                    // Boden-Mount: horizontale Richtung des Spieler-Blicks
+                    org.bukkit.util.Vector dir = player.getLocation().getDirection().setY(0).normalize();
+                    org.bukkit.block.Block ahead = mount.getLocation().add(dir.clone().multiply(1.0)).getBlock();
+                    double yVel = mount.isOnGround() && ahead.getType().isSolid() ? 0.5 : -0.08;
+                    mount.setVelocity(dir.multiply(speed).setY(yVel));
                 }
-                mount.setVelocity(dir.multiply(speed).setY(-0.1));
                 mount.setRotation(player.getLocation().getYaw(), 0);
             }
         }.runTaskTimer(plugin, 1L, 1L);
