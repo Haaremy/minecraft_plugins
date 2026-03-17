@@ -30,12 +30,12 @@ commands:
     usage: /weather [sonne|regen|sturm] [Dauer]
     permission: hmy.weather
   gm:
-    description: Ändert den Spielmodus.
-    usage: /gm [name|id] [Spieler]
+    description: Ändert den Spielmodus (optional für einen anderen Spieler).
+    usage: /gm <name|id> [Spieler]
     permission: hmy.gm
   time:
-    description: Zeigt oder ändert die aktuelle Zeit.
-    usage: /time [Nummer]
+    description: Setzt die Weltzeit (Zahl oder day/noon/night/midnight).
+    usage: /time <day|noon|night|midnight|Zahl>
     permission: hmy.time
   lightning:
     description: Lässt einen Blitz einschlagen.
@@ -135,3 +135,78 @@ commands:
   world:
     description: Switch world.
     permission: hmy.world
+  heal:
+    description: Heilt einen Spieler vollständig.
+    usage: /heal [Spieler]
+    permission: hmy.heal
+  feed:
+    description: Sättigt einen Spieler vollständig.
+    usage: /feed [Spieler]
+    permission: hmy.feed
+  tp:
+    description: Teleportiert einen Spieler zu einem anderen.
+    usage: /tp <Spieler> [Ziel]
+    permission: hmy.tp
+  tphere:
+    description: Teleportiert einen Spieler zu dir.
+    usage: /tphere <Spieler>
+    permission: hmy.tphere
+  back:
+    description: Teleportiert dich zur letzten Position.
+    usage: /back
+    permission: hmy.back
+  workbench:
+    description: Öffnet eine virtuelle Werkbank.
+    usage: /workbench
+    permission: hmy.workbench
+  enderchest:
+    description: Öffnet die eigene oder fremde Endertruhe.
+    usage: /enderchest [Spieler]
+    permission: hmy.enderchest
+  repair:
+    description: Repariert das Item in der Hand oder alle Items.
+    usage: /repair [all]
+    permission: hmy.repair
+permissions:
+  hmy.gm.other:
+    description: Erlaubt das Ändern des Spielmodus anderer Spieler.
+    default: op
+  hmy.heal:
+    description: Erlaubt das Heilen der eigenen Person.
+    default: op
+  hmy.heal.other:
+    description: Erlaubt das Heilen anderer Spieler.
+    default: op
+  hmy.feed:
+    description: Erlaubt das Sättigen der eigenen Person.
+    default: op
+  hmy.feed.other:
+    description: Erlaubt das Sättigen anderer Spieler.
+    default: op
+  hmy.tp:
+    description: Erlaubt das Teleportieren zu einem Spieler.
+    default: op
+  hmy.tp.other:
+    description: Erlaubt das Teleportieren anderer Spieler.
+    default: op
+  hmy.tphere:
+    description: Erlaubt das Teleportieren von Spielern zu sich.
+    default: op
+  hmy.back:
+    description: Erlaubt das Zurückteleportieren zur letzten Position.
+    default: op
+  hmy.workbench:
+    description: Erlaubt das Öffnen einer virtuellen Werkbank.
+    default: op
+  hmy.enderchest:
+    description: Erlaubt das Öffnen der eigenen Endertruhe.
+    default: op
+  hmy.enderchest.other:
+    description: Erlaubt das Öffnen der Endertruhe anderer Spieler.
+    default: op
+  hmy.repair:
+    description: Erlaubt das Reparieren des Items in der Hand.
+    default: op
+  hmy.repair.all:
+    description: Erlaubt das Reparieren aller Items im Inventar.
+    default: op

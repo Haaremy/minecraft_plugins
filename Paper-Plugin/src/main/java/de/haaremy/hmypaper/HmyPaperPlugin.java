@@ -16,18 +16,23 @@ import java.util.List;
 
 import net.luckperms.api.LuckPerms;
 
+import de.haaremy.hmypaper.commands.ComBack;
 import de.haaremy.hmypaper.commands.ComBroadcast;
 import de.haaremy.hmypaper.commands.ComDirectMessage;
+import de.haaremy.hmypaper.commands.ComEnderChest;
+import de.haaremy.hmypaper.commands.ComFeed;
 import de.haaremy.hmypaper.commands.ComFly;
 import de.haaremy.hmypaper.commands.ComGamemode;
 import de.haaremy.hmypaper.commands.ComGetPos;
 import de.haaremy.hmypaper.commands.ComGive;
+import de.haaremy.hmypaper.commands.ComHeal;
 import de.haaremy.hmypaper.commands.ComHelp;
 import de.haaremy.hmypaper.commands.ComInvSee;
 import de.haaremy.hmypaper.commands.ComKill;
 import de.haaremy.hmypaper.commands.ComLightning;
 import de.haaremy.hmypaper.commands.ComMute;
 import de.haaremy.hmypaper.commands.ComReply;
+import de.haaremy.hmypaper.commands.ComRepair;
 import de.haaremy.hmypaper.commands.ComRules;
 import de.haaremy.hmypaper.commands.ComSkull;
 import de.haaremy.hmypaper.commands.ComSocialSpy;
@@ -35,8 +40,11 @@ import de.haaremy.hmypaper.commands.ComSpawn;
 import de.haaremy.hmypaper.commands.ComSpeed;
 import de.haaremy.hmypaper.commands.ComSudo;
 import de.haaremy.hmypaper.commands.ComTime;
+import de.haaremy.hmypaper.commands.ComTp;
+import de.haaremy.hmypaper.commands.ComTpHere;
 import de.haaremy.hmypaper.commands.ComVanish;
 import de.haaremy.hmypaper.commands.ComWeather;
+import de.haaremy.hmypaper.commands.ComWorkbench;
 import de.haaremy.hmypaper.commands.ComWorld;
 
 
@@ -110,7 +118,7 @@ public class HmyPaperPlugin extends JavaPlugin {
         registerCommand("world", new ComWorld(language));
         registerCommand("fly", new ComFly(language));
         registerCommand("weather", new ComWeather());
-        registerCommand("gm", new ComGamemode(language));
+        registerCommand("gm", new ComGamemode());
         registerCommand("time", new ComTime());
         registerCommand("lightning", new ComLightning());
         registerCommand("speed", new ComSpeed());
@@ -128,6 +136,18 @@ public class HmyPaperPlugin extends JavaPlugin {
         registerCommand("broadcast", new ComBroadcast(language));
         registerCommand("r", new ComReply(language));
         registerCommand("socialspy", new ComSocialSpy());
+
+        // Essentials Commands
+        registerCommand("heal", new ComHeal());
+        registerCommand("feed", new ComFeed());
+        registerCommand("tp", new ComTp());
+        registerCommand("tphere", new ComTpHere());
+        ComBack comBack = new ComBack();
+        registerCommand("back", comBack);
+        registerCommand("workbench", new ComWorkbench());
+        registerCommand("enderchest", new ComEnderChest());
+        registerCommand("repair", new ComRepair());
+        getServer().getPluginManager().registerEvents(comBack, this);
     }
 
     private void registerEvents() {
@@ -135,9 +155,8 @@ public class HmyPaperPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new HmyAntiBuild(this, luckPerms), this);
         getServer().getPluginManager().registerEvents(new HmyChat(luckPerms), this);
 
-        HmyTab hmyTab = new HmyTab(luckPerms);
-        getServer().getPluginManager().registerEvents(hmyTab, this);
-        hmyTab.runTaskTimer(this, 0, 20);
+        // Tab-Liste wird von hmyVelocity zentral verwaltet (VelocityTabManager)
+        // HmyTab ist deaktiviert.
     }
 
     private void registerCommand(String name, CommandExecutor executor) {

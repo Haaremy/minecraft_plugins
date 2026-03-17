@@ -40,13 +40,14 @@ public class HmyVelocityPlugin {
     private final Logger      logger;
     private final Path        dataDirectory;
 
-    private LuckPerms          luckPerms;
-    private HmyLobby           hmyLobby;
-    private HmyLanguageManager languageManager;
-    private HmyConfigManager   configManager;
-    private CurrencyManager    currencyManager;
-    private FriendManager      friendManager;
-    private PlayerTracker      playerTracker;
+    private LuckPerms           luckPerms;
+    private HmyLobby            hmyLobby;
+    private HmyLanguageManager  languageManager;
+    private HmyConfigManager    configManager;
+    private CurrencyManager     currencyManager;
+    private FriendManager       friendManager;
+    private PlayerTracker       playerTracker;
+    private VelocityTabManager  tabManager;
 
     // Channels
     private static final MinecraftChannelIdentifier TRIGGER_CHANNEL = MinecraftChannelIdentifier.create("hmy", "trigger");
@@ -78,6 +79,7 @@ public class HmyVelocityPlugin {
         this.currencyManager = new CurrencyManager(dataDirectory, logger);
         this.friendManager   = new FriendManager(dataDirectory, logger);
         this.playerTracker   = new PlayerTracker(server, friendManager);
+        this.tabManager      = new VelocityTabManager(this, server, friendManager, playerTracker, luckPerms);
 
         registerListeners();
         initializePluginFeatures();
@@ -90,6 +92,8 @@ public class HmyVelocityPlugin {
         server.getEventManager().register(this, new PlayerJoinListener(server, "lobby", languageManager));
         server.getEventManager().register(this, new PingListener(server));
         server.getEventManager().register(this, playerTracker);
+        server.getEventManager().register(this, tabManager);
+        tabManager.startTask();
 
         server.getChannelRegistrar().register(TRIGGER_CHANNEL);
         server.getChannelRegistrar().register(STATUS_CHANNEL);

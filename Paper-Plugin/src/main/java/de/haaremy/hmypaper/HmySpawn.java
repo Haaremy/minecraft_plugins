@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 public class HmySpawn implements Listener {
 
@@ -63,13 +64,22 @@ public class HmySpawn implements Listener {
 
     @EventHandler
     public void onPlayerJoinEvent(PlayerJoinEvent event) {
+        // Vanilla join message deaktivieren (Velocity zeigt eigene Lobby-Nachricht)
+        event.joinMessage(null);
+
         Player player = event.getPlayer();
         World world = player.getWorld();
 
         // Spieler nur teleportieren, wenn die Welt in der Liste ist und nicht mit "survival" beginnt
         if (worlds.contains(world.getName()) && !world.getName().startsWith("survival")) {
-            Location worldSpawn = world.getSpawnLocation().add(0.5, 0, 0.5); // Spawn-Koordinaten anpassen
+            Location worldSpawn = world.getSpawnLocation().add(0.5, 0, 0.5);
             player.teleport(worldSpawn);
         }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        // Vanilla leave message deaktivieren (Velocity zeigt eigene Lobby-Nachricht)
+        event.quitMessage(null);
     }
 }
