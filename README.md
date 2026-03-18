@@ -121,9 +121,9 @@ General-purpose Paper plugin used on all sub-servers.
 - **AntiBuild** – per-world build protection with allowed-block overrides
 - **Chat prefixes** – pulled from LuckPerms groups
 - **Spawn system** – `/spawn` teleports to world spawn (disabled on worlds starting with `survival`)
-- **World switcher** – `/world <name>` moves players between worlds
-- **Home system** – up to 5 named home slots per player, each with its own permission; stored in `hmySettings/homes.yml`
-- **Parkour system** – create start / checkpoint / goal blocks; tracks time, checkpoints, and auto-resets on finish; stored in `hmySettings/parkour.yml`
+- **World switcher** – `/world <name>` moves players between worlds; automatically loads unloaded worlds from disk on demand
+- **Home system** – up to 5 home slots per player, each with its own permission; only usable in worlds starting with `survival_`; stored in `hmySettings/homes.yml`
+- **Parkour system** – create start / checkpoint / goal blocks; tracks time, checkpoints, and auto-resets on finish; fall detection: if the player drops 10 blocks below the last checkpoint they are teleported back; stored in `hmySettings/parkour.yml`
 - **Moderation** – ban, tempban, IP-ban, kick, mute, vanish, invsee, sudo
 - **Essentials** – heal, feed, tp, tphere, back, workbench, enderchest, repair
 - **Utilities** – fly, gamemode, speed, weather, time (`day`/`noon`/`night`/`midnight`), lightning, skull, getpos, socialspy, worlds
@@ -136,8 +136,8 @@ General-purpose Paper plugin used on all sub-servers.
 | `/rules [page]` | Show server rules | `hmy.rules` |
 | `/spawn` | Teleport to world spawn | — |
 | `/lobby` | Return to lobby server | — |
-| `/world <name>` | Switch to another world | `hmy.world` |
-| `/worlds` | List all loaded worlds | `hmy.worlds` |
+| `/world <name>` | Switch to another world; loads it from disk if not yet loaded | `hmy.world.<name>` |
+| `/worlds` | List all worlds (loaded with details + unloaded from disk) | `hmy.worlds` |
 | `/fly [player]` | Toggle fly mode | `hmy.fly` |
 | `/gm <name\|id> [player]` | Set game mode (optionally for another player) | `hmy.gm` / `hmy.gm.other` |
 | `/speed [player] <walk\|fly> <value>` | Set walk/fly speed | `hmy.speed` |

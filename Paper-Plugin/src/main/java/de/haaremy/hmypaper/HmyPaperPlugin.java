@@ -128,7 +128,7 @@ public class HmyPaperPlugin extends JavaPlugin {
         registerCommand("spawn", new ComSpawn());
 
         // World Commands
-        registerCommand("world", new ComWorld(language));
+        registerCommand("world", new ComWorld());
         registerCommand("fly", new ComFly(language));
         registerCommand("weather", new ComWeather());
         registerCommand("gm", new ComGamemode());
