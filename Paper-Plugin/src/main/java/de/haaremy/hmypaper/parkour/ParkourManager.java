@@ -127,6 +127,10 @@ public class ParkourManager {
         return readLocation("parkours." + name + ".start");
     }
 
+    public Location getCheckpointLocation(String name, int id) {
+        return readLocation("parkours." + name + ".checkpoints." + id);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void writeLocation(String path, Location loc) {

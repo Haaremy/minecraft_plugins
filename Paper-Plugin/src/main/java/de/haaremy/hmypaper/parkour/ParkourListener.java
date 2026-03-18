@@ -18,13 +18,15 @@ public class ParkourListener implements Listener {
     private final ParkourManager parkourManager;
 
     // uuid → parkour name
-    private final Map<UUID, String>   activeParkour  = new HashMap<>();
+    private final Map<UUID, String>   activeParkour   = new HashMap<>();
     // uuid → last reached checkpoint id (-1 = none)
-    private final Map<UUID, Integer>  checkpoint     = new HashMap<>();
+    private final Map<UUID, Integer>  checkpoint      = new HashMap<>();
     // uuid → start time millis
-    private final Map<UUID, Long>     startTime      = new HashMap<>();
+    private final Map<UUID, Long>     startTime       = new HashMap<>();
     // uuid → last block to prevent duplicate triggers
-    private final Map<UUID, Location> lastBlock      = new HashMap<>();
+    private final Map<UUID, Location> lastBlock       = new HashMap<>();
+    // uuid → Y of last checkpoint/start (for fall detection)
+    private final Map<UUID, Double>   checkpointY     = new HashMap<>();
 
     public ParkourListener(ParkourManager parkourManager) {
         this.parkourManager = parkourManager;
@@ -34,23 +36,37 @@ public class ParkourListener implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        if (!event.hasChangedBlock()) return;
+        if (event.getTo() == null) return;
         Player   player = event.getPlayer();
-        Location to     = event.getTo().getBlock().getLocation();
+        UUID     uuid   = player.getUniqueId();
+
+        // ── Fall detection (runs on every Y change, not just block changes) ──
+        if (activeParkour.containsKey(uuid) && checkpointY.containsKey(uuid)) {
+            double refY    = checkpointY.get(uuid);
+            double playerY = event.getTo().getY();
+            if (playerY < refY - 10) {
+                teleportToLastCheckpoint(player);
+                return;
+            }
+        }
+
+        if (!event.hasChangedBlock()) return;
+        Location to = event.getTo().getBlock().getLocation();
 
         // Debounce: skip if same block as last trigger
-        if (to.equals(lastBlock.get(player.getUniqueId()))) return;
-        lastBlock.put(player.getUniqueId(), to);
+        if (to.equals(lastBlock.get(uuid))) return;
+        lastBlock.put(uuid, to);
 
         // Goal check
-        if (activeParkour.containsKey(player.getUniqueId())) {
-            String parkour = activeParkour.get(player.getUniqueId());
+        if (activeParkour.containsKey(uuid)) {
+            String parkour = activeParkour.get(uuid);
             String[] cp = parkourManager.getParkourByCheckpoint(to);
             if (cp != null && cp[0].equals(parkour)) {
                 int id = Integer.parseInt(cp[1]);
-                int current = checkpoint.getOrDefault(player.getUniqueId(), -1);
+                int current = checkpoint.getOrDefault(uuid, -1);
                 if (id > current) {
-                    checkpoint.put(player.getUniqueId(), id);
+                    checkpoint.put(uuid, id);
+                    checkpointY.put(uuid, to.getY());
                     player.sendMessage("§a✔ Checkpoint §e" + id + " §aerreicht!");
                     player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
                 }
@@ -59,7 +75,7 @@ public class ParkourListener implements Listener {
 
             String goalParkour = parkourManager.getParkourByGoal(to);
             if (goalParkour != null && goalParkour.equals(parkour)) {
-                long elapsed = System.currentTimeMillis() - startTime.get(player.getUniqueId());
+                long elapsed = System.currentTimeMillis() - startTime.get(uuid);
                 String time  = formatTime(elapsed);
                 player.sendMessage("§6§l» §eParkour §6" + parkour + " §eabgeschlossen! §aZeit: §d" + time);
                 player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
@@ -71,9 +87,10 @@ public class ParkourListener implements Listener {
         // Start check
         String startParkour = parkourManager.getParkourByStart(to);
         if (startParkour != null) {
-            activeParkour.put(player.getUniqueId(), startParkour);
-            checkpoint.put(player.getUniqueId(), -1);
-            startTime.put(player.getUniqueId(), System.currentTimeMillis());
+            activeParkour.put(uuid, startParkour);
+            checkpoint.put(uuid, -1);
+            checkpointY.put(uuid, to.getY());
+            startTime.put(uuid, System.currentTimeMillis());
             player.sendMessage("§6§l» §eParkour §6" + startParkour + " §egestartet! §7Viel Erfolg!");
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1.5f);
         }
@@ -126,11 +143,35 @@ public class ParkourListener implements Listener {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    private void teleportToLastCheckpoint(Player player) {
+        UUID   uuid    = player.getUniqueId();
+        String parkour = activeParkour.get(uuid);
+        int    cpId    = checkpoint.getOrDefault(uuid, -1);
+
+        Location dest;
+        if (cpId == -1) {
+            dest = parkourManager.getStart(parkour);
+        } else {
+            dest = parkourManager.getCheckpointLocation(parkour, cpId);
+        }
+
+        if (dest != null) {
+            player.teleport(dest);
+            player.sendMessage("§c↓ §7Zurück zum letzten Checkpoint gesetzt.");
+            player.playSound(dest, Sound.ENTITY_PLAYER_HURT, 0.8f, 1f);
+        }
+
+        // Reset debounce so the start/checkpoint block can fire again if needed
+        lastBlock.remove(uuid);
+    }
+
     private void resetPlayer(Player player) {
-        activeParkour.remove(player.getUniqueId());
-        checkpoint.remove(player.getUniqueId());
-        startTime.remove(player.getUniqueId());
-        lastBlock.remove(player.getUniqueId());
+        UUID uuid = player.getUniqueId();
+        activeParkour.remove(uuid);
+        checkpoint.remove(uuid);
+        checkpointY.remove(uuid);
+        startTime.remove(uuid);
+        lastBlock.remove(uuid);
     }
 
     private String formatTime(long millis) {
