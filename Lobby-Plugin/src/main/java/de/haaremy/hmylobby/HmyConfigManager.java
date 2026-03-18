@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Lädt Konfigurationsdateien aus minecraftServers/hmySettings/.
+ * Lädt Konfigurationsdateien aus hmySettings/ im Serververzeichnis.
  *
- * Pfad-Berechnung (Plugin liegt in minecraftServers/subserver/plugins/):
- *   pluginsDir  = minecraftServers/subserver/plugins/
- *   hmySettings = pluginsDir/../../hmySettings
- *             = minecraftServers/hmySettings/
+ * Pfad-Berechnung (Plugin liegt in server/plugins/hmyLobby/):
+ *   pluginsDir  = server/plugins/          (getDataFolder().getParent())
+ *   hmySettings = pluginsDir/../hmySettings
+ *             = server/hmySettings/
  */
 public class HmyConfigManager {
 
@@ -31,7 +31,7 @@ public class HmyConfigManager {
 
     public HmyConfigManager(Logger logger, Path pluginsDir) {
         this.logger = logger;
-        this.hmySettingsDir = pluginsDir.getParent().getParent().resolve("hmySettings");
+        this.hmySettingsDir = pluginsDir.getParent().resolve("hmySettings");
         load();
     }
 
