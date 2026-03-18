@@ -39,6 +39,11 @@ public class ComSetHome implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        if (!player.getWorld().getName().startsWith("survival_")) {
+            player.sendMessage("§c/sethome kann nur in Survival-Welten verwendet werden.");
+            return true;
+        }
+
         if (!player.hasPermission("hmy.home." + slot)) {
             sender.sendMessage("§cDu hast keine Berechtigung für Home-Slot §e" + slot + "§c.");
             return true;

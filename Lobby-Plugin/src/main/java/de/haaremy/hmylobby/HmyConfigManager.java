@@ -5,6 +5,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ public class HmyConfigManager {
     /**
      * Lädt eine YAML-Datei aus hmySettings/. Existiert sie noch nicht,
      * wird die mitgelieferte Standarddatei aus dem JAR kopiert.
+     * Schlägt das Kopieren fehl, wird die Ressource direkt aus dem JAR geladen.
      */
     private YamlConfiguration loadOrCreate(String filename) {
         Path file = hmySettingsDir.resolve(filename);
@@ -61,7 +64,24 @@ public class HmyConfigManager {
                 logger.severe("Fehler beim Erstellen von " + filename + ": " + e.getMessage());
             }
         }
-        return YamlConfiguration.loadConfiguration(file.toFile());
+
+        // Datei existiert jetzt entweder auf Disk oder konnte nicht erstellt werden
+        if (Files.exists(file)) {
+            return YamlConfiguration.loadConfiguration(file.toFile());
+        }
+
+        // Fallback: direkt aus dem JAR laden (kein Schreiben auf Disk möglich)
+        logger.warning("Lade " + filename + " direkt aus dem JAR (Datei konnte nicht auf Disk erstellt werden).");
+        try (InputStream in = getClass().getResourceAsStream("/" + filename)) {
+            if (in != null) {
+                YamlConfiguration config = new YamlConfiguration();
+                config.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+                return config;
+            }
+        } catch (Exception e) {
+            logger.severe("Fehler beim Laden von " + filename + " aus JAR: " + e.getMessage());
+        }
+        return new YamlConfiguration();
     }
 
     // ── general.yml ─────────────────────────────────────────────────────────
