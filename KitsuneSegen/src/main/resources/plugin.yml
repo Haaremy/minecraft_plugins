@@ -23,3 +23,6 @@ permissions:
   hmy.kitsunesegen.inventory.edit:
     description: Erlaubt das Bearbeiten des Inventars im Spiel (Debug)
     default: false
+  hmy.kitsune.build:
+    description: Erlaubt das Platzieren und Abbauen von Blöcken in Hub- und Spielwelt
+    default: op

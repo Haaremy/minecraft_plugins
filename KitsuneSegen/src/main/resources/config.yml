@@ -20,12 +20,12 @@ min-players: 2
 max-players: 20
 
 # Maximale Lebenspunkte (Vanilla-Standard = 20.0)
-max-health: 40.0
+max-health: 20.0
 
 # ── Timing ───────────────────────────────────────────────────────────────────
 
 # Sekunden für den Countdown bevor das Spiel startet
-countdown-seconds: 60
+countdown-seconds: 30
 
 # Sekunden Einfrierzeit nach dem Teleport bis die Spieler loslaufen dürfen
 game-start-delay: 5

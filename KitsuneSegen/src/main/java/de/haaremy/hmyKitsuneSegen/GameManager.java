@@ -272,6 +272,24 @@ public class GameManager {
         checkWinCondition();
     }
 
+    public void giveSpectatorItems(Player player) {
+        player.getInventory().clear();
+
+        ItemStack leave = new ItemStack(Material.RED_DYE);
+        ItemMeta lm = leave.getItemMeta();
+        lm.setDisplayName(ChatColor.RED + "§lVerlassen");
+        lm.setLore(List.of(ChatColor.GRAY + "Zurück zur Lobby"));
+        leave.setItemMeta(lm);
+        player.getInventory().setItem(0, leave);
+
+        ItemStack report = new ItemStack(Material.BOOK);
+        ItemMeta rm = report.getItemMeta();
+        rm.setDisplayName(ChatColor.YELLOW + "§lReport");
+        rm.setLore(List.of(ChatColor.GRAY + "Spieler melden"));
+        report.setItemMeta(rm);
+        player.getInventory().setItem(8, report);
+    }
+
     private void checkWinCondition() {
         if (!isRunning()) return;
         if (alivePlayers.size() <= 1) {

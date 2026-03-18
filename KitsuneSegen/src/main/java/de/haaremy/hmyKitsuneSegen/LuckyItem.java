@@ -5,6 +5,7 @@ import java.util.Random;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
@@ -12,6 +13,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -22,8 +24,16 @@ public class LuckyItem implements Listener {
 
     private final HmyKitsuneSegen plugin;
 
+    // NamespacedKeys for legendary item identification
+    public final NamespacedKey KEY_LEG_BOOTS;
+    public final NamespacedKey KEY_LEG_HELMET;
+    public final NamespacedKey KEY_LEG_ELYTRA;
+
     public LuckyItem(HmyKitsuneSegen plugin) {
         this.plugin = plugin;
+        this.KEY_LEG_BOOTS  = new NamespacedKey(plugin, "legendary_boots");
+        this.KEY_LEG_HELMET = new NamespacedKey(plugin, "legendary_helmet");
+        this.KEY_LEG_ELYTRA = new NamespacedKey(plugin, "legendary_elytra");
     }
 
      // Kategorien
