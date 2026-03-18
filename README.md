@@ -219,9 +219,9 @@ Lobby-server plugin with hotbar navigation, cosmetics, minigames, economy displa
   - Slot 7: Geschwindigkeit (feather) – cycle walk speed (`hmy.lobby.speed`)
   - Slot 8: Sprung Boost (rocket) – launch into the air (`hmy.lobby.rocket`)
 
-- **My-Menü** – sub-menus: Partikel, Cosmetics (auras), Sprache, Köpfe, Mounts, Einstellungen
+- **My-Menü** – sub-menus: Partikel, Cosmetics (auras), Köpfe, Mounts, Einstellungen, Infos
   - Slot 4: Meine Freunde (player head) – opens friends GUI
-  - Slot 26: Infos (enchanted book) – help / info
+  - Slot 13: Infos (enchanted book) – help / info (previously slot 26)
 
 - **Navigator**
   - Configurable server entries from `hmyServer.conf`
@@ -231,6 +231,7 @@ Lobby-server plugin with hotbar navigation, cosmetics, minigames, economy displa
 - **Einstellungen** (Settings)
   - Walk speed toggle (3 levels)
   - Player visibility toggle – `hmy.lobby.visibility`
+  - Language selection (Deutsch / English) – moved from My-Menü to Einstellungen; language menu back button returns to Einstellungen
 
 - **Mounts** – player-controlled mounts (ground and flying); AI disabled via pathfinder clearing each tick; full 3D steering for flying mobs
 
@@ -298,4 +299,112 @@ Lobby-server plugin with hotbar navigation, cosmetics, minigames, economy displa
 
 ## KitsuneSegen (Game)
 
-*(Documentation pending)*
+Fortnite-style battle-royale game on its own Paper server. Players join a safe hub world and are dropped into a game world to fight until one remains.
+
+### Game Flow
+
+1. Players join → teleported to `hub` world (Adventure mode, no damage)
+2. Countdown starts automatically when `min-players` is reached (configurable)
+3. Additional players can join until `max-players` or the game starts
+4. On game start the server is locked; latecomers are sent to the lobby
+5. Players spawn via the configured spawn mode, then fight
+6. Last player alive wins; results are broadcast and everyone returns to hub
+7. The game world is reset from a backup after each round
+
+### Spawn Modes
+
+| Mode | Behaviour |
+|------|-----------|
+| `random` | Players are distributed across Obsidian marker blocks scanned at startup |
+| `flight` | All players teleport to world spawn at `elytra-height` Y with an Elytra equipped; Elytra is removed on first ground contact |
+
+### In-Game Rules
+
+- **Slot 0 (Axt)** – given at spawn, cannot be moved or dropped
+- **Block protection** – only blocks listed in `breakable-blocks` (config whitelist) can be broken or placed
+- **No hunger** – food level stays full; no hunger damage; no natural health regen
+- **Health** – restored only by specific items (healing potions)
+- **Mob spawning** – disabled in the game world
+- **No public chat** – hub chat is suppressed; DM hint shown instead
+
+### Chests
+
+- Marker blocks (`chest-spawn-block`) are scanned at startup; 60 % spawn as chests on game start
+- 20 % chance of an Ender Chest (special loot) vs normal Chest
+- Right-clicking a chest shows a bossbar loading animation; on completion items drop naturally and the block is removed
+
+### Weapons & Items
+
+Four weapon categories, each as a Crossbow with hidden enchantments driving its behaviour:
+
+| Category | Behaviour |
+|----------|-----------|
+| Multishot | Short range, many arrows |
+| Speedshot | Single shots, fast reload, lower damage |
+| Distanceshot | Single shots, medium range, higher damage |
+| Precisionshot | Single shot, very slow reload, long range, very high damage |
+
+Each weapon has five rarities (Common → Legendary) scaling damage / speed. Arrows are category-specific and must match the weapon type.
+
+Special items: splash healing potions, splash damage potions, slimeballs (jump booster).
+
+### Death & Spectator
+
+- Death message suppressed; placement shown as title (`Platz X / Y`)
+- Inventory cleared; two items given:
+  - Slot 0: **Red Dye** "Verlassen" – sends player to lobby
+  - Slot 8: **Book** "Report" – shows `/report` instruction
+- Player enters Spectator mode and is hidden from alive players
+- Spectators can see each other; dead spectators remain until the round ends
+
+### Scoreboard (Sidebar)
+
+| Line | Content |
+|------|---------|
+| Title | `Kitsune Segen` |
+| Am Leben | Remaining alive players |
+| Kills | This player's kill count |
+| Minimap | 7×5 text minimap (8-block cells); `@` = self, `●` = enemy, `▪` = solid, `·` = open; updates every second |
+
+### World Reset
+
+After each game, the game world folder is deleted and replaced with the backup from `world-backup-path`, then reloaded. If no backup exists the world is simply reloaded without a reset.
+
+### Commands
+
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/game start` | Force-start the game immediately | `hmy.kitsunesegen.admin` |
+| `/game countdown` | Start the countdown manually | `hmy.kitsunesegen.admin` |
+| `/game stop` | Force-end the game and return everyone to hub | `hmy.kitsunesegen.admin` |
+| `/game info` | Show game state and alive player list | `hmy.kitsunesegen.admin` |
+| `/game kick <player>` | Eliminate a player from the current game | `hmy.kitsunesegen.admin` |
+| `/game reset` | Reset state without world restart | `hmy.kitsunesegen.admin` |
+
+### Config (`config.yml`)
+
+```yaml
+hub-world:          "hub"
+game-world:         "game"
+lobby-server:       "lobby"
+world-backup-path:  "world_backups/game"
+min-players:        2
+max-players:        20
+max-health:         40.0
+countdown-seconds:  60
+spawn-mode:         "random"   # or "flight"
+elytra-height:      100
+spawn-block:        "OBSIDIAN"
+chest-spawn-block:  "OAK_PLANKS"
+breakable-blocks:
+  - "OAK_PLANKS"
+  - "COBBLESTONE"
+  # …
+```
+
+### Permissions
+
+| Permission | Default | Description |
+|-----------|---------|-------------|
+| `hmy.kitsunesegen.admin` | `op` | Full access to all `/game` sub-commands |
+| `hmy.kitsunesegen.play` | `true` | Allowed to participate in the game |

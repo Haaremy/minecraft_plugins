@@ -249,11 +249,10 @@ public class PlayerEventListener implements Listener {
                 case 4  -> requestFriendsList(player);
                 case 10 -> plugin.getCosmeticMenuListener().openParticleMenu(player);
                 case 11 -> plugin.getCosmeticMenuListener().openCosmeticsMenu(player);
-                case 13 -> openLanguageMenu(player);
+                case 13 -> { player.closeInventory(); player.performCommand("help"); }
                 case 15 -> plugin.getCosmeticMenuListener().openHeadsMenu(player);
                 case 16 -> plugin.getCosmeticMenuListener().openMountMenu(player);
                 case 22 -> openUserSettingsMenu(player);
-                case 26 -> { player.closeInventory(); player.performCommand("help"); }
             }
             if (slot >= 0 && slot < 27) player.playSound(player, Sound.UI_BUTTON_CLICK, 0.5f, 1f);
         } else if (title.contains("Sprache")) {
@@ -373,13 +372,17 @@ public class PlayerEventListener implements Listener {
         fillGlass(inv);
 
         int lvl = playerSpeedLevel.getOrDefault(player.getUniqueId(), 0);
-        inv.setItem(11, createItem(Material.FEATHER, "§eGeschwindigkeit",
+        inv.setItem(10, createItem(Material.FEATHER, "§eGeschwindigkeit",
                 List.of("§7Aktuell: " + SPEED_LABELS[lvl], "", "§aKlicke zum Wechseln!")));
 
         boolean hidden = hiddenPlayers.contains(player.getUniqueId());
-        inv.setItem(13, createItem(Material.ENDER_PEARL,
+        inv.setItem(12, createItem(Material.ENDER_PEARL,
                 hidden ? "§bSpieler §8| §cAusgeblendet" : "§bSpieler §8| §aSichtbar",
                 List.of("§7Klicke zum Wechseln")));
+
+        inv.setItem(14, createItem(Material.DIAMOND, "§b§lSprache §8| §7Language",
+                List.of("§7Deine Sprache: §b" + language.getPlayerLanguage(player),
+                        "", "§e» Klicke zum Ändern!")));
 
         inv.setItem(22, createItem(Material.ARROW, "§cZurück", List.of("§7Zum My-Menü")));
         player.openInventory(inv);
@@ -387,8 +390,9 @@ public class PlayerEventListener implements Listener {
 
     private void handleUserSettingsClick(Player player, int slot) {
         switch (slot) {
-            case 11 -> { toggleSpeed(player);            openUserSettingsMenu(player); }
-            case 13 -> { togglePlayerVisibility(player); openUserSettingsMenu(player); }
+            case 10 -> { toggleSpeed(player);            openUserSettingsMenu(player); }
+            case 12 -> { togglePlayerVisibility(player); openUserSettingsMenu(player); }
+            case 14 -> openLanguageMenu(player);
             case 22 -> openHeadMenu(player);
         }
     }
@@ -396,7 +400,7 @@ public class PlayerEventListener implements Listener {
     // ── Language ──────────────────────────────────────────────────────────────
 
     private void handleLanguageClick(Player player, ItemStack clicked, int slot) {
-        if (slot == 18) { openHeadMenu(player); return; }
+        if (slot == 18) { openUserSettingsMenu(player); return; }
         if (!clicked.hasItemMeta()) return;
 
         String name = LegacyComponentSerializer.legacySection().serialize(clicked.getItemMeta().displayName());
@@ -409,7 +413,7 @@ public class PlayerEventListener implements Listener {
     private void openLanguageMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 27, Component.text("§8» §bWähle deine Sprache"));
         fillGlass(inv);
-        inv.setItem(18, createItem(Material.ARROW, "§cZurück", List.of("§7Zum My-Menü")));
+        inv.setItem(18, createItem(Material.ARROW, "§cZurück", List.of("§7Zu den Einstellungen")));
         inv.setItem(11, createCustomHead(
                 "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWU3ODk5YjQ4ZTM4ZTk1NmZlYzE5YjYyYmFjOTExYWZlY2E5NWYzM2M3Mjg4ZTUzNjgzNjQ4ZWQwODZlMmIifX19",
                 "§eDeutsch"));
@@ -495,17 +499,14 @@ public class PlayerEventListener implements Listener {
                 List.of("§7Wähle einen Effekt,", "§7der dir folgt.", "", "§aKlicke zum Öffnen!")));
         inv.setItem(11, createItem(Material.LEATHER_CHESTPLATE, "§d§lCosmetics",
                 List.of("§7Auren & Status-Effekte.", "", "§aKlicke zum Öffnen!")));
-        inv.setItem(13, createItem(Material.DIAMOND,            "§b§lSprache §8| §7Language",
-                List.of("§7Deine Sprache: §b" + language.getPlayerLanguage(player),
-                        "", "§e» Klicke zum Ändern!")));
+        inv.setItem(13, createItem(Material.ENCHANTED_BOOK,      "§b§lInfos",
+                List.of("§7Hilfe & Befehle.", "", "§aKlicke zum Öffnen!")));
         inv.setItem(15, createItem(Material.ZOMBIE_HEAD,        "§a§lKöpfe",
                 List.of("§7Setze dir einen Kopf auf.", "", "§aKlicke zum Öffnen!")));
         inv.setItem(16, createItem(Material.SADDLE,             "§c§lMounts",
                 List.of("§7Reite auf coolen Tieren.", "", "§aKlicke zum Öffnen!")));
         inv.setItem(22, createItem(Material.REDSTONE_TORCH,     "§7§lEinstellungen",
-                List.of("§7Geschwindigkeit & Sichtbarkeit.")));
-        inv.setItem(26, createItem(Material.ENCHANTED_BOOK,     "§b§lInfos",
-                List.of("§7Hilfe & Befehle.", "", "§aKlicke zum Öffnen!")));
+                List.of("§7Geschwindigkeit, Sprache & Sichtbarkeit.")));
 
         player.openInventory(inv);
         player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1.2f);

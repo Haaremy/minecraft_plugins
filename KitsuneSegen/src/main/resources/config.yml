@@ -1,9 +1,60 @@
-game_spawn_locations:
-  - world: "game_kitsuneSegen_50"
-    x: 0
-    y: 70
-    z: 0
-  - world: "game_kitsuneSegen_50"
-    x: 10
-    y: 70
-    z: 10
+# ─── Kitsune Segen Konfiguration ────────────────────────────────────────────────
+
+# Namen der Welten auf diesem Server
+hub-world:  "hub"
+game-world: "game"
+
+# Proxy-Server-Name der Lobby (BungeeCord/Velocity)
+lobby-server: "lobby"
+
+# Backup-Pfad der Spielwelt (absolut oder relativ zum Server-Verzeichnis)
+# Wird nach jedem Spiel verwendet, um die Welt zurückzusetzen
+world-backup-path: "world_backups/game"
+
+# ── Spieler ──────────────────────────────────────────────────────────────────
+
+# Mindestanzahl Spieler, um den Countdown zu starten
+min-players: 2
+
+# Maximale Spieleranzahl pro Runde
+max-players: 20
+
+# Maximale Lebenspunkte (Vanilla-Standard = 20.0)
+max-health: 40.0
+
+# ── Timing ───────────────────────────────────────────────────────────────────
+
+# Sekunden für den Countdown bevor das Spiel startet
+countdown-seconds: 60
+
+# Sekunden Einfrierzeit nach dem Teleport bis die Spieler loslaufen dürfen
+game-start-delay: 5
+
+# ── Spawn-Modus ───────────────────────────────────────────────────────────────
+# "random" → Spieler werden auf Obsidian-Blöcken verteilt
+# "flight"  → Spieler starten mit Elytra in elytra-height Höhe über dem Spawn
+spawn-mode: "random"
+
+# Höhe (Y) für den Elytra-Flugstart (nur bei spawn-mode: flight)
+elytra-height: 100
+
+# ── Blöcke ────────────────────────────────────────────────────────────────────
+
+# Block-Typ der als Spieler-Spawnpunkt markiert ist (wird beim Scan gesucht)
+spawn-block: "OBSIDIAN"
+
+# Block-Typ der als möglicher Truhen-Spawnort markiert ist
+chest-spawn-block: "OAK_PLANKS"
+
+# Blöcke die Spieler abbauen dürfen (Whitelist)
+breakable-blocks:
+  - "OAK_PLANKS"
+  - "OAK_LOG"
+  - "BIRCH_LOG"
+  - "COBBLESTONE"
+  - "STONE"
+  - "DIRT"
+  - "GRAVEL"
+  - "SAND"
+  - "GLASS"
+  - "SNOW_BLOCK"

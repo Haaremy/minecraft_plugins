@@ -1,6 +1,10 @@
 package de.haaremy.hmypaper.parkour;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -8,6 +12,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.block.Action;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +33,8 @@ public class ParkourListener implements Listener {
     private final Map<UUID, Location> lastBlock       = new HashMap<>();
     // uuid → Y of last checkpoint/start (for fall detection)
     private final Map<UUID, Double>   checkpointY     = new HashMap<>();
+    // uuid → saved inventory contents before parkour
+    private final Map<UUID, ItemStack[]> savedInventory = new HashMap<>();
 
     public ParkourListener(ParkourManager parkourManager) {
         this.parkourManager = parkourManager;
@@ -79,21 +87,51 @@ public class ParkourListener implements Listener {
                 String time  = formatTime(elapsed);
                 player.sendMessage("§6§l» §eParkour §6" + parkour + " §eabgeschlossen! §aZeit: §d" + time);
                 player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
+                Location spawn = player.getWorld().getSpawnLocation();
                 resetPlayer(player);
+                player.teleport(spawn);
                 return;
             }
         }
 
         // Start check
         String startParkour = parkourManager.getParkourByStart(to);
-        if (startParkour != null) {
+        if (startParkour != null && !activeParkour.containsKey(uuid)) {
             activeParkour.put(uuid, startParkour);
             checkpoint.put(uuid, -1);
             checkpointY.put(uuid, to.getY());
             startTime.put(uuid, System.currentTimeMillis());
+
+            // Save inventory, clear it, give abort item
+            savedInventory.put(uuid, player.getInventory().getContents().clone());
+            player.getInventory().clear();
+            ItemStack abortItem = new ItemStack(Material.RED_DYE);
+            ItemMeta meta = abortItem.getItemMeta();
+            if (meta != null) {
+                meta.displayName(Component.text("Parkour abbrechen").color(NamedTextColor.RED));
+                abortItem.setItemMeta(meta);
+            }
+            player.getInventory().setItem(0, abortItem);
+
             player.sendMessage("§6§l» §eParkour §6" + startParkour + " §egestartet! §7Viel Erfolg!");
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1.5f);
         }
+    }
+
+    // ── Abort item click ──────────────────────────────────────────────────────
+
+    @EventHandler
+    public void onAbortItemUse(PlayerInteractEvent event) {
+        if (event.getAction() == Action.PHYSICAL) return;
+        Player player = event.getPlayer();
+        if (!activeParkour.containsKey(player.getUniqueId())) return;
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType() != Material.RED_DYE || !item.hasItemMeta()) return;
+        String displayName = LegacyComponentSerializer.legacySection()
+                .serialize(item.getItemMeta().displayName());
+        if (!displayName.contains("Parkour abbrechen")) return;
+        event.setCancelled(true);
+        quitParkour(player);
     }
 
     // ── Pressure-plate checkpoints (PlayerInteractEvent, PHYSICAL) ────────────
@@ -136,9 +174,8 @@ public class ParkourListener implements Listener {
         resetPlayer(player);
         player.sendMessage("§cDu hast den Parkour §e" + name + " §cabgebrochen.");
 
-        // Teleport back to start
-        Location start = parkourManager.getStart(name);
-        if (start != null) player.teleport(start);
+        // Teleport to world spawn
+        player.teleport(player.getWorld().getSpawnLocation());
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -172,6 +209,13 @@ public class ParkourListener implements Listener {
         checkpointY.remove(uuid);
         startTime.remove(uuid);
         lastBlock.remove(uuid);
+
+        // Restore saved inventory
+        ItemStack[] saved = savedInventory.remove(uuid);
+        if (saved != null) {
+            player.getInventory().clear();
+            player.getInventory().setContents(saved);
+        }
     }
 
     private String formatTime(long millis) {

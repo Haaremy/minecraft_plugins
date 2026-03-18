@@ -11,80 +11,68 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitTask;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
+/**
+ * Handles right-clicking chests on the game map.
+ * Shows a bossbar loading animation; on completion items drop and the block is removed.
+ */
 public class PlayerChestClick implements Listener {
 
     private final HmyKitsuneSegen plugin;
-    private BossBar bossBar;
-    private final HmyLanguageManager language;
-    private final String lang;
-    private boolean gameStarted = false;
-    private String gameworld;
-    private String hubworld;
+    private final Map<UUID, BukkitTask> activeTasks = new HashMap<>();
 
-    public PlayerChestClick(HmyKitsuneSegen plugin, HmyLanguageManager language) {
+    public PlayerChestClick(HmyKitsuneSegen plugin) {
         this.plugin = plugin;
-        this.language = language;
-        lang = language.getMessage("language","Sprache");
     }
 
-     @EventHandler
+    @EventHandler
     public void onChestClick(PlayerInteractEvent event) {
-        // Überprüfen, ob der Spieler rechtsklickt
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        var block = event.getClickedBlock();
+        if (block == null) return;
 
-        // Überprüfen, ob der angeklickte Block existiert und eine Truhe ist
-        if (event.getClickedBlock() == null || (event.getClickedBlock().getType() != Material.CHEST && event.getClickedBlock().getType() != Material.ENDER_CHEST)) return;
+        Material type = block.getType();
+        if (type != Material.CHEST && type != Material.ENDER_CHEST) return;
+
         event.setCancelled(true);
-        // Den Spieler ermitteln
+
         Player player = event.getPlayer();
-        Location clickedLocation = event.getClickedBlock().getLocation();
-        Inventory customInventory = plugin.getPlayerEventListener().getCustomChest(clickedLocation);
+        if (player == null) return;
+        Location loc = block.getLocation().clone();
 
+        if (!plugin.getChestManager().hasChest(loc)) return;
+        if (activeTasks.containsKey(player.getUniqueId())) return;
 
-// BossBar erstellen
-        BossBar bossBar = Bukkit.createBossBar("Öffne Truhe...", BarColor.BLUE, BarStyle.SOLID);
-        bossBar.addPlayer(player);
-        bossBar.setProgress(0.0);
+        BossBar bar = Bukkit.createBossBar("§b§lTruhe öffnen…", BarColor.BLUE, BarStyle.SOLID);
+        bar.addPlayer(player);
+        bar.setProgress(0.0);
 
-            // Ladeanimation (BossBar aktualisieren)
-    Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
-        double progress = 0.0;
+        double[] progress = {0.0};
 
-        @Override
-        public void run() {
-            progress += 0.1;
-            if (progress >= 1.0) {
-                // Ladeanimation abgeschlossen, BossBar entfernen
-                bossBar.removePlayer(player);
-                bossBar.setVisible(false);
-
-                // Truhe öffnen (benutzerdefiniertes Inventar)
-                if (customInventory != null) {
-                    for (ItemStack item : customInventory.getContents()) {
-                        if (item != null) {
-                            clickedLocation.getWorld().dropItemNaturally(clickedLocation, item);
-                        }
-                    }
-                    customInventory.clear(); // Inhalte entfernen
-                    clickedLocation.getBlock().setType(Material.AIR); // Truhe entfernen
-                }
-
-                // Scheduler stoppen
-                Bukkit.getScheduler().cancelTask(this.hashCode());
+        BukkitTask[] taskRef = new BukkitTask[1];
+        taskRef[0] = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            progress[0] += 0.1;
+            if (progress[0] >= 1.0) {
+                bar.removePlayer(player);
+                bar.setVisible(false);
+                activeTasks.remove(player.getUniqueId());
+                taskRef[0].cancel();
+                plugin.getChestManager().openChest(loc);
             } else {
-                bossBar.setProgress(Math.min(progress, 1.0)); // Sicherstellen, dass progress <= 1.0
-
-                // Partikel hinzufügen
-                clickedLocation.getWorld().spawnParticle(
-                    org.bukkit.Particle.END_ROD,
-                    clickedLocation.clone().add(0.5, 1.0, 0.5), 5
-                );
+                bar.setProgress(Math.min(progress[0], 1.0));
+                if (loc.getWorld() != null) {
+                    loc.getWorld().spawnParticle(
+                            org.bukkit.Particle.END_ROD,
+                            loc.clone().add(0.5, 1.0, 0.5), 5);
+                }
             }
-        }
-    }, 0L, 5L); // Start sofort, alle 5 Ticks (0,25 Sekunden) aktualisieren
-}
+        }, 0L, 5L);
+
+        activeTasks.put(player.getUniqueId(), taskRef[0]);
+    }
 }

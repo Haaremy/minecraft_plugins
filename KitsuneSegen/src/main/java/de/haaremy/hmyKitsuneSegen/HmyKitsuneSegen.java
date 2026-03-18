@@ -1,93 +1,98 @@
 package de.haaremy.hmykitsunesegen;
 
-import java.nio.file.Path;
-import java.util.List;
-
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import net.luckperms.api.LuckPerms;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HmyKitsuneSegen extends JavaPlugin {
 
-    private LuckPerms luckPerms;
-    private HmyConfigManager configManager;
-    private HmyLanguageManager language;
-    private PlayerEventListener playerEventListener;
-    private List<Location> locations;
-    private List<Location> chests;
-    private PlayerChestClick playerChestClick;
-    private LuckyItem luckyItem;
+    private GameConfig       gameConfig;
+    private GameManager      gameManager;
+    private ChestManager     chestManager;
+    private ScoreboardManager scoreboardManager;
+    private LuckyItem        luckyItem;
+    private WorldReset       worldReset;
+
+    // Scanned at startup (sync, on the game world)
+    private List<Location> spawnPoints  = new ArrayList<>();
+    private List<Location> chestSpots   = new ArrayList<>();
 
     @Override
-public void onEnable() {
-    getLogger().info("Haaremy: hmyKitsuneSegen Plugin wird aktiviert...");
+    public void onEnable() {
+        getLogger().info("KitsuneSegen wird aktiviert…");
 
-    RegisteredServiceProvider<LuckPerms> provider = getServer().getServicesManager().getRegistration(LuckPerms.class);
-    if (provider != null) {
-        this.luckPerms = provider.getProvider();
-    } else {
-        getLogger().severe("Haaremy: LuckPerms konnte nicht geladen werden! KistuneSegen wird deaktiviert.");
-        getServer().getPluginManager().disablePlugin(this);
-        return;
+        // ── Config ─────────────────────────────────────────────────────────────
+        saveDefaultConfig();
+        this.gameConfig = new GameConfig(getConfig());
+
+        // ── Core systems ───────────────────────────────────────────────────────
+        this.luckyItem        = new LuckyItem(this);
+        this.chestManager     = new ChestManager(this);
+        this.scoreboardManager = new ScoreboardManager(this);
+        this.gameManager      = new GameManager(this);
+        this.worldReset       = new WorldReset(this);
+
+        // ── Plugin messaging (BungeeCord) ──────────────────────────────────────
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+
+        // ── Worlds ─────────────────────────────────────────────────────────────
+        ensureWorldLoaded(gameConfig.getHubWorld());
+        ensureWorldLoaded(gameConfig.getGameWorld());
+
+        // ── Block scanning (done async, applied on main thread) ────────────────
+        World gameWorld = Bukkit.getWorld(gameConfig.getGameWorld());
+        if (gameWorld != null) {
+            getServer().getScheduler().runTask(this, () -> {
+                getLogger().info("Scanne Spielwelt nach Spawnpunkten und Truhen…");
+                spawnPoints = ChestManager.findBlocks(gameWorld, gameConfig.getSpawnBlock(), true);
+                chestSpots  = ChestManager.findBlocks(gameWorld, gameConfig.getChestSpawnBlock(), false);
+                getLogger().info("Gefunden: " + spawnPoints.size() + " Spawnpunkte, "
+                        + chestSpots.size() + " Truppenplätze.");
+            });
+        }
+
+        // ── Event listeners ────────────────────────────────────────────────────
+        getServer().getPluginManager().registerEvents(new HubListener(this),  this);
+        getServer().getPluginManager().registerEvents(new GameListener(this),  this);
+        getServer().getPluginManager().registerEvents(new PlayerChestClick(this), this);
+
+        // ── Commands ───────────────────────────────────────────────────────────
+        ComGame comGame = new ComGame(this);
+        var cmd = getCommand("game");
+        if (cmd != null) {
+            cmd.setExecutor(comGame);
+            cmd.setTabCompleter(comGame);
+        }
+
+        getLogger().info("KitsuneSegen aktiviert!");
     }
 
-    //saveDefaultConfig();
-    //gameWorldManager = new GameWorldManager(getDataFolder());
-
-     // Datenverzeichnis und Konfigurationsmanager initialisieren
-        var logger = getLogger();
-        Path dataDirectory = getDataFolder().toPath().getParent();
-        this.configManager = new HmyConfigManager(logger,dataDirectory);
-        logger.info("Haaremy: Paper Config wird initialisiert.");
-        this.language = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
-        logger.info("Haaremy: Paper Sprachen initialisiert.");
-
-    // Event-Listener registrieren
-    String gameworld = "game";
-    String hubworld = "hub";
-    playerEventListener = new PlayerEventListener(this, language, gameworld, hubworld);
-    playerChestClick = new PlayerChestClick(this, language);
-    luckyItem = new LuckyItem(this);
-    getServer().getPluginManager().registerEvents(playerEventListener, this);
-    getServer().getPluginManager().registerEvents(playerChestClick, this);
-    playerEventListener.loadWorlds(gameworld);
-    //Bukkit.getScheduler().runTask(this, () -> {
-    locations = playerEventListener.findAndLogBlocks(gameworld, Material.OBSIDIAN, 0);
-    chests = playerEventListener.findAndLogBlocks(gameworld, Material.OAK_PLANKS, 1);
-    
-    //});
-
-    getLogger().info("Haaremy: KitsuneSegen wurde erfolgreich aktiviert!");
-}
     @Override
     public void onDisable() {
-        getLogger().info("Haaremy: KitsuneSegen deaktiviert!");
+        scoreboardManager.stopUpdating();
+        getLogger().info("KitsuneSegen deaktiviert.");
     }
 
-    public LuckPerms getLuckPerms() {
-        return luckPerms;
+    // ── Getters ────────────────────────────────────────────────────────────────
+
+    public GameConfig      getGameConfig()       { return gameConfig; }
+    public GameManager     getGameManager()      { return gameManager; }
+    public ChestManager    getChestManager()     { return chestManager; }
+    public ScoreboardManager getScoreboardManager() { return scoreboardManager; }
+    public LuckyItem       getLuckItem()         { return luckyItem; }
+    public WorldReset      getWorldReset()       { return worldReset; }
+
+    public List<Location>  getSpawnPoints()      { return spawnPoints; }
+    public List<Location>  getChestSpots()       { return chestSpots; }
+
+    // ── Utilities ──────────────────────────────────────────────────────────────
+
+    private void ensureWorldLoaded(String name) {
+        if (Bukkit.getWorld(name) == null) {
+            getLogger().info("Lade Welt: " + name);
+            Bukkit.createWorld(new WorldCreator(name));
+        }
     }
-
-    public List<Location> getLocations(){
-        return locations;
-    }
-
-    public List<Location> getChests(){
-        return chests;
-    }
-
-    public PlayerEventListener getPlayerEventListener(){
-        return playerEventListener;
-    }
-
-    public LuckyItem getLuckItem(){
-        return luckyItem;
-    }
-
-
-
-    
 }

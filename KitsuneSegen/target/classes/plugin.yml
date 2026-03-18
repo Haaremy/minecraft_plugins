@@ -1,8 +1,25 @@
 name: hmyKitsuneSegen
-version: "1.0"
+version: "2.0"
 main: de.haaremy.hmykitsunesegen.HmyKitsuneSegen
-api-version: 1.19
+api-version: 1.20
 depend: [LuckPerms]
-description: Ein Plugin von @Haaremy als Kampfspiel auf Mythologischer Grundlage.
+description: Fortnite-ähnliches Kampfspiel auf mythologischer Grundlage.
 author: Haaremy
 website: https://haaremy.de
+
+commands:
+  game:
+    description: Kitsune Segen Spielverwaltung
+    usage: /game <start|countdown|stop|info|kick|reset>
+    permission: hmy.kitsunesegen.admin
+
+permissions:
+  hmy.kitsunesegen.admin:
+    description: Vollzugriff auf alle /game Befehle
+    default: op
+  hmy.kitsunesegen.play:
+    description: Erlaubt die Teilnahme am Spiel
+    default: true
+  hmy.kitsunesegen.inventory.edit:
+    description: Erlaubt das Bearbeiten des Inventars im Spiel (Debug)
+    default: false
