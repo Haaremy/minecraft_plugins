@@ -5,7 +5,7 @@
 
     <groupId>de.haaremy</groupId>
     <artifactId>hmyLobby</artifactId>
-    <version>17</version>
+    <version>18</version>
     <packaging>jar</packaging>
 
     <name>hmyLobby</name>
@@ -37,7 +37,6 @@
     </dependencies>
 
     <build>
-        <finalName>hmyLobby-3</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

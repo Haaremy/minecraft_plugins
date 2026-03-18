@@ -62,6 +62,17 @@ public class PlayerEventListener implements Listener {
         player.setWalkSpeed(SPEED_VALUES[0]);
         giveLobbyItems(player);
 
+        // Spawn-Teleport aus lobby.yml (teleport-points.spawn)
+        plugin.getConfigManager().getTeleportPoints().stream()
+                .filter(tp -> tp.id().equals("spawn"))
+                .findFirst()
+                .ifPresent(tp -> {
+                    World world = Bukkit.getWorld(tp.world());
+                    if (world != null) {
+                        player.teleport(new Location(world, tp.x(), tp.y(), tp.z(), tp.yaw(), tp.pitch()));
+                    }
+                });
+
         // BossBar anzeigen
         BossBar bar = BossBar.bossBar(buildBossBarText(), 1.0f, BossBar.Color.PINK, BossBar.Overlay.PROGRESS);
         activeBossBars.put(player.getUniqueId(), bar);
