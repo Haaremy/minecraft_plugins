@@ -235,12 +235,12 @@ public class PlayerEventListener implements Listener {
             handleTeleportMenuClick(player, clicked);
         } else if (title.contains("MY-MENÜ")) {
             switch (slot) {
+                case 4  -> requestFriendsList(player);
                 case 10 -> plugin.getCosmeticMenuListener().openParticleMenu(player);
                 case 11 -> plugin.getCosmeticMenuListener().openCosmeticsMenu(player);
                 case 13 -> openLanguageMenu(player);
                 case 15 -> plugin.getCosmeticMenuListener().openHeadsMenu(player);
                 case 16 -> plugin.getCosmeticMenuListener().openMountMenu(player);
-                case 20 -> requestFriendsList(player);
                 case 22 -> openUserSettingsMenu(player);
                 case 26 -> { player.closeInventory(); player.performCommand("help"); }
             }
@@ -478,7 +478,8 @@ public class PlayerEventListener implements Listener {
         Inventory inv = Bukkit.createInventory(null, 27, Component.text("§b§lMY-MENÜ §8» §7Profile"));
         fillGlass(inv);
 
-        inv.setItem(4,  getPlayerHead(player, "§6§lDein Profil §8(§7" + player.getName() + "§8)"));
+        inv.setItem(4,  getPlayerHead(player, "§a§lMeine Freunde §8(§7" + player.getName() + "§8)",
+                List.of("§7Klicke zum Öffnen deiner Freundesliste.", "§8/friend add <Spieler>", "", "§eShift+Klick im Menü = DM senden")));
         inv.setItem(10, createItem(Material.BLAZE_POWDER,       "§e§lPartikel",
                 List.of("§7Wähle einen Effekt,", "§7der dir folgt.", "", "§aKlicke zum Öffnen!")));
         inv.setItem(11, createItem(Material.LEATHER_CHESTPLATE, "§d§lCosmetics",
@@ -490,9 +491,6 @@ public class PlayerEventListener implements Listener {
                 List.of("§7Setze dir einen Kopf auf.", "", "§aKlicke zum Öffnen!")));
         inv.setItem(16, createItem(Material.SADDLE,             "§c§lMounts",
                 List.of("§7Reite auf coolen Tieren.", "", "§aKlicke zum Öffnen!")));
-        inv.setItem(20, createItem(Material.PAPER,              "§a§lMeine Freunde",
-                List.of("§7Freundesliste & Verwaltung.", "", "§aKlicke zum Öffnen!",
-                        "§8Shift+Klick im Menü = DM senden")));
         inv.setItem(22, createItem(Material.REDSTONE_TORCH,     "§7§lEinstellungen",
                 List.of("§7Geschwindigkeit & Sichtbarkeit.")));
         inv.setItem(26, createItem(Material.ENCHANTED_BOOK,     "§b§lInfos",
@@ -556,10 +554,15 @@ public class PlayerEventListener implements Listener {
     }
 
     private ItemStack getPlayerHead(Player p, String name) {
+        return getPlayerHead(p, name, List.of());
+    }
+
+    private ItemStack getPlayerHead(Player p, String name, List<String> lore) {
         ItemStack head = new ItemStack(Material.PLAYER_HEAD);
         head.editMeta(SkullMeta.class, meta -> {
             meta.setOwningPlayer(p);
             meta.displayName(Component.text(name));
+            meta.lore(lore.stream().map(Component::text).toList());
         });
         return head;
     }

@@ -52,6 +52,7 @@ public class HmyLobby extends JavaPlugin {
 
         this.playerEventListener = new PlayerEventListener(this, language);
         getServer().getPluginManager().registerEvents(this.playerEventListener, this);
+        getServer().getPluginManager().registerEvents(new AgbListener(this, luckPerms), this);
 
         CosmeticMenuListener cosmeticListener = new CosmeticMenuListener(this);
         getServer().getPluginManager().registerEvents(cosmeticListener, this);

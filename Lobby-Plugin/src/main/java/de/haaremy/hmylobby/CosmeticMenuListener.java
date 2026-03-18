@@ -358,7 +358,7 @@ public class CosmeticMenuListener implements Listener {
 
         org.bukkit.entity.Entity mount = player.getWorld().spawnEntity(player.getLocation(), type);
         if (mount instanceof org.bukkit.entity.LivingEntity living) {
-            living.setAI(false);            // Kein automatisches Laufen – Steuerung via PlayerInput-Task
+            living.setAI(true);             // Physik (Gravitation, Kollision) bleibt aktiv
             living.setInvulnerable(true);
             living.setCustomNameVisible(false);
             if (living instanceof org.bukkit.entity.Steerable s) s.setSaddle(true);
@@ -383,22 +383,30 @@ public class CosmeticMenuListener implements Listener {
                     return;
                 }
 
-                double speed = player.isSprinting() ? 0.5 : 0.25;
+                // Zufällige KI-Bewegung jedes Tick unterdrücken
+                if (mount instanceof org.bukkit.entity.Mob mob) {
+                    mob.getPathfinder().stopPathfinding();
+                }
+
+                double speed = player.isSprinting() ? 0.45 : 0.25;
 
                 if (flying) {
                     // Vollständige 3D-Steuerung: Spieler schaut in Richtung Ziel
                     org.bukkit.util.Vector dir = player.getLocation().getDirection().normalize();
                     mount.setVelocity(dir.multiply(speed));
                 } else {
-                    // Boden-Mount: horizontale Richtung des Spieler-Blicks
-                    org.bukkit.util.Vector dir = player.getLocation().getDirection().setY(0).normalize();
-                    org.bukkit.block.Block ahead = mount.getLocation().add(dir.clone().multiply(1.0)).getBlock();
-                    double yVel = mount.isOnGround() && ahead.getType().isSolid() ? 0.5 : -0.08;
-                    mount.setVelocity(dir.multiply(speed).setY(yVel));
+                    // Boden-Mount: horizontale Richtung, Normalisierung nur wenn Vektor nicht null
+                    org.bukkit.util.Vector flat = player.getLocation().getDirection().setY(0);
+                    if (flat.lengthSquared() < 1e-6) return;
+                    flat.normalize();
+                    org.bukkit.block.Block ahead = mount.getLocation()
+                            .add(flat.clone().multiply(1.0)).getBlock();
+                    double yVel = (mount.isOnGround() && ahead.getType().isSolid()) ? 0.45 : -0.08;
+                    mount.setVelocity(flat.multiply(speed).setY(yVel));
                 }
                 mount.setRotation(player.getLocation().getYaw(), 0);
             }
-        }.runTaskTimer(plugin, 1L, 1L);
+        }.runTaskTimer(plugin, 5L, 1L);  // 5 Ticks Verzögerung damit addPassenger greift
     }
 
     @EventHandler

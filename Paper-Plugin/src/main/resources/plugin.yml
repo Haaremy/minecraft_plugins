@@ -167,6 +167,22 @@ commands:
     description: Repariert das Item in der Hand oder alle Items.
     usage: /repair [all]
     permission: hmy.repair
+  sethome:
+    description: Setzt einen Home-Punkt (Slot 1-5).
+    usage: /sethome [1-5]
+    permission: hmy.home.1
+  home:
+    description: Teleportiert zum gesetzten Home-Punkt (Slot 1-5).
+    usage: /home [1-5]
+    permission: hmy.home.1
+  worlds:
+    description: Zeigt alle verfügbaren Welten an.
+    usage: /worlds
+    permission: hmy.worlds
+  parkour:
+    description: Verwaltet Parkours.
+    usage: /parkour <create|delete|setstart|setgoal|setcheckpoint|quit|list> [args]
+    permission: hmy.parkour
 permissions:
   hmy.gm.other:
     description: Erlaubt das Ändern des Spielmodus anderer Spieler.
@@ -209,4 +225,28 @@ permissions:
     default: op
   hmy.repair.all:
     description: Erlaubt das Reparieren aller Items im Inventar.
+    default: op
+  hmy.home.1:
+    description: Erlaubt Home-Slot 1.
+    default: true
+  hmy.home.2:
+    description: Erlaubt Home-Slot 2.
+    default: false
+  hmy.home.3:
+    description: Erlaubt Home-Slot 3.
+    default: false
+  hmy.home.4:
+    description: Erlaubt Home-Slot 4.
+    default: false
+  hmy.home.5:
+    description: Erlaubt Home-Slot 5.
+    default: false
+  hmy.worlds:
+    description: Erlaubt das Anzeigen verfügbarer Welten.
+    default: op
+  hmy.parkour:
+    description: Erlaubt die Nutzung von Parkour-Befehlen (quit, list).
+    default: true
+  hmy.parkour.admin:
+    description: Erlaubt das Erstellen und Verwalten von Parkours.
     default: op

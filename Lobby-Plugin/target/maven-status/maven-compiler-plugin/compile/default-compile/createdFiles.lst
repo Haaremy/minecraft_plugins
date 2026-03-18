@@ -4,6 +4,7 @@ de\haaremy\hmylobby\LotteryCrateListener$Prize.class
 de\haaremy\hmylobby\HmyConfigManager$TeleportPoint.class
 de\haaremy\hmylobby\LotteryCrateListener$1.class
 de\haaremy\hmylobby\SocialListener.class
+de\haaremy\hmylobby\AgbListener.class
 de\haaremy\hmylobby\minigames\LobbyGameManager.class
 de\haaremy\hmylobby\ComHmyLanguage.class
 de\haaremy\hmylobby\LotteryCrateListener.class

@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -32,8 +33,14 @@ import de.haaremy.hmypaper.commands.ComKill;
 import de.haaremy.hmypaper.commands.ComLightning;
 import de.haaremy.hmypaper.commands.ComMute;
 import de.haaremy.hmypaper.commands.ComReply;
+import de.haaremy.hmypaper.commands.ComParkour;
 import de.haaremy.hmypaper.commands.ComRepair;
 import de.haaremy.hmypaper.commands.ComRules;
+import de.haaremy.hmypaper.commands.ComSetHome;
+import de.haaremy.hmypaper.commands.ComHome;
+import de.haaremy.hmypaper.commands.ComWorlds;
+import de.haaremy.hmypaper.parkour.ParkourListener;
+import de.haaremy.hmypaper.parkour.ParkourManager;
 import de.haaremy.hmypaper.commands.ComSkull;
 import de.haaremy.hmypaper.commands.ComSocialSpy;
 import de.haaremy.hmypaper.commands.ComSpawn;
@@ -53,6 +60,9 @@ public class HmyPaperPlugin extends JavaPlugin {
     private LuckPerms luckPerms;
     private HmyLanguageManager language;
     private HmyConfigManager configManager;
+    private HomeManager homeManager;
+    private ParkourManager parkourManager;
+    private ParkourListener parkourListener;
 
 
 
@@ -71,7 +81,10 @@ public class HmyPaperPlugin extends JavaPlugin {
         // pluginsDir = minecraftServers/subserver/plugins/
         // HmyConfigManager berechnet daraus: pluginsDir/../../hmySettings = minecraftServers/hmySettings/
         Path pluginsDir = getDataFolder().toPath().toAbsolutePath().getParent();
-        this.configManager = new HmyConfigManager(logger, pluginsDir);
+        this.configManager   = new HmyConfigManager(logger, pluginsDir);
+        this.homeManager     = new HomeManager(getDataFolder(), logger);
+        this.parkourManager  = new ParkourManager(getDataFolder(), logger);
+        this.parkourListener = new ParkourListener(parkourManager);
         logger.info("Haaremy: Paper Config initialisiert.");
         this.language = new HmyLanguageManager(logger, pluginsDir, configManager, luckPerms);
         this.language.loadAllLanguageFiles();
@@ -148,12 +161,19 @@ public class HmyPaperPlugin extends JavaPlugin {
         registerCommand("enderchest", new ComEnderChest());
         registerCommand("repair", new ComRepair());
         getServer().getPluginManager().registerEvents(comBack, this);
+
+        // Home / Worlds / Parkour
+        registerCommand("sethome", new ComSetHome(homeManager));
+        registerCommand("home",    new ComHome(homeManager));
+        registerCommand("worlds",  new ComWorlds());
+        registerCommand("parkour", new ComParkour(parkourManager, parkourListener));
     }
 
     private void registerEvents() {
         getServer().getPluginManager().registerEvents(new HmySpawn(this), this);
         getServer().getPluginManager().registerEvents(new HmyAntiBuild(this, luckPerms), this);
         getServer().getPluginManager().registerEvents(new HmyChat(luckPerms), this);
+        getServer().getPluginManager().registerEvents(parkourListener, this);
 
         // Tab-Liste wird von hmyVelocity zentral verwaltet (VelocityTabManager)
         // HmyTab ist deaktiviert.
@@ -163,6 +183,9 @@ public class HmyPaperPlugin extends JavaPlugin {
         PluginCommand command = getCommand(name);
         if (command != null) {
             command.setExecutor(executor);
+            if (executor instanceof TabCompleter tc) {
+                command.setTabCompleter(tc);
+            }
         } else {
             getLogger().severe("Fehler beim Registrieren des Befehls: " + name);
         }
