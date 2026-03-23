@@ -4,11 +4,8 @@ de\haaremy\hmylobby\LotteryCrateListener$Prize.class
 de\haaremy\hmylobby\HmyConfigManager$TeleportPoint.class
 de\haaremy\hmylobby\LotteryCrateListener$1.class
 de\haaremy\hmylobby\SocialListener.class
-de\haaremy\hmylobby\AgbListener.class
 de\haaremy\hmylobby\minigames\LobbyGameManager.class
-de\haaremy\hmylobby\ComHmyLanguage.class
 de\haaremy\hmylobby\LotteryCrateListener.class
-de\haaremy\hmylobby\EconomyMessageListener.class
 de\haaremy\hmylobby\HmyLobby.class
 de\haaremy\hmylobby\SocialListener$DyeColor.class
 de\haaremy\hmylobby\ServerInfoListener.class
@@ -16,7 +13,6 @@ de\haaremy\hmylobby\minigames\TicTacToeGame$State.class
 de\haaremy\hmylobby\minigames\TicTacToeGame.class
 de\haaremy\hmylobby\minigames\LobbyGamesConfig$TicTacToeField.class
 de\haaremy\hmylobby\minigames\LobbyGameSelector.class
-de\haaremy\hmylobby\utils\PermissionUtils.class
 de\haaremy\hmylobby\ServerSelectorConfig.class
 de\haaremy\hmylobby\minigames\TicTacToeGame$1.class
 de\haaremy\hmylobby\HmyLanguageManager.class
@@ -25,6 +21,4 @@ de\haaremy\hmylobby\HmyConfigManager.class
 de\haaremy\hmylobby\minigames\LobbyGamesConfig.class
 de\haaremy\hmylobby\ServerSelectorConfig$SelectorEntry.class
 de\haaremy\hmylobby\minigames\LobbyGameListener.class
-de\haaremy\hmylobby\LobbyWorldManager.class
 de\haaremy\hmylobby\EffectManager.class
-de\haaremy\hmylobby\DoorSignListener.class

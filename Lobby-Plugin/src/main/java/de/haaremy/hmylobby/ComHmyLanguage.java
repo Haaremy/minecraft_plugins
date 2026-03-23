@@ -2,6 +2,7 @@ package de.haaremy.hmylobby;
 
 import java.util.List;
 
+import de.haaremy.hmylobby.balloon.BalloonManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -17,10 +18,15 @@ public class ComHmyLanguage implements CommandExecutor {
 
     private final LuckPerms luckPerms;
     private final HmyLanguageManager languageManager;
+    private BalloonManager balloonManager;
 
     public ComHmyLanguage(LuckPerms luckPerms, HmyLanguageManager languageManager) {
         this.luckPerms = luckPerms;
         this.languageManager = languageManager;
+    }
+
+    public void setBalloonManager(BalloonManager balloonManager) {
+        this.balloonManager = balloonManager;
     }
 
     @Override
@@ -32,6 +38,20 @@ public class ComHmyLanguage implements CommandExecutor {
         }
 
         Player player = (Player) sender;
+
+        if (args.length == 0) {
+            player.sendMessage(Component.text("Usage: /hmy <language|ballon> [args...]"));
+            return true;
+        }
+
+        // Ballon-Subcommand weiterleiten
+        if (args[0].equalsIgnoreCase("ballon")) {
+            if (balloonManager != null) {
+                return balloonManager.handleCommand(player, args);
+            }
+            player.sendMessage(Component.text("§cBallon-System nicht verfügbar."));
+            return true;
+        }
 
         // Argumente überprüfen
         if (args.length != 2 || !args[0].equalsIgnoreCase("language")) {

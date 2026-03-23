@@ -12,6 +12,9 @@ commands:
     description: Kitsune Segen Spielverwaltung
     usage: /game <start|countdown|stop|info|kick|reset>
     permission: hmy.kitsunesegen.admin
+  agb:
+    description: AGB akzeptieren
+    usage: /agb accept
 
 permissions:
   hmy.kitsunesegen.admin:

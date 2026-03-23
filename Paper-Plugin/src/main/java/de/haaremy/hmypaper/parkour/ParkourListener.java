@@ -70,14 +70,21 @@ public class ParkourListener implements Listener {
             String parkour = activeParkour.get(uuid);
             String[] cp = parkourManager.getParkourByCheckpoint(to);
             if (cp != null && cp[0].equals(parkour)) {
-                int id = Integer.parseInt(cp[1]);
+                int id      = Integer.parseInt(cp[1]);
                 int current = checkpoint.getOrDefault(uuid, -1);
-                if (id > current) {
+                if (id == current + 1) {
+                    // Nächster Checkpoint in der richtigen Reihenfolge
                     checkpoint.put(uuid, id);
                     checkpointY.put(uuid, to.getY());
                     player.sendMessage("§a✔ Checkpoint §e" + id + " §aerreicht!");
                     player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
+                } else if (id > current + 1) {
+                    // Checkpoint übersprungen → zurück zum letzten
+                    player.sendMessage("§c✖ Checkpoint §e" + (current + 1) + " §cwurde übersprungen!");
+                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_HURT, 0.8f, 1f);
+                    teleportToLastCheckpoint(player);
                 }
+                // id <= current: bereits erreicht, ignorieren
                 return;
             }
 
@@ -87,9 +94,7 @@ public class ParkourListener implements Listener {
                 String time  = formatTime(elapsed);
                 player.sendMessage("§6§l» §eParkour §6" + parkour + " §eabgeschlossen! §aZeit: §d" + time);
                 player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f, 1f);
-                Location spawn = player.getWorld().getSpawnLocation();
-                resetPlayer(player);
-                player.teleport(spawn);
+                resetPlayer(player); // stellt Inventar wieder her, kein Teleport
                 return;
             }
         }
@@ -152,10 +157,15 @@ public class ParkourListener implements Listener {
 
         int id      = Integer.parseInt(cp[1]);
         int current = checkpoint.getOrDefault(player.getUniqueId(), -1);
-        if (id > current) {
+        if (id == current + 1) {
             checkpoint.put(player.getUniqueId(), id);
+            checkpointY.put(player.getUniqueId(), block.getY());
             player.sendMessage("§a✔ Checkpoint §e" + id + " §aerreicht!");
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
+        } else if (id > current + 1) {
+            player.sendMessage("§c✖ Checkpoint §e" + (current + 1) + " §cwurde übersprungen!");
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_HURT, 0.8f, 1f);
+            teleportToLastCheckpoint(player);
         }
     }
 

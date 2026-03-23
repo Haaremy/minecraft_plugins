@@ -289,39 +289,55 @@ public class GameListener implements Listener {
         event.setDamage(event.getDamage() * multiplier);
     }
 
-    // ── Legendary armor effects ───────────────────────────────────────────────
+    // ── Damage gate (HIGHEST: overrides any prior cancellation) ─────────────────
+    //
+    //  Läuft nach HubListener (HIGH) und stellt sicher, dass lebende Spieler
+    //  im Spielfeld immer Schaden nehmen – außer Legendär-Effekte greifen.
 
-    /** Legendary helmet: absorbs the first projectile hit, then breaks. */
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onProjectileHitPlayer(EntityDamageByEntityEvent event) {
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onGameDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         if (!isInGame(player)) return;
-        if (!(event.getDamager() instanceof Projectile)) return;
 
-        ItemStack helmet = player.getInventory().getHelmet();
-        if (helmet == null || !isLegendaryHelmet(helmet)) return;
+        // Zuschauer nehmen nie Schaden
+        if (plugin.getGameManager().isSpectator(player)) {
+            event.setCancelled(true);
+            return;
+        }
 
-        event.setCancelled(true);
-        player.getInventory().setHelmet(null);
-        player.sendActionBar(ChatColor.GOLD + "§lVorhalte-Helm §ahat den Schuss abgefangen!");
-        player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1.2f);
-    }
+        // Außerhalb einer laufenden Runde kein Schaden
+        if (!plugin.getGameManager().isRunning()) {
+            event.setCancelled(true);
+            return;
+        }
 
-    /** Legendary elytra: cancels fall damage that would hurt, then breaks. */
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onFallDamage(EntityDamageEvent event) {
-        if (event.getCause() != EntityDamageEvent.DamageCause.FALL) return;
-        if (!(event.getEntity() instanceof Player player)) return;
-        if (!isInGame(player)) return;
-        if (event.getDamage() < 1.0) return;
+        // Legendäre Elytra: tödlichen Sturz abfangen
+        if (event.getCause() == EntityDamageEvent.DamageCause.FALL && event.getDamage() >= 1.0) {
+            ItemStack chest = player.getInventory().getChestplate();
+            if (chest != null && isLegendaryElytra(chest)) {
+                event.setCancelled(true);
+                player.getInventory().setChestplate(null);
+                player.sendActionBar(ChatColor.GOLD + "§lFallschutz-Elytra §ahat den Aufprall abgefangen!");
+                player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 0.8f);
+                return;
+            }
+        }
 
-        ItemStack chest = player.getInventory().getChestplate();
-        if (chest == null || !isLegendaryElytra(chest)) return;
+        // Legendärer Helm: ersten Pfeil abfangen
+        if (event instanceof EntityDamageByEntityEvent byEntity
+                && byEntity.getDamager() instanceof Projectile) {
+            ItemStack helmet = player.getInventory().getHelmet();
+            if (helmet != null && isLegendaryHelmet(helmet)) {
+                event.setCancelled(true);
+                player.getInventory().setHelmet(null);
+                player.sendActionBar(ChatColor.GOLD + "§lVorhalte-Helm §ahat den Schuss abgefangen!");
+                player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1.2f);
+                return;
+            }
+        }
 
-        event.setCancelled(true);
-        player.getInventory().setChestplate(null);
-        player.sendActionBar(ChatColor.GOLD + "§lFallschutz-Elytra §ahat den Aufprall abgefangen!");
-        player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 0.8f);
+        // Schaden explizit erlauben (hebt jede vorherige Cancellation auf)
+        event.setCancelled(false);
     }
 
     // ── Death handling ────────────────────────────────────────────────────────
@@ -357,21 +373,22 @@ public class GameListener implements Listener {
     // ── Spectator leave / report buttons ─────────────────────────────────────
 
     @EventHandler
-    public void onInteract(PlayerInteractEvent event) {
+    public void onSpectatorInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_AIR
+                && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+
         Player player = event.getPlayer();
         if (player.getGameMode() != GameMode.SPECTATOR) return;
         if (!plugin.getGameManager().isSpectator(player)) return;
 
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item == null || !item.hasItemMeta()) return;
-        ItemMeta meta = item.getItemMeta();
-        if (!meta.hasDisplayName()) return;
-        String name = meta.getDisplayName();
+        if (item.getType() == Material.AIR) return;
 
         event.setCancelled(true);
-        if (name.contains("Verlassen")) {
+
+        if (item.getType() == Material.RED_DYE) {
             plugin.getGameManager().sendToLobby(player);
-        } else if (name.contains("Report")) {
+        } else if (item.getType() == Material.BOOK) {
             player.sendMessage(ChatColor.YELLOW + "Nutze §e/report <Spieler> <Grund> §ezum Melden.");
         }
     }

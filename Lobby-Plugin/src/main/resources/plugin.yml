@@ -13,7 +13,7 @@ commands:
     permission: hmy.server.<name>
   hmy:
     description: "Hauptbefehl des Haaremy-Plugins."
-    usage: "/hmy <language|lobbygame> [args...]"
+    usage: "/hmy <language|ballon> [args...]"
   lobbygame:
     description: "Erstellt und verwaltet Lobby-Minispiele."
     usage: "/lobbygame <create> <tiktaktoe> <name> <feld-id>"
@@ -49,3 +49,9 @@ permissions:
   hmy.lobby.tp.*:
     description: Erlaubt alle Lobby-Teleportpunkte (Kompass im Navigator).
     default: true
+  hmy.lobby.balloon.use:
+    description: Erlaubt das Mitfahren auf Ballons und Fahrstühlen.
+    default: true
+  hmy.lobby.balloon.admin:
+    description: Erlaubt das Erstellen und Verwalten von Ballon-Routen und Fahrstühlen.
+    default: op

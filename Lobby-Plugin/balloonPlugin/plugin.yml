@@ -1,0 +1,21 @@
+name: HotAirBallon
+version: 1.1
+main: com.example.hotairballon.HotAirBallon
+description: Ein Heißluftballon Plugin zum Reisen mit Waypoints auf deinem Server
+authors: [YourName]
+api-version: '1.20'
+
+commands:
+  ballon:
+    description: Heißluftballon Befehle
+    usage: /ballon <erstellen|waypoint|starten|stoppen> [args]
+    aliases: [balloon, hb]
+    permission: hotairballon.use
+    
+permissions:
+  hotairballon.use:
+    description: Erlaubnis, Heißluftballons zu nutzen
+    default: true
+  hotairballon.admin:
+    description: Admin-Rechte für das Plugin
+    default: op

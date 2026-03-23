@@ -1,5 +1,6 @@
 package de.haaremy.hmylobby;
 
+import de.haaremy.hmylobby.balloon.BalloonManager;
 import de.haaremy.hmylobby.minigames.LobbyGameListener;
 import de.haaremy.hmylobby.minigames.LobbyGameManager;
 import de.haaremy.hmylobby.minigames.LobbyGameSelector;
@@ -78,7 +79,8 @@ public class HmyLobby extends JavaPlugin {
         getServer().getPluginManager().registerEvents(selector, this);
         getServer().getPluginManager().registerEvents(new LobbyGameListener(lobbyGameManager), this);
         getServer().getPluginManager().registerEvents(lotteryCrateListener, this);
-        getCommand("lobbygame").setExecutor(lobbyGameManager);
+        var lobbygameCmd = getCommand("lobbygame");
+        if (lobbygameCmd != null) lobbygameCmd.setExecutor(lobbyGameManager);
 
         // Social / Economy channels
         this.socialListener = new SocialListener(this);
@@ -88,9 +90,16 @@ public class HmyLobby extends JavaPlugin {
                 new EconomyMessageListener(this));
         getServer().getMessenger().registerOutgoingPluginChannel(this, "hmy:economy");
 
+        // Balloon / Elevator system
+        BalloonManager balloonManager = new BalloonManager(this, language, hmySettingsDir);
+        getServer().getPluginManager().registerEvents(balloonManager, this);
+
         // Commands
-        if (getCommand("hmy") != null)
-            getCommand("hmy").setExecutor(new ComHmyLanguage(luckPerms, language));
+        if (getCommand("hmy") != null) {
+            ComHmyLanguage hmyCommand = new ComHmyLanguage(luckPerms, language);
+            hmyCommand.setBalloonManager(balloonManager);
+            getCommand("hmy").setExecutor(hmyCommand);
+        }
 
         Bukkit.getScheduler().runTaskLater(this, this::scanForSigns, 100L);
 

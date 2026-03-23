@@ -269,6 +269,15 @@ Lobby-server plugin with hotbar navigation, cosmetics, minigames, economy displa
   - Accept → grants `hmy.agb` via LuckPerms; player continues normally
   - Decline → player is kicked with a friendly message
 
+- **Heißluftballon & Fahrstuhl** (`BalloonManager`)
+  - Admin legt benannte Routen mit beliebig vielen Waypoints an
+  - Bis zu 20 Ballons fliegen gleichzeitig und versetzt eine Route im Kreis
+  - Boarding-Zonen (grüne Partikel, Radius 5 Blöcke) nehmen Spieler automatisch auf
+  - Dropoff-Zonen (blaue Partikel) setzen Spieler beim nächsten Halt ab
+  - Fahrstuhl-System: Kabine fährt Ping-Pong zwischen konfigurierten Etagen
+  - Alle Routen und Etagen werden persistent in `hmySettings/balloons.yml` gespeichert
+  - Visuelle Strukturen: Ballon-Hülle aus Rüstungsständern (Woll-Lagen + Seile + Korb), Fahrstuhl-Kabine (Eisengitter, Türen, Kettenschacht)
+
 ### Commands
 
 | Command | Description | Permission |
@@ -276,6 +285,22 @@ Lobby-server plugin with hotbar navigation, cosmetics, minigames, economy displa
 | `/hmy language <de\|en>` | Change language | — |
 | `/lobbygame create tiktaktoe <feld-id>` | Create a TicTacToe field | `hmy.lobby.gamecreator` |
 | `/lobbygame create crate` | Tag a chest as lottery crate | `hmy.lobby.gamecreator` |
+| `/hmy ballon route erstellen <name>` | Create a new balloon route | `hmy.lobby.balloon.admin` |
+| `/hmy ballon route waypoint <name>` | Add a waypoint at your position | `hmy.lobby.balloon.admin` |
+| `/hmy ballon route boarding <name> <nr>` | Mark a waypoint as boarding zone | `hmy.lobby.balloon.admin` |
+| `/hmy ballon route dropoff <name> <nr>` | Mark a waypoint as drop-off zone | `hmy.lobby.balloon.admin` |
+| `/hmy ballon route list <name>` | Show all waypoints of a route | `hmy.lobby.balloon.admin` |
+| `/hmy ballon route start <name> <anzahl>` | Start auto-travel with 1–20 balloons | `hmy.lobby.balloon.admin` |
+| `/hmy ballon route stop <name>` | Stop auto-travel and remove balloons | `hmy.lobby.balloon.admin` |
+| `/hmy ballon route info` | List all routes with status | `hmy.lobby.balloon.admin` |
+| `/hmy ballon elevator create <name>` | Create an elevator | `hmy.lobby.balloon.admin` |
+| `/hmy ballon elevator floor <name>` | Add a floor at your position | `hmy.lobby.balloon.admin` |
+| `/hmy ballon elevator boarding <name> <nr>` | Mark a floor as boarding zone | `hmy.lobby.balloon.admin` |
+| `/hmy ballon elevator dropoff <name> <nr>` | Mark a floor as drop-off zone | `hmy.lobby.balloon.admin` |
+| `/hmy ballon elevator list <name>` | Show all floors of an elevator | `hmy.lobby.balloon.admin` |
+| `/hmy ballon elevator start <name>` | Start the elevator | `hmy.lobby.balloon.admin` |
+| `/hmy ballon elevator stop <name>` | Stop the elevator | `hmy.lobby.balloon.admin` |
+| `/hmy ballon elevator info` | List all elevators with status | `hmy.lobby.balloon.admin` |
 
 ### Permissions
 
@@ -288,12 +313,74 @@ Lobby-server plugin with hotbar navigation, cosmetics, minigames, economy displa
 | `hmy.lobby.tp.*` | `true` | Access all lobby TP-points |
 | `hmy.lobby.tp.<id>` | — | Access a specific TP-point |
 | `hmy.lobby.gamecreator` | `op` | Create TicTacToe fields and lottery crates |
+| `hmy.lobby.balloon.use` | `true` | Board balloons and elevators |
+| `hmy.lobby.balloon.admin` | `op` | Create and manage balloon routes and elevators |
 | `hmy.lobby.inventory.edit` | `false` | Allow moving hotbar items |
 | `hmy.lobby.message.none` | `false` | Disable welcome message on join |
 | `hmy.lobby.sound.none` | `false` | Disable join sounds |
 | `hmy.lobby.particle.none` | `false` | Disable join particles |
 | `hmy.lobby.bossbar.none` | `false` | Disable the BossBar |
 | `hmy.agb` | `false` | Granted on AGB acceptance; required to play |
+
+### Balloon & Elevator Setup (Kurzanleitung)
+
+**Route mit 3 Stationen:**
+```
+# 1. Route erstellen
+/hmy ballon route erstellen city-tour
+
+# 2. An jeder Station teleportieren und Waypoint setzen
+/hmy ballon route waypoint city-tour   # Waypoint #0 (Spawn)
+/hmy ballon route waypoint city-tour   # Waypoint #1 (Shop)
+/hmy ballon route waypoint city-tour   # Waypoint #2 (Arena)
+
+# 3. Zonen zuweisen
+/hmy ballon route boarding city-tour 0   # Einsteigen am Spawn
+/hmy ballon route dropoff city-tour 1    # Aussteigen am Shop
+/hmy ballon route boarding city-tour 1   # Auch Einsteigen am Shop
+/hmy ballon route dropoff city-tour 2    # Aussteigen an der Arena
+
+# 4. Starten
+/hmy ballon route start city-tour 3   # 3 Ballons gleichzeitig
+```
+
+**Fahrstuhl mit 3 Etagen:**
+```
+/hmy ballon elevator create lift-a
+# Zu jeder Etage teleportieren:
+/hmy ballon elevator floor lift-a   # Etage #0 (EG)
+/hmy ballon elevator floor lift-a   # Etage #1 (1. OG)
+/hmy ballon elevator floor lift-a   # Etage #2 (2. OG)
+# Alle Etagen als Boarding und Dropoff:
+/hmy ballon elevator boarding lift-a 0
+/hmy ballon elevator dropoff  lift-a 0
+/hmy ballon elevator boarding lift-a 1
+/hmy ballon elevator dropoff  lift-a 1
+/hmy ballon elevator boarding lift-a 2
+/hmy ballon elevator dropoff  lift-a 2
+/hmy ballon elevator start lift-a
+```
+
+**Zonen-Übersicht:**
+
+| Zone | Partikel | Radius | Verhalten |
+|------|----------|--------|-----------|
+| Boarding | Grün (`HAPPY_VILLAGER`) | 5 Blöcke | Spieler werden beim nächsten Ballon automatisch aufgenommen |
+| Dropoff | Blau (`ENTITY_EFFECT`) | 5 Blöcke | Spieler werden automatisch abgesetzt, wenn der Ballon hält |
+| Fahrstuhl | Grün | 3 Blöcke | Ein- und Aussteigen an jeder Etage |
+
+**Technische Details:**
+
+| Parameter | Wert |
+|-----------|------|
+| Ballon-Geschwindigkeit | 0.3 Blöcke / Tick |
+| Fahrstuhl-Geschwindigkeit | 0.15 Blöcke / Tick |
+| Pause pro Waypoint | 40 Ticks (2 s) |
+| Pause pro Etage | 60 Ticks (3 s) |
+| Update-Frequenz Ballons | alle 2 Ticks |
+| Zone-Check | jeden Tick |
+| Max. Boarding-Distanz zum Ballon | 30 Blöcke |
+| Persistenz | `hmySettings/balloons.yml` |
 
 ---
 

@@ -7,9 +7,11 @@ de\haaremy\hmykitsunesegen\ComGame.class
 de\haaremy\hmykitsunesegen\HmyLanguageManager.class
 de\haaremy\hmykitsunesegen\ScoreboardManager.class
 de\haaremy\hmykitsunesegen\GameManager$State.class
+de\haaremy\hmykitsunesegen\AgbManager.class
 de\haaremy\hmykitsunesegen\HubListener.class
 de\haaremy\hmykitsunesegen\GameConfig.class
 de\haaremy\hmykitsunesegen\GameManager.class
+de\haaremy\hmykitsunesegen\ComAgb.class
 de\haaremy\hmykitsunesegen\HmyConfigManager.class
 de\haaremy\hmykitsunesegen\WorldReset.class
 de\haaremy\hmykitsunesegen\LuckyItem.class

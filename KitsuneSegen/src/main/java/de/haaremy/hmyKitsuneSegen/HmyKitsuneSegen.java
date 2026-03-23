@@ -8,12 +8,14 @@ import java.util.List;
 
 public class HmyKitsuneSegen extends JavaPlugin {
 
-    private GameConfig       gameConfig;
-    private GameManager      gameManager;
-    private ChestManager     chestManager;
+    private GameConfig        gameConfig;
+    private GameManager       gameManager;
+    private ChestManager      chestManager;
     private ScoreboardManager scoreboardManager;
-    private LuckyItem        luckyItem;
-    private WorldReset       worldReset;
+    private LuckyItem         luckyItem;
+    private WorldReset        worldReset;
+    private AgbManager        agbManager;
+    private HubListener       hubListener;
 
     // Scanned at startup (sync, on the game world)
     private List<Location> spawnPoints  = new ArrayList<>();
@@ -28,11 +30,13 @@ public class HmyKitsuneSegen extends JavaPlugin {
         this.gameConfig = new GameConfig(getConfig());
 
         // ── Core systems ───────────────────────────────────────────────────────
+        this.agbManager       = new AgbManager(this);
         this.luckyItem        = new LuckyItem(this);
         this.chestManager     = new ChestManager(this);
         this.scoreboardManager = new ScoreboardManager(this);
         this.gameManager      = new GameManager(this);
         this.worldReset       = new WorldReset(this);
+        this.hubListener      = new HubListener(this);
 
         // ── Plugin messaging (BungeeCord) ──────────────────────────────────────
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -54,7 +58,7 @@ public class HmyKitsuneSegen extends JavaPlugin {
         }
 
         // ── Event listeners ────────────────────────────────────────────────────
-        getServer().getPluginManager().registerEvents(new HubListener(this),  this);
+        getServer().getPluginManager().registerEvents(hubListener, this);
         getServer().getPluginManager().registerEvents(new GameListener(this),  this);
         getServer().getPluginManager().registerEvents(new PlayerChestClick(this), this);
 
@@ -65,6 +69,8 @@ public class HmyKitsuneSegen extends JavaPlugin {
             cmd.setExecutor(comGame);
             cmd.setTabCompleter(comGame);
         }
+        var agbCmd = getCommand("agb");
+        if (agbCmd != null) agbCmd.setExecutor(new ComAgb(this));
 
         getLogger().info("KitsuneSegen aktiviert!");
     }
@@ -77,12 +83,14 @@ public class HmyKitsuneSegen extends JavaPlugin {
 
     // ── Getters ────────────────────────────────────────────────────────────────
 
-    public GameConfig      getGameConfig()       { return gameConfig; }
-    public GameManager     getGameManager()      { return gameManager; }
-    public ChestManager    getChestManager()     { return chestManager; }
-    public ScoreboardManager getScoreboardManager() { return scoreboardManager; }
-    public LuckyItem       getLuckItem()         { return luckyItem; }
-    public WorldReset      getWorldReset()       { return worldReset; }
+    public GameConfig        getGameConfig()         { return gameConfig; }
+    public GameManager       getGameManager()        { return gameManager; }
+    public ChestManager      getChestManager()       { return chestManager; }
+    public ScoreboardManager getScoreboardManager()  { return scoreboardManager; }
+    public LuckyItem         getLuckItem()           { return luckyItem; }
+    public WorldReset        getWorldReset()         { return worldReset; }
+    public AgbManager        getAgbManager()         { return agbManager; }
+    public HubListener       getHubListener()        { return hubListener; }
 
     public List<Location>  getSpawnPoints()      { return spawnPoints; }
     public List<Location>  getChestSpots()       { return chestSpots; }
