@@ -539,9 +539,11 @@ public class BalloonManager implements Listener {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (playerToBalloon.containsKey(player.getUniqueId())) {
                 BalloonRide ride = playerToBalloon.get(player.getUniqueId());
-                Integer dropoffIdx = ride.route.getNearestDropoffZoneIndex(player.getLocation());
-                if (dropoffIdx != null && !ride.isMoving) {
-                    exitBalloon(player, ride.route.waypoints.get(dropoffIdx));
+                if (ride.route != null) {
+                    Integer dropoffIdx = ride.route.getNearestDropoffZoneIndex(player.getLocation());
+                    if (dropoffIdx != null && !ride.isMoving) {
+                        exitBalloon(player, ride.route.waypoints.get(dropoffIdx));
+                    }
                 }
                 continue;
             }

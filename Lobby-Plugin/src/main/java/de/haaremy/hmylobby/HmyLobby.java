@@ -95,10 +95,11 @@ public class HmyLobby extends JavaPlugin {
         getServer().getPluginManager().registerEvents(balloonManager, this);
 
         // Commands
-        if (getCommand("hmy") != null) {
+        var hmyCmd = getCommand("hmy");
+        if (hmyCmd != null) {
             ComHmyLanguage hmyCommand = new ComHmyLanguage(luckPerms, language);
             hmyCommand.setBalloonManager(balloonManager);
-            getCommand("hmy").setExecutor(hmyCommand);
+            hmyCmd.setExecutor(hmyCommand);
         }
 
         Bukkit.getScheduler().runTaskLater(this, this::scanForSigns, 100L);
