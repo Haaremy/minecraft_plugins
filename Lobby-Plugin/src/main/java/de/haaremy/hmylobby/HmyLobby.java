@@ -1,6 +1,9 @@
 package de.haaremy.hmylobby;
 
 import de.haaremy.hmylobby.balloon.BalloonManager;
+import de.haaremy.hmylobby.jukebox.ComJukebox;
+import de.haaremy.hmylobby.jukebox.JukeboxListener;
+import de.haaremy.hmylobby.jukebox.JukeboxManager;
 import de.haaremy.hmylobby.minigames.LobbyGameListener;
 import de.haaremy.hmylobby.minigames.LobbyGameManager;
 import de.haaremy.hmylobby.minigames.LobbyGameSelector;
@@ -93,6 +96,12 @@ public class HmyLobby extends JavaPlugin {
         // Balloon / Elevator system
         BalloonManager balloonManager = new BalloonManager(this, language, hmySettingsDir);
         getServer().getPluginManager().registerEvents(balloonManager, this);
+
+        // Jukebox system
+        JukeboxManager jukeboxManager = new JukeboxManager(this, hmySettingsDir);
+        getServer().getPluginManager().registerEvents(new JukeboxListener(jukeboxManager), this);
+        var jukeboxCmd = getCommand("jukebox");
+        if (jukeboxCmd != null) jukeboxCmd.setExecutor(new ComJukebox(jukeboxManager));
 
         // Commands
         var hmyCmd = getCommand("hmy");

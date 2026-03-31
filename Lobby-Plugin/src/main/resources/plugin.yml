@@ -3,6 +3,7 @@ version: "1.0"
 main: de.haaremy.hmylobby.HmyLobby
 api-version: 1.19
 depend: [LuckPerms]
+softdepend: [OpenAudioMc]
 description: Ein Plugin von @Haaremy zur Verwaltung eines Lobby-Servers.
 author: Haaremy
 website: https://haaremy.de
@@ -18,6 +19,10 @@ commands:
     description: "Erstellt und verwaltet Lobby-Minispiele."
     usage: "/lobbygame <create> <tiktaktoe> <name> <feld-id>"
     permission: hmy.lobby.gamecreator
+  jukebox:
+    description: "Verwaltet verwaltete Jukeboxen (Endlosschleifen, Playlists, Streams)."
+    usage: "/jukebox <create|list|sync|<id> <play|stop|add|set>>"
+    permission: hmy.lobby.jukebox.admin
 permissions:
   hmy.lobby.message.none:
     description: Deaktiviert die Willkommensnachricht beim Betreten der Lobby.
@@ -54,4 +59,7 @@ permissions:
     default: true
   hmy.lobby.balloon.admin:
     description: Erlaubt das Erstellen und Verwalten von Ballon-Routen und Fahrstühlen.
+    default: op
+  hmy.lobby.jukebox.admin:
+    description: Erlaubt das Erstellen und Verwalten von verwalteten Jukeboxen.
     default: op

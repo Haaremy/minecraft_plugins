@@ -1,0 +1,21 @@
+name: hmyWallpaper
+version: "1"
+main: de.haaremy.hmywallpaper.HmyWallpaper
+api-version: 1.21
+description: Erstellt Map-Wallpaper aus Block-Farbe, Vollfarbe oder SVG-Datei
+author: Haaremy
+website: https://haaremy.de
+
+commands:
+  wallpaper:
+    description: Erstelle einen Map-Wallpaper
+    usage: /wallpaper create <block|full|svg> [args...]
+    permission: hmy.wallpaper.use
+
+permissions:
+  hmy.wallpaper.use:
+    description: Darf /wallpaper create nutzen
+    default: true
+  hmy.wallpaper.admin:
+    description: Admin-Befehle für Wallpaper
+    default: op

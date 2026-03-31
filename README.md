@@ -384,6 +384,120 @@ Lobby-server plugin with hotbar navigation, cosmetics, minigames, economy displa
 
 ---
 
+### Jukebox System
+
+Managed jukebox system with three playback modes, golden-sword block selection, and multi-jukebox synchronisation.
+
+#### Features
+
+- **Endless** – loops the disc currently placed in the jukebox forever
+- **Diskbox** – links a chest; plays all music discs in the chest in slot order, then repeats
+- **Stream** – plays a URL once via OpenAudioMc; live streams detected automatically via `icy-metaint`; non-live streams can be set to loop endlessly
+- **Sync** – stops multiple named jukeboxes and restarts them all in the same server tick
+- Managed jukeboxes are protected: non-admins cannot remove discs or break the jukebox block
+- Config persisted in `hmySettings/jukeboxes.yml`; survives server restarts (mode restarts manually after reboot)
+
+#### Commands
+
+| Command | Description |
+|---------|-------------|
+| `/jukebox create <id>` | Register a new jukebox (then right-click it with a golden sword) |
+| `/jukebox <id> play endless` | Loop the disc in the jukebox indefinitely; also enables repeat for stream mode |
+| `/jukebox <id> stop` | Stop all playback |
+| `/jukebox <id> add diskbox` | Link a chest as disc playlist (right-click it with a golden sword) |
+| `/jukebox <id> set stream <url>` | Play a URL via OpenAudioMc; use `play endless` afterwards to loop it |
+| `/jukebox sync <id1,id2,...>` | Restart all listed jukeboxes simultaneously in the same server tick |
+| `/jukebox list` | List all registered jukeboxes with their current state |
+
+#### Permissions
+
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `hmy.lobby.jukebox.admin` | `op` | Create and manage all jukebox commands |
+
+#### Setup (Schnellstart)
+
+**Jukebox mit Endlosschleife:**
+```
+1. Platziere eine Jukebox und lege eine Disk hinein.
+2. /jukebox create lobby1     → Rechtsklick die Jukebox mit dem goldenen Schwert
+3. /jukebox lobby1 play endless
+```
+
+**Diskbox (Playlist aus Truhe):**
+```
+1. Platziere eine Truhe mit Musik-Disks.
+2. /jukebox create lobby2     → Rechtsklick die Jukebox
+3. /jukebox lobby2 add diskbox → Rechtsklick die Truhe
+   → Diskbox startet automatisch
+```
+
+**Stream (OpenAudioMc erforderlich):**
+```
+1. /jukebox create radio1     → Rechtsklick die Jukebox
+2. /jukebox radio1 set stream https://example.com/stream.mp3
+3. /jukebox radio1 play endless   (optional, bei nicht-Live-Streams)
+```
+
+**Sync (mehrere Jukeboxen gleichzeitig starten):**
+```
+/jukebox sync lobby1,lobby2,radio1
+```
+
+#### Technical Details
+
+| Parameter | Value |
+|-----------|-------|
+| Disc durations | 16 hardcoded values (13 s–345 s) |
+| Stream live detection | HTTP HEAD + `icy-metaint` header |
+| Stream repeat interval | 6000 ticks (~5 min) for non-live endless |
+| Loop restart offset | 10 ticks before song end |
+| OpenAudioMc | Optional soft-dependency; resolved via reflection at runtime |
+| Persistence | `hmySettings/jukeboxes.yml` |
+
+---
+
+## hmyWallpaper
+
+Standalone Paper plugin that renders 128×128 Minecraft maps as wallpapers. Three render modes: solid color, block map-color tile, and SVG-pattern. The finished map item is placed directly in the player's main hand.
+
+### Features
+
+- **Full** – fills the entire map with any hex color
+- **Block** – reads the block's native Minecraft map-color via NMS and renders a subtle 8×8 tile shading pattern across the map
+- **SVG** – loads an SVG file from `plugins/hmyWallpaper/svgs/`, replaces the first 3 distinct `fill` colors with the player-specified colors, and renders all basic shapes (`<rect>`, `<circle>`, `<ellipse>`, `<polygon>`, `<g>`) to the map
+- Two sample SVGs bundled and extracted on first start: `bubble.svg` (circles on background, 3 colors) and `checkers.svg` (checkerboard, 2 colors)
+- Admins can add custom SVGs to `plugins/hmyWallpaper/svgs/` at any time
+
+### Commands
+
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/wallpaper create full <#RRGGBB>` | Solid-color map | `hmy.wallpaper.use` |
+| `/wallpaper create block <Material>` | Block map-color tile | `hmy.wallpaper.use` |
+| `/wallpaper create svg <Name> <#c1> <#c2> <#c3>` | SVG pattern with 3 colors | `hmy.wallpaper.use` |
+
+### Permissions
+
+| Permission | Default | Description |
+|------------|---------|-------------|
+| `hmy.wallpaper.use` | `true` | May use `/wallpaper create` |
+| `hmy.wallpaper.admin` | `op` | Reserved for future admin commands |
+
+### SVG Color Convention
+
+SVGs use placeholder fill colors. When rendering, the plugin collects all distinct `fill` values in order of first appearance and maps them to the three user-specified colors. Example:
+
+```xml
+<!-- checkers.svg has 2 distinct fills: #111111 and #eeeeee -->
+/wallpaper create svg checkers #1a1a2e #e94560 #ffffff
+<!-- → #111111 becomes #1a1a2e, #eeeeee becomes #e94560 -->
+```
+
+Custom SVGs only need valid `fill="#rrggbb"` attributes on `<rect>`, `<circle>`, `<ellipse>`, and `<polygon>` elements. The `viewBox` attribute controls the coordinate space and is automatically scaled to 128×128.
+
+---
+
 ## KitsuneSegen (Game)
 
 Fortnite-style battle-royale game on its own Paper server. Players join a safe hub world and are dropped into a game world to fight until one remains.

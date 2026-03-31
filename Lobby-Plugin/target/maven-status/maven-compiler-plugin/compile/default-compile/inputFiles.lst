@@ -1,6 +1,9 @@
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\balloon\ElevatorStructure.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\EffectManager.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\jukebox\JukeboxManager.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\balloon\BalloonRoute.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\jukebox\JukeboxData.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\jukebox\JukeboxListener.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\minigames\LobbyGamesConfig.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\ComHmyLanguage.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\balloon\BalloonRide.java
@@ -10,6 +13,7 @@ C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\minigames\LobbyGameSelector.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\balloon\BalloonStructure.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\PlayerEventListener.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\jukebox\JukeboxMode.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\balloon\ElevatorRide.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\minigames\TicTacToeGame.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\ServerInfoListener.java
@@ -22,7 +26,9 @@ C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\utils\PermissionUtils.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\balloon\BalloonManager.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\balloon\BalloonConfig.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\jukebox\ComJukebox.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\minigames\LobbyGameListener.java
+C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\jukebox\JukeboxConfig.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\LobbyWorldManager.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\AgbListener.java
 C:\Users\444je\Documents\GitHub\minecraft_plugins\Lobby-Plugin\src\main\java\de\haaremy\hmylobby\ServerSelectorConfig.java
