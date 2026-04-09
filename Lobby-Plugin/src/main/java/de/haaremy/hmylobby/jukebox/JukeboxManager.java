@@ -158,8 +158,8 @@ public class JukeboxManager {
         data.currentDisc = disc;
         data.mode = JukeboxMode.ENDLESS;
         jukebox.setPlaying(disc);
-        jukebox.startPlaying();
         jukebox.update();
+        jukebox.startPlaying();
         scheduleEndlessNext(data);
         if (feedback != null) feedback.sendMessage("§6✓ Jukebox §e" + id + "§6 spielt §e" + discName(disc) + "§6 endlos.");
         return true;
@@ -173,8 +173,8 @@ public class JukeboxManager {
             if (!(block.getState() instanceof Jukebox jukebox)) return;
             jukebox.stopPlaying();
             jukebox.setPlaying(data.currentDisc);
-            jukebox.startPlaying();
             jukebox.update();
+            jukebox.startPlaying();
             scheduleEndlessNext(data);
         }, duration - 10L);
     }
@@ -217,8 +217,8 @@ public class JukeboxManager {
         if (!(block.getState() instanceof Jukebox jukebox)) return;
         jukebox.stopPlaying();
         jukebox.setPlaying(disc);
-        jukebox.startPlaying();
         jukebox.update();
+        jukebox.startPlaying();
 
         long duration = DISC_DURATIONS.getOrDefault(disc, 200L * 20);
         data.currentTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -339,8 +339,8 @@ public class JukeboxManager {
                             Block block = data.jukeboxLoc.getBlock();
                             if (block.getState() instanceof Jukebox jukebox) {
                                 jukebox.setPlaying(data.currentDisc);
-                                jukebox.startPlaying();
                                 jukebox.update();
+                                jukebox.startPlaying();
                                 scheduleEndlessNext(data);
                             }
                         }
@@ -434,21 +434,53 @@ public class JukeboxManager {
     }
 
     private void playViaOpenAudioMc(Player player, String url) {
+        // Bail early if OpenAudioMc is not installed at all
+        if (Bukkit.getPluginManager().getPlugin("OpenAudioMc") == null) {
+            player.sendMessage("§cOpenAudioMc ist nicht installiert – Stream kann nicht abgespielt werden.");
+            return;
+        }
         try {
-            Class<?> apiClass = Class.forName("com.craftmend.openaudiomc.api.MediaApi");
-            Object instance = apiClass.getMethod("getInstance").invoke(null);
-            for (Method m : apiClass.getMethods()) {
-                if (m.getParameterCount() == 2
-                        && (m.getName().equals("playMedia") || m.getName().equals("playAudio"))
-                        && m.getParameterTypes()[0].isAssignableFrom(player.getClass())) {
-                    m.invoke(instance, player, url);
-                    return;
-                }
+            // OpenAudioMc 6.x API:
+            // ClientApi.getInstance().getByPlayer(player) -> Optional<Client>
+            // new OAMediaLink(url, new MediaOptions()) -> Client.playMedia(link)
+            Class<?> clientApiClass = Class.forName("com.craftmend.openaudiomc.api.ClientApi");
+            Object clientApi = clientApiClass.getMethod("getInstance").invoke(null);
+
+            // getByPlayer(Player) or getClient(UUID) depending on version
+            Optional<?> optClient;
+            try {
+                optClient = (Optional<?>) clientApiClass
+                        .getMethod("getByPlayer", Player.class)
+                        .invoke(clientApi, player);
+            } catch (NoSuchMethodException e) {
+                optClient = (Optional<?>) clientApiClass
+                        .getMethod("getClient", java.util.UUID.class)
+                        .invoke(clientApi, player.getUniqueId());
             }
+
+            if (optClient == null || optClient.isEmpty()) {
+                player.sendMessage("§cDu bist nicht mit OpenAudioMc verbunden. Bitte verbinde dich zuerst.");
+                return;
+            }
+
+            Object client = optClient.get();
+
+            // Build OAMediaLink(url, new MediaOptions()) and call client.playMedia(link)
+            Class<?> mediaOptionsClass = Class.forName("com.craftmend.openaudiomc.api.media.MediaOptions");
+            Class<?> mediaLinkClass    = Class.forName("com.craftmend.openaudiomc.api.media.OAMediaLink");
+            Object mediaOptions = mediaOptionsClass.getDeclaredConstructor().newInstance();
+            Object mediaLink    = mediaLinkClass
+                    .getDeclaredConstructor(String.class, mediaOptionsClass)
+                    .newInstance(url, mediaOptions);
+            client.getClass().getMethod("playMedia", mediaLinkClass).invoke(client, mediaLink);
+
         } catch (ClassNotFoundException ignored) {
-            // OpenAudioMc not installed — silently skip
-        } catch (Exception e) {
-            logger.warning("Haaremy: OpenAudioMc Fehler: " + e.getMessage());
+            // OpenAudioMc API classes not found — different version installed?
+            player.sendMessage("§cOpenAudioMc API nicht gefunden. Bitte überprüfe die Version.");
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException
+                 | java.lang.reflect.InvocationTargetException | IllegalArgumentException e) {
+            logger.warning(() -> String.format("Haaremy: OpenAudioMc Fehler für %s: %s", player.getName(), e.getMessage()));
+            player.sendMessage("§cStream-Fehler: §e" + e.getMessage());
         }
     }
 

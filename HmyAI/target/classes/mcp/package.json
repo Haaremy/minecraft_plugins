@@ -1,0 +1,10 @@
+{
+  "name": "hmyai-mcp",
+  "version": "1.0.0",
+  "description": "MCP server bridging Claude to a Minecraft Paper server",
+  "type": "module",
+  "main": "server.js",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.3"
+  }
+}

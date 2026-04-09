@@ -78,6 +78,7 @@ public class BalloonManager implements Listener {
         player.sendMessage("§e/hmy ballon route start <Name> <Anzahl> §7- Starten");
         player.sendMessage("§e/hmy ballon route stop <Name> §7- Stoppen");
         player.sendMessage("§e/hmy ballon route info §7- Alle Routen");
+        player.sendMessage("§e/hmy ballon route delete <Name> §7- Route löschen");
         player.sendMessage("§6=== Fahrstuhl ===");
         player.sendMessage("§e/hmy ballon elevator create <Name> §7- Fahrstuhl erstellen");
         player.sendMessage("§e/hmy ballon elevator floor <Name> §7- Etage hinzufügen");
@@ -87,6 +88,7 @@ public class BalloonManager implements Listener {
         player.sendMessage("§e/hmy ballon elevator start <Name> §7- Starten");
         player.sendMessage("§e/hmy ballon elevator stop <Name> §7- Stoppen");
         player.sendMessage("§e/hmy ballon elevator info §7- Alle Fahrstühle");
+        player.sendMessage("§e/hmy ballon elevator delete <Name> §7- Fahrstuhl löschen");
     }
 
     // ====== ROUTE COMMANDS ======
@@ -129,9 +131,28 @@ public class BalloonManager implements Listener {
                 requireArgs(player, args, 4, "/hmy ballon route stop <Name>");
                 if (args.length >= 4) stopAutoTravel(player, args[3]);
             }
-            case "info" -> listActiveRoutes(player);
+            case "info"   -> listActiveRoutes(player);
+            case "delete" -> {
+                requireArgs(player, args, 4, "/hmy ballon route delete <Name>");
+                if (args.length >= 4) deleteRoute(player, args[3]);
+            }
             default -> player.sendMessage("§c✗ Unbekannte Aktion: " + args[2]);
         }
+    }
+
+    private void deleteRoute(Player player, String routeName) {
+        BalloonRoute route = routes.get(routeName);
+        if (route == null) { notFound(player, "Route", routeName); return; }
+        // Stop all active balloons on this route first
+        for (BalloonRide ride : new ArrayList<>(route.activeBalloons)) {
+            ride.removeStructure();
+            if (ride.minecart.isValid()) ride.minecart.remove();
+            activeBalloons.remove(ride.minecart.getUniqueId());
+        }
+        route.activeBalloons.clear();
+        routes.remove(routeName);
+        config.save(routes, elevatorRoutes);
+        player.sendMessage("§6✓ Route '§e" + routeName + "§6' gelöscht!");
     }
 
     private void createRoute(Player player, String routeName) {
@@ -306,9 +327,27 @@ public class BalloonManager implements Listener {
                 requireArgs(player, args, 4, "/hmy ballon elevator stop <Name>");
                 if (args.length >= 4) stopElevator(player, args[3]);
             }
-            case "info" -> listElevators(player);
+            case "info"   -> listElevators(player);
+            case "delete" -> {
+                requireArgs(player, args, 4, "/hmy ballon elevator delete <Name>");
+                if (args.length >= 4) deleteElevator(player, args[3]);
+            }
             default -> player.sendMessage("§c✗ Unbekannte Aktion: " + args[2]);
         }
+    }
+
+    private void deleteElevator(Player player, String name) {
+        ElevatorRoute route = elevatorRoutes.get(name);
+        if (route == null) { notFound(player, "Fahrstuhl", name); return; }
+        for (ElevatorRide ride : new ArrayList<>(route.activeElevators)) {
+            ride.removeStructure();
+            if (ride.minecart.isValid()) ride.minecart.remove();
+            activeElevators.remove(ride.minecart.getUniqueId());
+        }
+        route.activeElevators.clear();
+        elevatorRoutes.remove(name);
+        config.save(routes, elevatorRoutes);
+        player.sendMessage("§6✓ Fahrstuhl '§e" + name + "§6' gelöscht!");
     }
 
     private void createElevator(Player player, String name) {

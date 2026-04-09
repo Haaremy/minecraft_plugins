@@ -53,14 +53,30 @@ public class LobbyGameManager implements CommandExecutor {
             return true;
         }
 
-        if (args.length >= 1 && args[0].equalsIgnoreCase("create")) {
-            if (args.length >= 3 && args[1].equalsIgnoreCase("tiktaktoe")) {
-                createTicTacToe(player, args[2]);
-                return true;
-            }
-            if (args.length >= 2 && args[1].equalsIgnoreCase("crate")) {
-                createCrate(player);
-                return true;
+        if (args.length >= 1) {
+            switch (args[0].toLowerCase()) {
+                case "create" -> {
+                    if (args.length >= 3 && args[1].equalsIgnoreCase("tiktaktoe")) {
+                        createTicTacToe(player, args[2]);
+                        return true;
+                    }
+                    if (args.length >= 2 && args[1].equalsIgnoreCase("crate")) {
+                        createCrate(player);
+                        return true;
+                    }
+                }
+                case "list" -> {
+                    listGames(player);
+                    return true;
+                }
+                case "delete" -> {
+                    if (args.length >= 3 && args[1].equalsIgnoreCase("tiktaktoe")) {
+                        deleteGame(player, args[2]);
+                        return true;
+                    }
+                    player.sendMessage(Component.text("§cVerwendung: §e/lobbygame delete tiktaktoe <feld-id>"));
+                    return true;
+                }
             }
         }
 
@@ -68,6 +84,8 @@ public class LobbyGameManager implements CommandExecutor {
         player.sendMessage(Component.text("§e/lobbygame create tiktaktoe <feld-id>"));
         player.sendMessage(Component.text("§7Danach Schild platzieren: §eZeile 1: §f[g: tiktaktoe] §eZeile 2: §f<Anzeigename> §eZeile 3: §f<feld-id>"));
         player.sendMessage(Component.text("§e/lobbygame create crate §7(Truhe anvisieren)"));
+        player.sendMessage(Component.text("§e/lobbygame list §7– Alle Spiele anzeigen"));
+        player.sendMessage(Component.text("§e/lobbygame delete tiktaktoe <feld-id> §7– Spiel löschen"));
         return true;
     }
 
@@ -113,6 +131,31 @@ public class LobbyGameManager implements CommandExecutor {
 
         player.sendMessage(Component.text("§aTicTacToe-Feld §e" + name + " §8(ID: " + fieldId + ")§a erstellt!"));
         player.sendMessage(Component.text("§7Platziere ein Schild mit §e[g: TikTakToe] §7in der ersten Zeile zum Beitreten."));
+    }
+
+    private void listGames(Player player) {
+        if (activeTTTGames.isEmpty()) {
+            player.sendMessage(Component.text("§7Keine TicTacToe-Felder registriert."));
+            return;
+        }
+        player.sendMessage(Component.text("§6=== TicTacToe-Felder (" + activeTTTGames.size() + ") ==="));
+        for (TicTacToeGame game : activeTTTGames) {
+            player.sendMessage(Component.text(
+                    "§e" + game.getFieldId() + " §7– §f" + game.getName()
+                    + " §7[" + game.getState().name().toLowerCase() + "]"));
+        }
+    }
+
+    private void deleteGame(Player player, String fieldId) {
+        TicTacToeGame game = getGameByFieldId(fieldId);
+        if (game == null) {
+            player.sendMessage(Component.text("§cUnbekanntes Feld: §e" + fieldId));
+            return;
+        }
+        game.reset();
+        activeTTTGames.remove(game);
+        config.deleteField("tiktaktoe", fieldId);
+        player.sendMessage(Component.text("§aTicTacToe-Feld §e" + fieldId + " §agelöscht."));
     }
 
     // ── Game access ───────────────────────────────────────────────────────────

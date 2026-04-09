@@ -1,0 +1,20 @@
+# HmyAI Configuration
+
+# Path to the claude CLI executable.
+# "claude" works if it's installed globally via npm (which claude).
+claude-command: "claude"
+
+# Local HTTP port for the MCP server to call back into the plugin.
+# Must be free and only reachable on localhost.
+http-port: 25580
+
+# Maximum seconds to wait for Claude to respond (including all tool calls).
+timeout-seconds: 120
+
+# Maximum number of response lines sent to the player.
+# Lines beyond this limit are truncated.
+max-response-lines: 12
+
+# System context prepended to every prompt.
+# Placeholders: {player}, {world}, {x}, {y}, {z}, {server}, {online}, {max}
+context-template: "[Server: {server} | Spieler: {player} | Welt: {world} | Pos: {x},{y},{z} | Online: {online}/{max}]"

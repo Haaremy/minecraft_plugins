@@ -53,6 +53,18 @@ public class LobbyGamesConfig {
         }
     }
 
+    public boolean deleteField(String gameType, String fieldId) {
+        String path = gameType + ".fields." + fieldId;
+        if (!config.contains(path)) return false;
+        config.set(path, null);
+        try {
+            config.save(file.toFile());
+        } catch (IOException e) {
+            logger.severe("Fehler beim Speichern von lobbygames.yml: " + e.getMessage());
+        }
+        return true;
+    }
+
     public List<TicTacToeField> getTicTacToeFields() {
         List<TicTacToeField> result = new ArrayList<>();
         ConfigurationSection section = config.getConfigurationSection("tiktaktoe.fields");
