@@ -43,6 +43,16 @@ Inventory taken from the live Minecraft tree under `/root/minecraft` on 2026-05-
 | Kitsune | `LuckPerms` | Third-party | 5.5.36 | Documented only | Permissions provider. |
 | Kitsune | `Plan` | Third-party | 5.7 build 3306 | Documented only | Player analytics. |
 | Kitsune | `WorldEdit` | Third-party | 7.4.0+7381-3decaf0 | Documented only | World editing/admin tooling. |
+| Game Test | `hmyCore` | Custom | 1.0 | Archived deployed JAR | Shared game-mode infrastructure on the flat test backend. |
+| Game Test | `hmyDailyRewards` | Custom | 1.0 | Archived deployed JAR | Daily rewards and streaks on the flat test backend. |
+| Game Test | `hmy1v1` | Custom | 1.0 | Archived deployed JAR | 1v1 duel system on the flat test backend. |
+| Game Test | `hmyParkour` | Custom | 1.0 | Archived deployed JAR | Parkour testing on the flat test backend. |
+| Game Test | `hmySpleef` | Custom | 1.0 | Archived deployed JAR | Spleef testing on the flat test backend. |
+| Game Test | `hmySumo` | Custom | 1.0 | Archived deployed JAR | Sumo testing on the flat test backend. |
+| Game Test | `hmyTNTRun` | Custom | 1.0 | Archived deployed JAR | TNTRun testing on the flat test backend. |
+| Game Test | `hmyPaper` | Custom | 1.0 | Source present | Shared Paper commands and world utilities on the flat test backend. |
+| Game Test | `LuckPerms` | Third-party | 5.5.36 | Documented only | Permissions provider. |
+| Game Test | `Plan` | Third-party | 5.7 build 3306 | Documented only | Player analytics. |
 | Vanilla | `hmyPaper` | Custom | 1.0 | Source present | Shared Paper utilities. |
 | Vanilla | `LuckPerms` | Third-party | 5.5.36 | Documented only | Permissions provider. |
 | Vanilla | `Plan` | Third-party | 5.7 build 3306 | Documented only | Player analytics. |

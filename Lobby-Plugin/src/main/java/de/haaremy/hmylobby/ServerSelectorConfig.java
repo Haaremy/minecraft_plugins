@@ -52,4 +52,12 @@ public class ServerSelectorConfig {
     public List<SelectorEntry> getEntries() {
         return entries;
     }
+
+    public boolean hasServer(String server) {
+        return entries.stream().anyMatch(entry -> entry.server().equalsIgnoreCase(server));
+    }
+
+    public List<String> getServerNames() {
+        return entries.stream().map(SelectorEntry::server).distinct().toList();
+    }
 }

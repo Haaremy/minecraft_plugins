@@ -23,6 +23,14 @@ commands:
     description: "Verwaltet verwaltete Jukeboxen (Endlosschleifen, Playlists, Streams)."
     usage: "/jukebox <create|list|sync|<id> <play|stop|add|set>>"
     permission: hmy.lobby.jukebox.admin
+  navigator:
+    description: "Öffnet den integrierten Lobby-Navigator."
+    usage: "/navigator"
+    permission: hmy.lobby.selector
+  play:
+    description: "Wechselt über den integrierten Navigator zu einem Server."
+    usage: "/play <servername>"
+    permission: hmy.lobby.selector
 permissions:
   hmy.lobby.message.none:
     description: Deaktiviert die Willkommensnachricht beim Betreten der Lobby.

@@ -19,6 +19,7 @@ lobby = "127.0.0.1:30066"
 ai = "10.0.3.62:30066"
 vanilla = "127.0.0.1:30067"
 kitsune1 = "127.0.0.1:30068"
+gametest = "127.0.0.1:30069"
 try = ["lobby","vanilla"]
 ```
 
@@ -61,3 +62,13 @@ The Proxmox host remains unable to connect to `10.0.3.62:30066`, which is expect
 - If another backend server is moved to a different VM, add narrow Proxmox firewall rules for only the required source VM and backend ports.
 - Keep backend Paper servers in `online-mode=false` when they are behind Velocity with modern forwarding.
 - Ensure the Velocity `forwarding.secret` matches the Paper backend proxy secret when adding new backend nodes.
+
+## Game Plugin Test Backend
+
+VM111 also has a dedicated flat Paper backend for game plugin testing:
+
+| Backend | Address | Service | World | Purpose |
+| --- | --- | --- | --- | --- |
+| `gametest` | `127.0.0.1:30069` | `minecraft-games-test.service` | `games_test` | Flat test server with the deployed game-mode plugins. |
+
+The backend is local to VM111 and is reached only through Velocity. The Lobby navigator entry points to `gametest`.

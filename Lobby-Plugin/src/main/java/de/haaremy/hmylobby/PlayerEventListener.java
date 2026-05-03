@@ -282,7 +282,7 @@ public class PlayerEventListener implements Listener {
 
     // ── Navigator ─────────────────────────────────────────────────────────────
 
-    private void openNavigatorMenu(Player player) {
+    void openNavigatorMenu(Player player) {
         Inventory inv = Bukkit.createInventory(null, 45, Component.text("§6Navigator"));
         fillGlass(inv);
 
@@ -542,7 +542,7 @@ public class PlayerEventListener implements Listener {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private void connectToServer(Player player, String server) {
+    void connectToServer(Player player, String server) {
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Connect");
         out.writeUTF(server);

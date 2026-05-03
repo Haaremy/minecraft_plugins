@@ -104,6 +104,18 @@ public class HmyLobby extends JavaPlugin {
         if (jukeboxCmd != null) jukeboxCmd.setExecutor(new ComJukebox(jukeboxManager));
 
         // Commands
+        ComNavigator navigatorCommand = new ComNavigator(this);
+        var navigatorCmd = getCommand("navigator");
+        if (navigatorCmd != null) {
+            navigatorCmd.setExecutor(navigatorCommand);
+            navigatorCmd.setTabCompleter(navigatorCommand);
+        }
+        var playCmd = getCommand("play");
+        if (playCmd != null) {
+            playCmd.setExecutor(navigatorCommand);
+            playCmd.setTabCompleter(navigatorCommand);
+        }
+
         var hmyCmd = getCommand("hmy");
         if (hmyCmd != null) {
             ComHmyLanguage hmyCommand = new ComHmyLanguage(luckPerms, language);
@@ -149,4 +161,6 @@ public class HmyLobby extends JavaPlugin {
     public HmyConfigManager getConfigManager()                 { return configManager; }
     public LobbyGameManager getLobbyGameManager()              { return lobbyGameManager; }
     public SocialListener getSocialListener()                  { return socialListener; }
+    public void openNavigatorMenu(org.bukkit.entity.Player player) { playerEventListener.openNavigatorMenu(player); }
+    public void connectToServer(org.bukkit.entity.Player player, String server) { playerEventListener.connectToServer(player, server); }
 }

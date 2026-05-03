@@ -61,3 +61,12 @@ server-selector:
       lore:
         - "§7Klicke zum Wechseln"
       server: "creative"
+    gametest:
+      x: 2
+      y: 2
+      blocktype: "SLIME_BLOCK"
+      name: "§aSpielplugin-Testwelt"
+      lore:
+        - "§7Flache Testwelt für Spielmodi"
+        - "§8Backend: gametest"
+      server: "gametest"
