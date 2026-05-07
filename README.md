@@ -16,6 +16,10 @@ This repository contains the custom plugins and operational documentation for th
 | `docs/PLUGIN_INVENTORY.md` | Full plugin inventory by server and ownership. |
 | `docs/NETWORK.md` | Velocity backend topology, VM mapping, and the VM111-to-VM107 firewall fix. |
 
+> **Bauanleitung für Lobby & Spielplattformen:** Schritt-für-Schritt-Guide zum physischen Aufbau (Größen, Materialien, Spawn-Positionen) → [BAUANLEITUNG.md](BAUANLEITUNG.md). Plugin-Setup, Commands und Permissions stehen weiterhin in den jeweiligen Plugin-READMEs unten.
+
+---
+
 ## Dependencies
 
 | Plugin | Platform | Links |
