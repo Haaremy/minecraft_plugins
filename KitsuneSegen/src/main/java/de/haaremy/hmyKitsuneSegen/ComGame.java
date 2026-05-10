@@ -76,7 +76,9 @@ public class ComGame implements CommandExecutor, TabCompleter {
                 sender.sendMessage(ChatColor.YELLOW + "Beende Spiel…");
                 if (gm.getState() == GameManager.State.COUNTDOWN) {
                     gm.cancelCountdown();
-                    Bukkit.broadcast(net.kyori.adventure.text.Component.text(ChatColor.RED + "Spiel abgebrochen."));
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        p.sendMessage(ChatColor.RED + "Spiel abgebrochen.");
+                    }
                 } else {
                     gm.endGame(null);
                 }

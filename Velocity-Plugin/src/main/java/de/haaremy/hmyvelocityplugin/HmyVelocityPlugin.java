@@ -18,6 +18,8 @@ import de.haaremy.hmyvelocityplugin.economy.ComCoins;
 import de.haaremy.hmyvelocityplugin.economy.CurrencyManager;
 import de.haaremy.hmyvelocityplugin.friends.ComFriend;
 import de.haaremy.hmyvelocityplugin.friends.FriendManager;
+import de.haaremy.hmyvelocityplugin.messaging.MessageRouter;
+import de.haaremy.hmyvelocityplugin.messaging.VelocityMessagingService;
 import net.luckperms.api.LuckPerms;
 import org.slf4j.Logger;
 
@@ -30,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @Plugin(
     id = "hmyvelocityplugin",
     name = "hmyVelocity",
-    version = "1.2",
+    version = "1.3",
     authors = {"Haaremy"},
     dependencies = {@Dependency(id = "luckperms")}
 )
@@ -40,14 +42,15 @@ public class HmyVelocityPlugin {
     private final Logger      logger;
     private final Path        dataDirectory;
 
-    private LuckPerms           luckPerms;
-    private HmyLobby            hmyLobby;
-    private HmyLanguageManager  languageManager;
-    private HmyConfigManager    configManager;
-    private CurrencyManager     currencyManager;
-    private FriendManager       friendManager;
-    private PlayerTracker       playerTracker;
-    private VelocityTabManager  tabManager;
+    private LuckPerms                 luckPerms;
+    private HmyLobby                  hmyLobby;
+    private HmyLanguageManager        languageManager;
+    private HmyConfigManager          configManager;
+    private CurrencyManager           currencyManager;
+    private FriendManager             friendManager;
+    private PlayerTracker             playerTracker;
+    private VelocityTabManager        tabManager;
+    private VelocityMessagingService  messagingService;
 
     // Channels
     private static final MinecraftChannelIdentifier TRIGGER_CHANNEL = MinecraftChannelIdentifier.create("hmy", "trigger");
@@ -76,10 +79,11 @@ public class HmyVelocityPlugin {
         this.languageManager = new HmyLanguageManager(logger, dataDirectory, configManager, luckPerms);
         languageManager.loadAllLanguageFiles();
 
-        this.currencyManager = new CurrencyManager(dataDirectory, logger);
-        this.friendManager   = new FriendManager(dataDirectory, logger);
-        this.playerTracker   = new PlayerTracker(server, friendManager);
-        this.tabManager      = new VelocityTabManager(this, server, friendManager, playerTracker, luckPerms);
+        this.currencyManager  = new CurrencyManager(dataDirectory, logger);
+        this.friendManager    = new FriendManager(dataDirectory, logger);
+        this.playerTracker    = new PlayerTracker(server, friendManager);
+        this.tabManager       = new VelocityTabManager(this, server, friendManager, playerTracker, luckPerms);
+        this.messagingService = new VelocityMessagingService(server, logger);
 
         registerListeners();
         initializePluginFeatures();
@@ -99,6 +103,12 @@ public class HmyVelocityPlugin {
         server.getChannelRegistrar().register(STATUS_CHANNEL);
         server.getChannelRegistrar().register(ECONOMY_CHANNEL);
         server.getChannelRegistrar().register(SOCIAL_CHANNEL);
+
+        // hmy:msg generic messaging-layer (v2.2)
+        server.getChannelRegistrar().register(VelocityMessagingService.CHANNEL_ID);
+        server.getEventManager().register(this, messagingService);
+        server.getEventManager().register(this, new MessageRouter(messagingService, logger));
+        logger.info("Haaremy: hmy:msg generischer Messaging-Layer registriert.");
     }
 
     private void initializePluginFeatures() {

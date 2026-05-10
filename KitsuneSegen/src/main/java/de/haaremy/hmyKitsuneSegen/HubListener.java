@@ -20,6 +20,8 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
+
 /**
  * Handles all events specific to the hub world:
  *  – AGB enforcement: freeze + book until accepted
@@ -48,7 +50,7 @@ public class HubListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        event.setJoinMessage(null);
+        event.joinMessage(null);
 
         World hub = plugin.getServer().getWorld(plugin.getGameConfig().getHubWorld());
         if (hub == null) return;
@@ -85,7 +87,7 @@ public class HubListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        event.setQuitMessage(null);
+        event.quitMessage(null);
         Player player = event.getPlayer();
         hubBar.removePlayer(player);
         plugin.getGameManager().onPlayerQuit(player);
@@ -186,12 +188,11 @@ public class HubListener implements Listener {
         if (player.hasPermission("hmy.kitsune.build")) return;
 
         if (isInGame(player)) {
-            String blockType = event.getBlock().getType().name();
-            if (plugin.getGameConfig().getBreakableBlocks().contains(blockType)) return;
+            if (plugin.getGameConfig().getBreakableBlocks().contains(event.getBlock().getType())) return;
         }
 
         event.setCancelled(true);
-        player.sendActionBar(ChatColor.RED + "Du kannst hier keine Blöcke abbauen.");
+        player.sendActionBar(ChatColor.RED + "Du kannst hier keine Bloecke abbauen.");
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -207,12 +208,13 @@ public class HubListener implements Listener {
     // ── Chat suppression: only /dm allowed ────────────────────────────────────
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         if (!isInHub(player)) return;
         event.setCancelled(true);
-        player.sendMessage(ChatColor.GRAY + "Öffentlicher Chat ist deaktiviert. "
-                + ChatColor.AQUA + "Nutze §e/dm <Spieler> <Nachricht> §bfür Direktnachrichten.");
+        player.sendMessage(ChatColor.GRAY + "Oeffentlicher Chat ist deaktiviert. "
+                + ChatColor.AQUA + "Nutze " + ChatColor.YELLOW + "/dm <Spieler> <Nachricht> "
+                + ChatColor.AQUA + "fuer Direktnachrichten.");
     }
 
     // ── Hub world stay ────────────────────────────────────────────────────────
@@ -259,10 +261,10 @@ public class HubListener implements Listener {
         int min = plugin.getGameConfig().getMinPlayers();
         int max = plugin.getGameConfig().getMaxPlayers();
         String status = current >= min
-                ? ChatColor.GREEN + "Countdown läuft!"
-                : ChatColor.GRAY + "Warte auf Spieler…";
-        return ChatColor.AQUA + "§l" + current + " §r§7/ §a" + max
-                + " §7Spieler  §8│  " + status;
+                ? ChatColor.GREEN + "Countdown laeuft!"
+                : ChatColor.GRAY + "Warte auf Spieler...";
+        return ChatColor.AQUA + "" + ChatColor.BOLD + current + " " + ChatColor.RESET + ChatColor.GRAY + "/ " + ChatColor.GREEN + max
+                + " " + ChatColor.GRAY + "Spieler  " + ChatColor.DARK_GRAY + "|  " + status;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

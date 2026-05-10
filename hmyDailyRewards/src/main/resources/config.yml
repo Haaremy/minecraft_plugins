@@ -1,0 +1,66 @@
+# hmyDailyRewards Configuration
+# Definiere Belohnungen pro Tag (1-30).
+# Zwischen-Tage werden interpoliert (COINS skalieren linear zwischen naechstem Meilenstein).
+#
+# Types:
+#   COINS          - Gibt Coins ueber hmyCore EconomyManager
+#   COSMETIC_CRATE - Gibt Kosmetik-Kiste als Item (NamespacedKey hmy:crate.cosmetic)
+#   RANK_TEMP      - Temporaerer LuckPerms-Rang (Dauer in Sekunden)
+#   ITEM           - Beliebiger ItemStack (Material via 'material')
+
+rewards:
+  1:
+    type: COINS
+    amount: 100
+    description: "<yellow>100 Coins</yellow>"
+    icon: GOLD_NUGGET
+  2:
+    type: COINS
+    amount: 150
+    description: "<yellow>150 Coins</yellow>"
+    icon: GOLD_NUGGET
+  3:
+    type: COINS
+    amount: 200
+    description: "<yellow>200 Coins</yellow>"
+    icon: GOLD_INGOT
+  4:
+    type: COINS
+    amount: 250
+    description: "<yellow>250 Coins</yellow>"
+    icon: GOLD_INGOT
+  5:
+    type: COINS
+    amount: 350
+    description: "<yellow>350 Coins</yellow>"
+    icon: GOLD_INGOT
+  6:
+    type: COINS
+    amount: 500
+    description: "<yellow>500 Coins</yellow>"
+    icon: GOLD_BLOCK
+  7:
+    type: COSMETIC_CRATE
+    amount: 1
+    description: "<aqua>Kosmetik-Kiste</aqua>"
+    icon: CHEST
+  14:
+    type: COSMETIC_CRATE
+    amount: 2
+    description: "<aqua>2x Kosmetik-Kiste</aqua>"
+    icon: ENDER_CHEST
+  21:
+    type: COINS
+    amount: 2000
+    description: "<yellow>2000 Coins</yellow>"
+    icon: GOLD_BLOCK
+  30:
+    type: RANK_TEMP
+    rank: "phoenix"
+    duration: 86400
+    amount: 1
+    description: "<gold>1 Tag Phoenix-Rang</gold>"
+    icon: NETHER_STAR
+
+# Streak bricht nach X Stunden ohne Login (Standard 48)
+streak_timeout_hours: 48

@@ -14,7 +14,7 @@ import java.util.*;
 /**
  * Central game state machine for Kitsune Segen.
  *
- * States: WAITING → COUNTDOWN → RUNNING → ENDED → WAITING
+ * States: WAITING -> COUNTDOWN -> RUNNING -> ENDED -> WAITING
  */
 public class GameManager {
 
@@ -36,7 +36,7 @@ public class GameManager {
         this.plugin = plugin;
     }
 
-    // ── Getters ────────────────────────────────────────────────────────────────
+    // -- Getters --
 
     public State  getState()             { return state; }
     public boolean isJoinable()          { return state == State.WAITING || state == State.COUNTDOWN; }
@@ -55,7 +55,7 @@ public class GameManager {
         return result;
     }
 
-    // ── Join / Quit ────────────────────────────────────────────────────────────
+    // -- Join / Quit --
 
     public void onPlayerJoin(Player player) {
         if (!isJoinable()) {
@@ -92,12 +92,12 @@ public class GameManager {
             World hub = Bukkit.getWorld(plugin.getGameConfig().getHubWorld());
             if (hub != null && hub.getPlayers().size() < plugin.getGameConfig().getMinPlayers()) {
                 cancelCountdown();
-                broadcast("§cZu wenige Spieler – Countdown abgebrochen.");
+                broadcast(ChatColor.RED + "Zu wenige Spieler – Countdown abgebrochen.");
             }
         }
     }
 
-    // ── Countdown ─────────────────────────────────────────────────────────────
+    // -- Countdown --
 
     public void startCountdown() {
         if (state != State.WAITING) return;
@@ -132,7 +132,7 @@ public class GameManager {
         countdownLeft = 0;
     }
 
-    // ── Game Start ─────────────────────────────────────────────────────────────
+    // -- Game Start --
 
     public void startGame() {
         state = State.RUNNING;
@@ -172,7 +172,7 @@ public class GameManager {
             }
         }
 
-        broadcast("§6§lKitsune Segen §egestartet! §a" + players.size() + " Spieler kämpfen!");
+        broadcast(ChatColor.GOLD + "" + ChatColor.BOLD + "Kitsune Segen " + ChatColor.YELLOW + "gestartet! " + ChatColor.GREEN + players.size() + " Spieler kaempfen!");
         plugin.getScoreboardManager().startUpdating();
     }
 
@@ -183,7 +183,7 @@ public class GameManager {
         giveStartItems(p);
         p.getInventory().setChestplate(new ItemStack(Material.ELYTRA));
         p.setGliding(true);
-        p.sendTitle(ChatColor.GOLD + "§lKitsune Segen", ChatColor.GRAY + "Spring!", 10, 40, 10);
+        p.sendTitle(ChatColor.GOLD + "" + ChatColor.BOLD + "Kitsune Segen", ChatColor.GRAY + "Spring!", 10, 40, 10);
     }
 
     private void teleportNormal(Player p, Location loc) {
@@ -191,12 +191,12 @@ public class GameManager {
         p.teleport(loc);
         resetStats(p);
         giveStartItems(p);
-        p.sendTitle(ChatColor.GOLD + "§lKitsune Segen", ChatColor.GRAY + "Los!", 10, 40, 10);
+        p.sendTitle(ChatColor.GOLD + "" + ChatColor.BOLD + "Kitsune Segen", ChatColor.GRAY + "Los!", 10, 40, 10);
     }
 
     private void resetStats(Player p) {
         double maxHp = plugin.getGameConfig().getMaxHealth();
-        var attr = p.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        var attr = p.getAttribute(Attribute.MAX_HEALTH);
         if (attr != null) attr.setBaseValue(maxHp);
         p.setHealth(maxHp);
         p.setFoodLevel(20);
@@ -210,13 +210,15 @@ public class GameManager {
         // Slot 0: Axe (locked)
         ItemStack axe = new ItemStack(Material.WOODEN_HOE);
         ItemMeta axeMeta = axe.getItemMeta();
-        axeMeta.setDisplayName(ChatColor.GOLD + "Axt");
-        axeMeta.setLore(List.of(ChatColor.GRAY + "Verteidige dich so lange du musst."));
-        axe.setItemMeta(axeMeta);
+        if (axeMeta != null) {
+            axeMeta.setDisplayName(ChatColor.GOLD + "Axt");
+            axeMeta.setLore(List.of(ChatColor.GRAY + "Verteidige dich so lange du musst."));
+            axe.setItemMeta(axeMeta);
+        }
         p.getInventory().setItem(0, axe);
     }
 
-    // ── Death / Elimination ────────────────────────────────────────────────────
+    // -- Death / Elimination --
 
     public void eliminatePlayer(Player killed, Player killer) {
         UUID uuid = killed.getUniqueId();
@@ -229,12 +231,12 @@ public class GameManager {
 
         if (killer != null) {
             kills.merge(killer.getUniqueId(), 1, Integer::sum);
-            killer.sendMessage(ChatColor.GREEN + "+" + 1 + " Kill: §e" + killed.getName());
+            killer.sendMessage(ChatColor.GREEN + "+1 Kill: " + ChatColor.YELLOW + killed.getName());
         }
 
         killed.sendTitle(
             ChatColor.RED + "Ausgeschieden!",
-            ChatColor.YELLOW + "Platz §e" + placement + " §7/ §e" + total,
+            ChatColor.YELLOW + "Platz " + ChatColor.YELLOW + placement + ChatColor.GRAY + " / " + ChatColor.YELLOW + total,
             10, 80, 20
         );
 
@@ -242,19 +244,7 @@ public class GameManager {
         killed.setGameMode(GameMode.SPECTATOR);
         killed.getInventory().clear();
 
-        ItemStack leave = new ItemStack(Material.RED_DYE);
-        ItemMeta lm = leave.getItemMeta();
-        lm.setDisplayName(ChatColor.RED + "§lVerlassen");
-        lm.setLore(List.of(ChatColor.GRAY + "Zurück zur Lobby"));
-        leave.setItemMeta(lm);
-        killed.getInventory().setItem(0, leave);
-
-        ItemStack report = new ItemStack(Material.BOOK);
-        ItemMeta rm = report.getItemMeta();
-        rm.setDisplayName(ChatColor.YELLOW + "§lReport");
-        rm.setLore(List.of(ChatColor.GRAY + "Spieler melden"));
-        report.setItemMeta(rm);
-        killed.getInventory().setItem(8, report);
+        giveSpectatorItems(killed);
 
         // Hide from alive players (but not from other spectators)
         for (Player alive : getAlivePlayers()) {
@@ -277,16 +267,20 @@ public class GameManager {
 
         ItemStack leave = new ItemStack(Material.RED_DYE);
         ItemMeta lm = leave.getItemMeta();
-        lm.setDisplayName(ChatColor.RED + "§lVerlassen");
-        lm.setLore(List.of(ChatColor.GRAY + "Zurück zur Lobby"));
-        leave.setItemMeta(lm);
+        if (lm != null) {
+            lm.setDisplayName(ChatColor.RED + "" + ChatColor.BOLD + "Verlassen");
+            lm.setLore(List.of(ChatColor.GRAY + "Zurueck zur Lobby"));
+            leave.setItemMeta(lm);
+        }
         player.getInventory().setItem(0, leave);
 
         ItemStack report = new ItemStack(Material.BOOK);
         ItemMeta rm = report.getItemMeta();
-        rm.setDisplayName(ChatColor.YELLOW + "§lReport");
-        rm.setLore(List.of(ChatColor.GRAY + "Spieler melden"));
-        report.setItemMeta(rm);
+        if (rm != null) {
+            rm.setDisplayName(ChatColor.YELLOW + "" + ChatColor.BOLD + "Report");
+            rm.setLore(List.of(ChatColor.GRAY + "Spieler melden"));
+            report.setItemMeta(rm);
+        }
         player.getInventory().setItem(8, report);
     }
 
@@ -298,15 +292,15 @@ public class GameManager {
         }
     }
 
-    // ── Game End ───────────────────────────────────────────────────────────────
+    // -- Game End --
 
     public void endGame(Player winner) {
         state = State.ENDED;
         plugin.getScoreboardManager().stopUpdating();
 
         if (winner != null) {
-            broadcast(ChatColor.GOLD + "§l" + winner.getName() + " §ehat gewonnen!");
-            winner.sendTitle(ChatColor.GOLD + "§lGEWONNEN!", ChatColor.YELLOW + "Herzlichen Glückwunsch!", 10, 100, 20);
+            broadcast(ChatColor.GOLD + "" + ChatColor.BOLD + winner.getName() + " " + ChatColor.YELLOW + "hat gewonnen!");
+            winner.sendTitle(ChatColor.GOLD + "" + ChatColor.BOLD + "GEWONNEN!", ChatColor.YELLOW + "Herzlichen Glueckwunsch!", 10, 100, 20);
         } else {
             broadcast(ChatColor.GRAY + "Unentschieden – niemand hat gewonnen.");
         }
@@ -316,12 +310,12 @@ public class GameManager {
         if (winner != null) allPlacements.add(winner.getName());
         allPlacements.addAll(placements);
 
-        StringBuilder sb = new StringBuilder(ChatColor.GOLD + "§lErgebnisse:\n");
+        StringBuilder sb = new StringBuilder(ChatColor.GOLD + "" + ChatColor.BOLD + "Ergebnisse:\n");
         for (int i = 0; i < allPlacements.size(); i++) {
             String prefix = switch (i) {
-                case 0 -> ChatColor.GOLD + "§l🥇 ";
-                case 1 -> ChatColor.GRAY + "§l🥈 ";
-                case 2 -> ChatColor.DARK_RED + "§l🥉 ";
+                case 0 -> ChatColor.GOLD + "" + ChatColor.BOLD + "\u00bb 1. ";
+                case 1 -> ChatColor.GRAY + "" + ChatColor.BOLD + "\u00bb 2. ";
+                case 2 -> ChatColor.DARK_RED + "" + ChatColor.BOLD + "\u00bb 3. ";
                 default -> ChatColor.WHITE.toString() + (i + 1) + ". ";
             };
             sb.append(prefix).append(ChatColor.WHITE).append(allPlacements.get(i)).append("\n");
@@ -354,14 +348,14 @@ public class GameManager {
         countdownLeft = 0;
     }
 
-    // ── Utilities ─────────────────────────────────────────────────────────────
+    // -- Utilities --
 
     private void broadcast(String msg) {
         Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(msg));
     }
 
     void sendToLobby(Player player) {
-        player.sendMessage(ChatColor.YELLOW + "Spiel läuft bereits – du wirst weitergeleitet…");
+        player.sendMessage(ChatColor.YELLOW + "Spiel laeuft bereits – du wirst weitergeleitet...");
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             try {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();

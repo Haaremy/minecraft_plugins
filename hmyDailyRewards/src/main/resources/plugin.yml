@@ -1,0 +1,12 @@
+name: hmyDailyRewards
+version: "1.0"
+main: de.haaremy.hmydailyrewards.HmyDailyRewards
+api-version: 1.19
+depend: [hmyCore]
+softdepend: [LuckPerms]
+description: Taegliche Belohnungen mit Login-Streak
+author: Haaremy
+commands:
+  daily:
+    description: Taegliche Belohnung abholen
+    usage: /daily [claim|streak|rewards]

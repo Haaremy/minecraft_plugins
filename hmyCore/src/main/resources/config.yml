@@ -1,0 +1,32 @@
+# hmyCore Configuration
+# hmyCubed — the Haaremy Minecraft Server - Core Plugin
+
+# Storage backend
+# - "sqlite" (Default, lokal, pro Backend isoliert) — sicher fuer Tests
+# - "mariadb" (Cross-Server-Persistenz, MariaDB auf VM 111)
+storage:
+  type: sqlite
+  host: 10.0.3.16
+  port: 3306
+  database: hmycore
+  user: hmycore
+  password: ""
+  pool-size: 4
+
+# Economy settings
+economy:
+  starting-coins: 0
+
+# Arena settings
+arena:
+  countdown-seconds: 5
+
+# Messages prefix
+prefix: "<gradient:#ff6b35:#a8d8ea>hmyCubed</gradient> <dark_gray>|</dark_gray> "
+
+# Cross-Server-Messaging (Velocity PluginMessage, hmy:msg Channel)
+# Der server-name MUSS mit dem in velocity.toml [servers] eingetragenen Namen
+# uebereinstimmen (z. B. "lobby", "survival", "kitsune", "ai") — sonst kann
+# Velocity Frames nicht korrekt routen.
+messaging:
+  server-name: unknown

@@ -1,7 +1,7 @@
 name: hmyKitsuneSegen
-version: "2.0"
+version: "6"
 main: de.haaremy.hmykitsunesegen.HmyKitsuneSegen
-api-version: 1.20
+api-version: '1.21'
 depend: [LuckPerms]
 description: Fortnite-ähnliches Kampfspiel auf mythologischer Grundlage.
 author: Haaremy

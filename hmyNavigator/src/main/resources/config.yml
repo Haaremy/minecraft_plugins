@@ -1,0 +1,11 @@
+# Server-Mappings
+servers:
+  sumo: kitsune
+  1v1: kitsune
+  parkour: kitsune
+  tntrun: kitsune
+  spleef: kitsune
+  survival: survival
+
+# Kompass-Slot
+compass-slot: 4

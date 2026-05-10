@@ -37,7 +37,8 @@ public void run() {
                 "§l========================",
                 "§e§7 Willkommen auf",
                 "",
-                "§dMC.HAAREMY.DE ",
+                "§dhmyCubed §7(hmy)³",
+                "§8by §fHaaremy §7· §fmc.haaremy.de",
                 "",
                 "§7Online Spieler: §d" + playersInWorld.size(),
                 "§r§l========================"

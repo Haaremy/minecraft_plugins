@@ -7,22 +7,21 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
 
-public class LuckyItem implements Listener {
+public class LuckyItem {
 
     private final HmyKitsuneSegen plugin;
+    private static final Random random = new Random();
 
     // NamespacedKeys for legendary item identification
     public final NamespacedKey KEY_LEG_BOOTS;
@@ -38,95 +37,94 @@ public class LuckyItem implements Listener {
 
      // Kategorien
     private static final String[] CATEGORIES = {"Multishot", "Speedshot", "Distanceshot", "Precisionshot"};
-    
-    // Raritäten mit zugehörigen Farben
+
+    // Raritaeten mit zugehoerigen Farben
     private static final ChatColor[] RARITY_COLORS = {
-            ChatColor.GRAY,    // Gewöhnlich
-            ChatColor.GREEN,   // Ungewöhnlich
-            ChatColor.BLUE,    // Selten
+            ChatColor.GRAY,        // Gewoehnlich
+            ChatColor.GREEN,       // Ungewoehnlich
+            ChatColor.BLUE,        // Selten
             ChatColor.DARK_PURPLE, // Episch
-            ChatColor.GOLD     // Legendär
+            ChatColor.GOLD         // Legendaer
     };
 
-     public Inventory createNormalChest(Inventory inventory){
-            Random random = new Random();
-                // Füge Gegenstände in die Truhe ein
-                inventory.addItem(new ItemStack(Material.DIAMOND, 5));
+     public Inventory createNormalChest(Inventory inventory) {
+            // Fuege Gegenstaende in die Truhe ein
+            inventory.addItem(new ItemStack(Material.DIAMOND, 5));
 
-                if (random.nextDouble() < 0.7) {
-                    ItemStack bow = randomBow(0);
-                    inventory.addItem(bow);
-                }
+            if (random.nextDouble() < 0.7) {
+                ItemStack bow = randomBow(0);
+                inventory.addItem(bow);
+            }
 
-                 if (random.nextDouble() < 0.7) {
-                    ItemStack buildtool = createItem(Material.OAK_PLANKS, "§6Bauholz", List.of("§7Angriff? Blockade!"));
-                    inventory.addItem(buildtool);
-                }
+            if (random.nextDouble() < 0.7) {
+                ItemStack buildtool = createItem(Material.OAK_PLANKS, ChatColor.GOLD + "Bauholz", List.of(ChatColor.GRAY + "Angriff? Blockade!"));
+                inventory.addItem(buildtool);
+            }
 
-                 ItemStack arrow = createArrow(1);
-                    inventory.addItem(arrow);
-                if (random.nextDouble() < 0.1) {
+            ItemStack arrow = createArrow(1);
+            inventory.addItem(arrow);
+            if (random.nextDouble() < 0.1) {
                 ItemStack arrow2 = createArrow(1.5);
-                    inventory.addItem(arrow2);
-                }
+                inventory.addItem(arrow2);
+            }
 
-               if (random.nextDouble() < 0.05) {
-                 ItemStack potion1 = createHealingPotion();
-                    inventory.addItem(potion1);
-                } 
-
-        return inventory;
-     }
-
-    public Inventory createSpecialChest(Inventory inventory){
-                Random random = new Random();
-                // Füge Gegenstände in die Truhe ein
-                inventory.addItem(new ItemStack(Material.DIAMOND, 5));
-                if (random.nextDouble() < 0.9) {
-                    ItemStack bow = randomBow(1);
-                    inventory.addItem(bow);
-                }
-                 if (random.nextDouble() < 0.7) {
-                    ItemStack buildtool = createItem(Material.OAK_PLANKS, "§6Bauholz", List.of("§7Angriff? Blockade!"));
-                    inventory.addItem(buildtool);
-                }
-
-                ItemStack arrow = createArrow(2);
-                    inventory.addItem(arrow);
-                    ItemStack arrow2 = createArrow(2.5);
-                    inventory.addItem(arrow2);
-
-                if (random.nextDouble() < 0.2) {
-                 ItemStack potion1 = createHealingPotion();
-                    inventory.addItem(potion1);
-                } 
-
-                if (random.nextDouble() < 0.05) {
-                 ItemStack potion2 = createDamagePotion();
-                    inventory.addItem(potion2);
-                } 
-
-                if (random.nextDouble() < 0.01) {
-                 inventory.addItem(new ItemStack(Material.SHIELD, 1));
-                } 
+            if (random.nextDouble() < 0.05) {
+                ItemStack potion1 = createHealingPotion();
+                inventory.addItem(potion1);
+            }
 
         return inventory;
      }
 
+    public Inventory createSpecialChest(Inventory inventory) {
+            // Fuege Gegenstaende in die Truhe ein
+            inventory.addItem(new ItemStack(Material.DIAMOND, 5));
+            if (random.nextDouble() < 0.9) {
+                ItemStack bow = randomBow(1);
+                inventory.addItem(bow);
+            }
+            if (random.nextDouble() < 0.7) {
+                ItemStack buildtool = createItem(Material.OAK_PLANKS, ChatColor.GOLD + "Bauholz", List.of(ChatColor.GRAY + "Angriff? Blockade!"));
+                inventory.addItem(buildtool);
+            }
+
+            ItemStack arrow = createArrow(2);
+            inventory.addItem(arrow);
+            ItemStack arrow2 = createArrow(2.5);
+            inventory.addItem(arrow2);
+
+            if (random.nextDouble() < 0.2) {
+                ItemStack potion1 = createHealingPotion();
+                inventory.addItem(potion1);
+            }
+
+            if (random.nextDouble() < 0.05) {
+                ItemStack potion2 = createDamagePotion();
+                inventory.addItem(potion2);
+            }
+
+            if (random.nextDouble() < 0.01) {
+                inventory.addItem(new ItemStack(Material.SHIELD, 1));
+            }
+
+        return inventory;
+     }
 
 
-      public static ItemStack randomBow(int odds) {
-        Random random = new Random();
-        // Wähle eine zufällige Kategorie
+
+    public static ItemStack randomBow(int odds) {
+        // Waehle eine zufaellige Kategorie
         String category = CATEGORIES[random.nextInt(CATEGORIES.length)];
 
-        // Bestimme die Rarität basierend auf Wahrscheinlichkeiten
-        int rarityIndex = 0;
-        if (odds==0) {
-        rarityIndex = determineRaritySpecial();
-        } else rarityIndex = determineRarityNormal();
+        // Bestimme die Raritaet basierend auf Wahrscheinlichkeiten
+        int rarityIndex;
+        if (odds == 0) {
+            rarityIndex = determineRaritySpecial();
+        } else {
+            rarityIndex = determineRarityNormal();
+        }
 
-        // Wähle die entsprechende Farbe der Rarität
+        // Waehle die entsprechende Farbe der Raritaet
         ChatColor rarityColor = RARITY_COLORS[rarityIndex];
 
         // Erstelle den Crossbow
@@ -142,15 +140,15 @@ public class LuckyItem implements Listener {
                     ChatColor.GRAY + "Kategorie: " + category
             ));
 
-            // Füge Verzauberungen basierend auf Kategorie und Seltenheit hinzu
+            // Fuege Verzauberungen basierend auf Kategorie und Seltenheit hinzu
             switch (category) {
                 case "Multishot" -> meta.addEnchant(Enchantment.MULTISHOT, rarityIndex + 1, true);
                 case "Speedshot" -> meta.addEnchant(Enchantment.QUICK_CHARGE, rarityIndex + 1, true);
-                case "Distanceshot" -> meta.addEnchant(Enchantment.ARROW_KNOCKBACK, rarityIndex + 1, true);
-                case "Precisionshot" -> meta.addEnchant(Enchantment.ARROW_DAMAGE, rarityIndex + 1, true);
+                case "Distanceshot" -> meta.addEnchant(Enchantment.PUNCH, rarityIndex + 1, true);
+                case "Precisionshot" -> meta.addEnchant(Enchantment.POWER, rarityIndex + 1, true);
             }
 
-            // Verstecke die Verzauberungen (optional)
+            // Verstecke die Verzauberungen
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
             crossbow.setItemMeta(meta);
@@ -160,13 +158,12 @@ public class LuckyItem implements Listener {
     }
 
     private static int determineRarityNormal() {
-        Random random = new Random();
-        // Beginne mit der häufigsten Seltenheit (Grau)
+        // Beginne mit der haeufigsten Seltenheit (Grau)
         int rarity = 0;
 
-        // Jede Stufe hat eine 33% Chance, zur nächsten aufzusteigen
+        // Jede Stufe hat eine 33% Chance, zur naechsten aufzusteigen
         if (random.nextDouble() < 0.33) {
-            rarity++; // Grün
+            rarity++; // Gruen
             if (random.nextDouble() < 0.33) {
                 rarity++; // Blau
                 if (random.nextDouble() < 0.33) {
@@ -182,13 +179,12 @@ public class LuckyItem implements Listener {
     }
 
     private static int determineRaritySpecial() {
-        Random random = new Random();
-        // Beginne mit der häufigsten Seltenheit (Grau)
+        // Beginne mit der haeufigsten Seltenheit (Grau)
         int rarity = 0;
 
-        // Jede Stufe hat eine 33% Chance, zur nächsten aufzusteigen
+        // Jede Stufe hat eine 50% Chance, zur naechsten aufzusteigen
         if (random.nextDouble() < 0.5) {
-            rarity++; // Grün
+            rarity++; // Gruen
             if (random.nextDouble() < 0.5) {
                 rarity++; // Blau
                 if (random.nextDouble() < 0.5) {
@@ -205,21 +201,20 @@ public class LuckyItem implements Listener {
 
     private static String rarityToString(int index) {
         return switch (index) {
-            case 0 -> "Gewöhnlich";
-            case 1 -> "Ungewöhnlich";
+            case 0 -> "Gewoehnlich";
+            case 1 -> "Ungewoehnlich";
             case 2 -> "Selten";
             case 3 -> "Episch";
-            case 4 -> "Legendär";
+            case 4 -> "Legendaer";
             default -> "Unbekannt";
         };
     }
 
     public static ItemStack createArrow(double multiplier) {
-        Random random = new Random();
         int amount = 1;
-        // Wähle eine zufällige Kategorie
+        // Waehle eine zufaellige Kategorie
         String category = CATEGORIES[random.nextInt(CATEGORIES.length)];
-        // Erstelle einen speziellen Pfeil für die Kategorie
+        // Erstelle einen speziellen Pfeil fuer die Kategorie
         ItemStack arrow = new ItemStack(Material.ARROW);
         ItemMeta meta = arrow.getItemMeta();
         if (meta != null) {
@@ -228,20 +223,18 @@ public class LuckyItem implements Listener {
 
             // Setze optional Lore
             meta.setLore(List.of(
-                    "§7Cheeese!"
+                    ChatColor.GRAY + "Cheeese!"
             ));
 
-            // Füge Verzauberungen basierend auf Kategorie und Seltenheit hinzu
+            // Bestimme Menge basierend auf Kategorie und Multiplikator
             switch (category) {
-                case "Multishot" -> amount = (int) Math.ceil(amount*10* random.nextDouble() * multiplier);
-                case "Speedshot" -> amount = (int) Math.ceil(amount*30* random.nextDouble() * multiplier);
-                case "Distanceshot" -> amount = (int) Math.ceil(amount*2* random.nextDouble() * multiplier);
-                case "Precisionshot" -> amount = (int) Math.ceil(amount*5* random.nextDouble() * multiplier);
+                case "Multishot" -> amount = (int) Math.ceil(amount * 10 * random.nextDouble() * multiplier);
+                case "Speedshot" -> amount = (int) Math.ceil(amount * 30 * random.nextDouble() * multiplier);
+                case "Distanceshot" -> amount = (int) Math.ceil(amount * 2 * random.nextDouble() * multiplier);
+                case "Precisionshot" -> amount = (int) Math.ceil(amount * 5 * random.nextDouble() * multiplier);
             }
 
-            
-            arrow.setAmount(amount);
-
+            arrow.setAmount(Math.max(1, amount));
             arrow.setItemMeta(meta);
         }
 
@@ -249,19 +242,19 @@ public class LuckyItem implements Listener {
     }
 
     public static ItemStack createHealingPotion() {
-        ItemStack potion = new ItemStack(Material.SPLASH_POTION); // Werfbarer Trank
+        ItemStack potion = new ItemStack(Material.SPLASH_POTION);
         PotionMeta meta = (PotionMeta) potion.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(ChatColor.LIGHT_PURPLE + "Wurf-Heiltrank");
-            meta.setBasePotionData(new PotionData(PotionType.REGEN));
+            meta.setBasePotionType(PotionType.REGENERATION);
             meta.clearCustomEffects();
             meta.addCustomEffect(
-                new PotionEffect(PotionEffectType.REGENERATION, 100, 0), // Dauer in Ticks: 100 = 5 Sekunden
-                true // Überschreibe bestehende Effekte
+                new PotionEffect(PotionEffectType.REGENERATION, 100, 0),
+                true
             );
             meta.setLore(List.of(
                     ChatColor.GRAY + "Ein magischer Heiltrank.",
-                    ChatColor.GRAY + "Heilt Spieler in einem Radius von 5 Blöcken."
+                    ChatColor.GRAY + "Heilt Spieler in einem Radius von 5 Bloecken."
             ));
             potion.setItemMeta(meta);
         }
@@ -269,20 +262,19 @@ public class LuckyItem implements Listener {
     }
 
     public static ItemStack createDamagePotion() {
-        ItemStack potion = new ItemStack(Material.SPLASH_POTION); // Werfbarer Trank
-            PotionMeta meta = (PotionMeta) potion.getItemMeta();
+        ItemStack potion = new ItemStack(Material.SPLASH_POTION);
+        PotionMeta meta = (PotionMeta) potion.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.LIGHT_PURPLE + "Flächenschaden");
-             // Setze den Tranktyp auf Regeneration
-            meta.setBasePotionData(new PotionData(PotionType.INSTANT_DAMAGE));
-             meta.clearCustomEffects();
+            meta.setDisplayName(ChatColor.LIGHT_PURPLE + "Flaechenschaden");
+            meta.setBasePotionType(PotionType.HARMING);
+            meta.clearCustomEffects();
             meta.addCustomEffect(
-                new PotionEffect(PotionEffectType.REGENERATION, 100, 0), // Dauer in Ticks: 100 = 5 Sekunden
-                true // Überschreibe bestehende Effekte
+                new PotionEffect(PotionEffectType.INSTANT_DAMAGE, 1, 0),
+                true
             );
             meta.setLore(List.of(
                     ChatColor.GRAY + "Ein magischer Schmerzentrank.",
-                    ChatColor.GRAY + "Verletzt Spieler in einem Radius von 5 Blöcken."
+                    ChatColor.GRAY + "Verletzt Spieler in einem Radius von 5 Bloecken."
             ));
             potion.setItemMeta(meta);
         }

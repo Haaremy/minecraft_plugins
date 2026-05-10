@@ -1,0 +1,11 @@
+name: hmy1v1
+version: "1.0"
+main: de.haaremy.hmy1v1.Hmy1v1
+api-version: 1.19
+depend: [hmyCore]
+description: 1v1 Duell-System mit Kit-Auswahl
+author: Haaremy
+commands:
+  duel:
+    description: 1v1 Duell-System
+    usage: /duel <accept|deny|join|leave|stats|kit|spectate|setup>

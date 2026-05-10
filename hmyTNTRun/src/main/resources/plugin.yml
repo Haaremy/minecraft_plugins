@@ -1,0 +1,11 @@
+name: hmyTNTRun
+version: "1.0"
+main: de.haaremy.hmytntrun.HmyTNTRun
+api-version: 1.19
+depend: [hmyCore]
+description: TNTRun - Boden verschwindet unter deinen Fuessen
+author: Haaremy
+commands:
+  tntrun:
+    description: TNTRun Spielmodus
+    usage: /tntrun <join|leave|stats>

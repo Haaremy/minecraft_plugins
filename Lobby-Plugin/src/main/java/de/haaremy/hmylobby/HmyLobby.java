@@ -32,6 +32,7 @@ public class HmyLobby extends JavaPlugin {
     private LobbyGameManager lobbyGameManager;
     private LotteryCrateListener lotteryCrateListener;
     private SocialListener socialListener;
+    private StatsScoreboardManager statsScoreboardManager;
 
     @Override
     public void onEnable() {
@@ -53,6 +54,8 @@ public class HmyLobby extends JavaPlugin {
         this.serverSelectorConfig = new ServerSelectorConfig(configManager, getLogger());
         this.language = new HmyLanguageManager(getLogger(), pluginsDir, configManager, luckPerms);
         this.language.loadAllLanguageFiles();
+
+        this.statsScoreboardManager = new StatsScoreboardManager(this);
 
         this.playerEventListener = new PlayerEventListener(this, language);
         getServer().getPluginManager().registerEvents(this.playerEventListener, this);
@@ -101,7 +104,7 @@ public class HmyLobby extends JavaPlugin {
         JukeboxManager jukeboxManager = new JukeboxManager(this, hmySettingsDir);
         getServer().getPluginManager().registerEvents(new JukeboxListener(jukeboxManager), this);
         var jukeboxCmd = getCommand("jukebox");
-        if (jukeboxCmd != null) jukeboxCmd.setExecutor(new ComJukebox(jukeboxManager));
+        if (jukeboxCmd != null) jukeboxCmd.setExecutor(new ComJukebox(jukeboxManager, language));
 
         // Commands
         ComNavigator navigatorCommand = new ComNavigator(this);
@@ -163,4 +166,5 @@ public class HmyLobby extends JavaPlugin {
     public SocialListener getSocialListener()                  { return socialListener; }
     public void openNavigatorMenu(org.bukkit.entity.Player player) { playerEventListener.openNavigatorMenu(player); }
     public void connectToServer(org.bukkit.entity.Player player, String server) { playerEventListener.connectToServer(player, server); }
+    public StatsScoreboardManager getStatsScoreboardManager()  { return statsScoreboardManager; }
 }

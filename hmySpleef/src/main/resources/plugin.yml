@@ -1,0 +1,11 @@
+name: hmySpleef
+version: "1.0"
+main: de.haaremy.hmyspleef.HmySpleef
+api-version: 1.19
+depend: [hmyCore]
+description: Spleef - Zerstoere den Boden unter deinen Gegnern
+author: Haaremy
+commands:
+  spleef:
+    description: Spleef Spielmodus
+    usage: /spleef <join|leave|stats>

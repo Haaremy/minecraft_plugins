@@ -1,0 +1,12 @@
+name: hmyParkour
+version: "1.0"
+main: de.haaremy.hmyparkour.HmyParkour
+api-version: 1.19
+depend: [hmyCore]
+description: Parkour-System mit Checkpoints und Bestzeiten
+author: Haaremy
+commands:
+  pk:
+    description: Parkour-System
+    usage: /pk <list|join|quit|checkpoint|top|setup>
+    aliases: [parcour]

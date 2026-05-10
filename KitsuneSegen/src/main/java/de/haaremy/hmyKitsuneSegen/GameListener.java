@@ -176,8 +176,9 @@ public class GameListener implements Listener {
                     player.getWorld().dropItemNaturally(player.getLocation(), existing);
                     player.getInventory().setItem(slot, stack.clone());
                     event.getItem().remove();
-                    player.sendActionBar(ChatColor.GREEN + "Bessere Waffe: "
-                            + stack.getItemMeta().getDisplayName());
+                    ItemMeta upgradeMeta = stack.getItemMeta();
+                    String upgradeName = upgradeMeta != null ? upgradeMeta.getDisplayName() : "Unbekannt";
+                    player.sendActionBar(ChatColor.GREEN + "Bessere Waffe: " + upgradeName);
                 } else {
                     event.setCancelled(true);
                     player.sendActionBar(ChatColor.YELLOW + "Du hast bereits eine bessere " + newCategory + "-Waffe.");
@@ -213,8 +214,8 @@ public class GameListener implements Listener {
         }
         if (!hasMatch) {
             event.setCancelled(true);
-            player.sendActionBar(ChatColor.RED + "Keine §e" + category
-                    + "§c-Pfeile im Inventar!");
+            player.sendActionBar(ChatColor.RED + "Keine " + ChatColor.YELLOW + category
+                    + ChatColor.RED + "-Pfeile im Inventar!");
         }
     }
 
@@ -317,7 +318,7 @@ public class GameListener implements Listener {
             if (chest != null && isLegendaryElytra(chest)) {
                 event.setCancelled(true);
                 player.getInventory().setChestplate(null);
-                player.sendActionBar(ChatColor.GOLD + "§lFallschutz-Elytra §ahat den Aufprall abgefangen!");
+                player.sendActionBar(ChatColor.GOLD + "" + ChatColor.BOLD + "Fallschutz-Elytra " + ChatColor.GREEN + "hat den Aufprall abgefangen!");
                 player.playSound(player.getLocation(), Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 0.8f);
                 return;
             }
@@ -330,7 +331,7 @@ public class GameListener implements Listener {
             if (helmet != null && isLegendaryHelmet(helmet)) {
                 event.setCancelled(true);
                 player.getInventory().setHelmet(null);
-                player.sendActionBar(ChatColor.GOLD + "§lVorhalte-Helm §ahat den Schuss abgefangen!");
+                player.sendActionBar(ChatColor.GOLD + "" + ChatColor.BOLD + "Vorhalte-Helm " + ChatColor.GREEN + "hat den Schuss abgefangen!");
                 player.playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1.2f);
                 return;
             }
@@ -347,7 +348,7 @@ public class GameListener implements Listener {
         Player killed = event.getEntity();
         if (!isInGame(killed)) return;
 
-        event.setDeathMessage(null);
+        event.deathMessage(null);
         event.getDrops().clear();
         event.setDroppedExp(0);
         event.setKeepInventory(false); // cleared by eliminatePlayer + re-given on respawn
