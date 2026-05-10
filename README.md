@@ -31,22 +31,24 @@ This repository contains the custom plugins and operational documentation for th
 
 ## Plugin Overview
 
-| Plugin | Platform | Server | Purpose | Setup docs |
-|--------|----------|--------|---------|------------|
-| [hmyVelocity](Velocity-Plugin/README.md) | Velocity | Proxy | Routing, economy, friends, DMs, reports, tab list | `plugins/hmyvelocityplugin/`, `hmyLanguages/` |
-| [hmyPaper](Paper-Plugin/README.md) | Paper | All Paper backends | Essentials, moderation, homes, worlds, anti-build, shared parkour | `hmySettings/general.yml`, `hmySettings/helpBook.yml` |
-| [hmyLobby](Lobby-Plugin/README.md) | Paper | lobby | Hotbar, navigator, cosmetics, lobby games, balloons, jukeboxes | `hmySettings/lobby.yml`, `lobbygames.yml`, `balloons.yml`, `jukeboxes.yml` |
-| [hmyNavigator](hmyNavigator/README.md) | Paper | lobby | Standalone game-mode compass and `/play` routing | `plugins/hmyNavigator/config.yml` |
-| [hmyWallpaper](Wallpapers/README.md) | Paper | lobby | Map wallpapers from colors, blocks, SVGs, images | `plugins/hmyWallpaper/svgs/` |
-| [HmyAI](HmyAI/README.md) | Paper | lobby/admin server | `/ai` bridge to Claude CLI with local MCP callback | `plugins/HmyAI/config.yml` |
-| [hmyCore](hmyCore/README.md) | Paper | game backends | Economy, stats, arena, GUI, countdown and team helpers | `plugins/hmyCore/config.yml`, `data.db` |
-| [hmyDailyRewards](hmyDailyRewards/README.md) | Paper | lobby/game backends | Daily claim GUI, streak rewards, hmyCore coins, LuckPerms temp rank | `plugins/hmyDailyRewards/config.yml` |
-| [hmy1v1](hmy1v1/README.md) | Paper | kitsune/game | 1v1 duels, kits, ranked ELO, spectator mode | `plugins/hmy1v1/arenas.yml` |
-| [hmySumo](hmySumo/README.md) | Paper | kitsune/game | Best-of-3 sumo duels with ELO | `plugins/hmySumo/arenas.yml` |
-| [hmyTNTRun](hmyTNTRun/README.md) | Paper | kitsune/game | TNT Run arenas with layer reset | `plugins/hmyTNTRun/arenas.yml` |
-| [hmySpleef](hmySpleef/README.md) | Paper | kitsune/game | Spleef arenas with snow-floor reset | `plugins/hmySpleef/arenas.yml` |
-| [hmyParkour](hmyParkour/README.md) | Paper | kitsune/game | Parkour courses, checkpoints, best times | `plugins/hmyParkour/courses.yml` |
-| [KitsuneSegen](KitsuneSegen/README.md) | Paper | kitsune | Battle-royale game mode | `plugins/hmyKitsuneSegen/config.yml`, world backup |
+> **Player guide:** for "how do I actually play this?" docs see [GAMES.md](GAMES.md) (overview of every mode) and the `PLAY.md` linked next to each plugin below. The `README.md` files are the admin/setup reference.
+
+| Plugin | Platform | Server | Purpose | Player guide | Admin docs |
+|--------|----------|--------|---------|--------------|------------|
+| [hmyVelocity](Velocity-Plugin/README.md) | Velocity | Proxy | Routing, economy, friends, DMs, reports, tab list | — | [README](Velocity-Plugin/README.md) |
+| [hmyPaper](Paper-Plugin/README.md) | Paper | All Paper backends | Essentials, moderation, homes, worlds, anti-build, shared parkour | — | [README](Paper-Plugin/README.md) |
+| [hmyLobby](Lobby-Plugin/README.md) | Paper | lobby | Hotbar, navigator, cosmetics, lobby games, balloons, jukeboxes | [PLAY](Lobby-Plugin/PLAY.md) | [README](Lobby-Plugin/README.md) |
+| [hmyNavigator](hmyNavigator/README.md) | Paper | lobby | Standalone game-mode compass and `/play` routing | [PLAY](hmyNavigator/PLAY.md) | [README](hmyNavigator/README.md) |
+| [hmyWallpaper](Wallpapers/README.md) | Paper | lobby | Map wallpapers from colors, blocks, SVGs, images | — | [README](Wallpapers/README.md) |
+| [HmyAI](HmyAI/README.md) | Paper | lobby/admin server | `/ai` bridge to Claude CLI with local MCP callback | OP-only | [README](HmyAI/README.md) |
+| [hmyCore](hmyCore/README.md) | Paper | game backends | Economy, stats, arena, GUI, countdown and team helpers | (used by games) | [README](hmyCore/README.md) |
+| [hmyDailyRewards](hmyDailyRewards/README.md) | Paper | lobby/game backends | Daily claim GUI, streak rewards, hmyCore coins, LuckPerms temp rank | [PLAY](hmyDailyRewards/PLAY.md) | [README](hmyDailyRewards/README.md) |
+| [hmy1v1](hmy1v1/README.md) | Paper | kitsune/game | 1v1 duels, kits, ranked ELO, spectator mode | [PLAY](hmy1v1/PLAY.md) | [README](hmy1v1/README.md) |
+| [hmySumo](hmySumo/README.md) | Paper | kitsune/game | Best-of-3 sumo duels with ELO | [PLAY](hmySumo/PLAY.md) | [README](hmySumo/README.md) |
+| [hmyTNTRun](hmyTNTRun/README.md) | Paper | kitsune/game | TNT Run arenas with layer reset | [PLAY](hmyTNTRun/PLAY.md) | [README](hmyTNTRun/README.md) |
+| [hmySpleef](hmySpleef/README.md) | Paper | kitsune/game | Spleef arenas with snow-floor reset | [PLAY](hmySpleef/PLAY.md) | [README](hmySpleef/README.md) |
+| [hmyParkour](hmyParkour/README.md) | Paper | kitsune/game | Parkour courses, checkpoints, best times | [PLAY](hmyParkour/PLAY.md) | [README](hmyParkour/README.md) |
+| [KitsuneSegen](KitsuneSegen/README.md) | Paper | kitsune | Battle-royale game mode | [PLAY](KitsuneSegen/PLAY.md) | [README](KitsuneSegen/README.md) |
 
 ### Build
 
