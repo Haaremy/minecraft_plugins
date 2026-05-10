@@ -1,5 +1,6 @@
 package de.haaremy.hmylobby.jukebox;
 
+import de.haaremy.hmylobby.HmyLanguageManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -54,13 +55,15 @@ public class JukeboxManager {
 
     private final Plugin plugin;
     private final Logger logger;
+    private final HmyLanguageManager language;
     private final Map<String, JukeboxData> jukeboxes = new LinkedHashMap<>();
     private final JukeboxConfig config;
     private final Map<UUID, PendingSelection> pendingSelections = new HashMap<>();
 
-    public JukeboxManager(Plugin plugin, Path hmySettingsDir) {
+    public JukeboxManager(Plugin plugin, HmyLanguageManager language, Path hmySettingsDir) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
+        this.language = language;
         this.config = new JukeboxConfig(hmySettingsDir, logger);
         config.load(jukeboxes);
     }
@@ -69,21 +72,25 @@ public class JukeboxManager {
 
     public void beginCreate(Player player, String id) {
         if (jukeboxes.containsKey(id)) {
-            player.sendMessage("§cEine Jukebox mit ID §e" + id + "§c existiert bereits.");
+            player.sendMessage(language.getMessage(player, "jukebox.mgr.create.exists",
+                    "§cEine Jukebox mit ID §e{id}§c existiert bereits.", Map.of("id", id)));
             return;
         }
         pendingSelections.put(player.getUniqueId(), new PendingSelection(SelectionAction.CREATE, id));
-        player.sendMessage("§6Rechtsklick die Jukebox mit dem §egoldenen Schwert§6.");
+        player.sendMessage(language.getMessage(player, "jukebox.mgr.create.prompt",
+                "§6Rechtsklick die Jukebox mit dem §egoldenen Schwert§6."));
     }
 
     public void beginAddDiskbox(Player player, String id) {
         JukeboxData data = jukeboxes.get(id);
         if (data == null) {
-            player.sendMessage("§cUnbekannte Jukebox: §e" + id);
+            player.sendMessage(language.getMessage(player, "jukebox.mgr.unknown",
+                    "§cUnbekannte Jukebox: §e{id}", Map.of("id", id)));
             return;
         }
         pendingSelections.put(player.getUniqueId(), new PendingSelection(SelectionAction.ADD_DISKBOX, id));
-        player.sendMessage("§6Rechtsklick die Truhe mit dem §egoldenen Schwert§6.");
+        player.sendMessage(language.getMessage(player, "jukebox.mgr.add.prompt",
+                "§6Rechtsklick die Truhe mit dem §egoldenen Schwert§6."));
     }
 
     public boolean hasPendingSelection(UUID uuid) {
@@ -100,17 +107,21 @@ public class JukeboxManager {
 
         if (pending.action() == SelectionAction.CREATE) {
             if (block.getType() != Material.JUKEBOX) {
-                player.sendMessage("§cDas ist keine Jukebox. Aktion abgebrochen.");
+                player.sendMessage(language.getMessage(player, "jukebox.mgr.create.not_jukebox",
+                        "§cDas ist keine Jukebox. Aktion abgebrochen."));
                 return;
             }
             JukeboxData data = new JukeboxData(pending.jukeboxId(), block.getLocation());
             jukeboxes.put(pending.jukeboxId(), data);
             config.save(jukeboxes);
-            player.sendMessage("§6✓ Jukebox §e" + pending.jukeboxId() + "§6 registriert! Lege eine Disk ein und nutze §e/jukebox " + pending.jukeboxId() + " play endless§6.");
+            player.sendMessage(language.getMessage(player, "jukebox.mgr.create.ok",
+                    "§6✓ Jukebox §e{id}§6 registriert! Lege eine Disk ein und nutze §e/jukebox {id} play endless§6.",
+                    Map.of("id", pending.jukeboxId())));
 
         } else if (pending.action() == SelectionAction.ADD_DISKBOX) {
             if (!(block.getState() instanceof Container)) {
-                player.sendMessage("§cDas ist kein Container. Aktion abgebrochen.");
+                player.sendMessage(language.getMessage(player, "jukebox.mgr.add.not_container",
+                        "§cDas ist kein Container. Aktion abgebrochen."));
                 return;
             }
             JukeboxData data = jukeboxes.get(pending.jukeboxId());
@@ -118,7 +129,9 @@ public class JukeboxManager {
             data.chestLoc = block.getLocation();
             config.save(jukeboxes);
             doStartDiskbox(data);
-            player.sendMessage("§6✓ Diskbox §e" + pending.jukeboxId() + "§6 verknüpft und gestartet!");
+            player.sendMessage(language.getMessage(player, "jukebox.mgr.add.ok",
+                    "§6✓ Diskbox §e{id}§6 verknuepft und gestartet!",
+                    Map.of("id", pending.jukeboxId())));
         }
     }
 
@@ -128,7 +141,8 @@ public class JukeboxManager {
     public boolean startEndless(String id, Player feedback) {
         JukeboxData data = jukeboxes.get(id);
         if (data == null) {
-            if (feedback != null) feedback.sendMessage("§cUnbekannte Jukebox: §e" + id);
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.unknown",
+                    "§cUnbekannte Jukebox: §e{id}", Map.of("id", id)));
             return false;
         }
 
@@ -137,20 +151,23 @@ public class JukeboxManager {
             data.streamEndless = true;
             config.save(jukeboxes);
             scheduleStreamRepeat(data);
-            if (feedback != null) feedback.sendMessage("§6✓ Stream §e" + id + "§6 wird endlos wiederholt.");
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.endless.stream_loop",
+                    "§6✓ Stream §e{id}§6 wird endlos wiederholt.", Map.of("id", id)));
             return true;
         }
 
         Block block = data.jukeboxLoc.getBlock();
         if (!(block.getState() instanceof Jukebox jukebox)) {
-            if (feedback != null) feedback.sendMessage("§cAn der Jukebox-Position befindet sich keine Jukebox.");
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.endless.no_block",
+                    "§cAn der Jukebox-Position befindet sich keine Jukebox."));
             return false;
         }
 
         // Use cached disc or read from block
         Material disc = isMusicDisc(data.currentDisc) ? data.currentDisc : jukebox.getPlaying();
         if (!isMusicDisc(disc)) {
-            if (feedback != null) feedback.sendMessage("§cKeine Disk in der Jukebox §e" + id + "§c.");
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.endless.no_disc",
+                    "§cKeine Disk in der Jukebox §e{id}§c.", Map.of("id", id)));
             return false;
         }
 
@@ -161,7 +178,9 @@ public class JukeboxManager {
         jukebox.update();
         jukebox.startPlaying();
         scheduleEndlessNext(data);
-        if (feedback != null) feedback.sendMessage("§6✓ Jukebox §e" + id + "§6 spielt §e" + discName(disc) + "§6 endlos.");
+        if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.endless.ok",
+                "§6✓ Jukebox §e{id}§6 spielt §e{disc}§6 endlos.",
+                Map.of("id", id, "disc", discName(disc))));
         return true;
     }
 
@@ -183,15 +202,19 @@ public class JukeboxManager {
     public boolean startDiskbox(String id, Player feedback) {
         JukeboxData data = jukeboxes.get(id);
         if (data == null) {
-            if (feedback != null) feedback.sendMessage("§cUnbekannte Jukebox: §e" + id);
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.unknown",
+                    "§cUnbekannte Jukebox: §e" + id, Map.of("id", id)));
             return false;
         }
         if (data.chestLoc == null) {
-            if (feedback != null) feedback.sendMessage("§cKeine Diskbox für §e" + id + "§c verknüpft. Nutze §e/jukebox " + id + " add diskbox§c.");
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.diskbox.no_link",
+                    "§cKeine Diskbox für §e" + id + "§c verknüpft. Nutze §e/jukebox " + id + " add diskbox§c.",
+                    Map.of("id", id)));
             return false;
         }
         doStartDiskbox(data);
-        if (feedback != null) feedback.sendMessage("§6✓ Diskbox §e" + id + "§6 gestartet.");
+        if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.diskbox.ok",
+                "§6✓ Diskbox §e" + id + "§6 gestartet.", Map.of("id", id)));
         return true;
     }
 
@@ -231,11 +254,13 @@ public class JukeboxManager {
     public boolean setStream(String id, String url, Player feedback) {
         JukeboxData data = jukeboxes.get(id);
         if (data == null) {
-            if (feedback != null) feedback.sendMessage("§cUnbekannte Jukebox: §e" + id);
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.unknown",
+                    "§cUnbekannte Jukebox: §e" + id, Map.of("id", id)));
             return false;
         }
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            if (feedback != null) feedback.sendMessage("§cNur §ehttp://§c und §ehttps://§c URLs erlaubt.");
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.stream.bad_url",
+                    "§cNur §ehttp://§c und §ehttps://§c URLs erlaubt."));
             return false;
         }
         cancelTask(data);
@@ -243,7 +268,8 @@ public class JukeboxManager {
         data.streamEndless = false;
         data.mode = JukeboxMode.STREAM;
         config.save(jukeboxes);
-        if (feedback != null) feedback.sendMessage("§7⏳ Stream wird geprüft...");
+        if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.stream.checking",
+                "§7⏳ Stream wird geprüft..."));
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             boolean live = isLiveStream(url);
@@ -251,8 +277,10 @@ public class JukeboxManager {
                 data.streamLive = live;
                 playStreamToAll(data);
                 if (feedback != null) {
-                    feedback.sendMessage("§6✓ Jukebox §e" + id + "§6 spielt Stream"
-                            + (live ? " §7(Live)" : "") + "§6. Nutze §e/jukebox " + id + " play endless§6 zum Wiederholen.");
+                    String key = live ? "jukebox.mgr.stream.ok.live" : "jukebox.mgr.stream.ok.normal";
+                    String fallback = "§6✓ Jukebox §e" + id + "§6 spielt Stream"
+                            + (live ? " §7(Live)" : "") + "§6. Nutze §e/jukebox " + id + " play endless§6 zum Wiederholen.";
+                    feedback.sendMessage(language.getMessage(feedback, key, fallback, Map.of("id", id)));
                 }
             });
         });
@@ -282,7 +310,8 @@ public class JukeboxManager {
     public boolean stopPlayback(String id, Player feedback) {
         JukeboxData data = jukeboxes.get(id);
         if (data == null) {
-            if (feedback != null) feedback.sendMessage("§cUnbekannte Jukebox: §e" + id);
+            if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.unknown",
+                    "§cUnbekannte Jukebox: §e" + id, Map.of("id", id)));
             return false;
         }
         cancelTask(data);
@@ -293,7 +322,8 @@ public class JukeboxManager {
             jukebox.stopPlaying();
             jukebox.update();
         }
-        if (feedback != null) feedback.sendMessage("§6✓ Jukebox §e" + id + "§6 gestoppt.");
+        if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.stop.ok",
+                "§6✓ Jukebox §e" + id + "§6 gestoppt.", Map.of("id", id)));
         return true;
     }
 
@@ -303,7 +333,8 @@ public class JukeboxManager {
         for (String id : ids) {
             JukeboxData data = jukeboxes.get(id);
             if (data == null) {
-                if (feedback != null) feedback.sendMessage("§cUnbekannte Jukebox: §e" + id);
+                if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.unknown",
+                        "§cUnbekannte Jukebox: §e" + id, Map.of("id", id)));
                 return false;
             }
             toSync.add(data);
@@ -362,7 +393,9 @@ public class JukeboxManager {
             }
         });
 
-        if (feedback != null) feedback.sendMessage("§6✓ §e" + toSync.size() + "§6 Jukeboxen synchronisiert.");
+        if (feedback != null) feedback.sendMessage(language.getMessage(feedback, "jukebox.mgr.sync.ok",
+                "§6✓ §e" + toSync.size() + "§6 Jukeboxen synchronisiert.",
+                Map.of("count", String.valueOf(toSync.size()))));
         return true;
     }
 
@@ -436,7 +469,8 @@ public class JukeboxManager {
     private void playViaOpenAudioMc(Player player, String url) {
         // Bail early if OpenAudioMc is not installed at all
         if (Bukkit.getPluginManager().getPlugin("OpenAudioMc") == null) {
-            player.sendMessage("§cOpenAudioMc ist nicht installiert – Stream kann nicht abgespielt werden.");
+            player.sendMessage(language.getMessage(player, "jukebox.mgr.oam.not_installed",
+                    "§cOpenAudioMc ist nicht installiert – Stream kann nicht abgespielt werden."));
             return;
         }
         try {

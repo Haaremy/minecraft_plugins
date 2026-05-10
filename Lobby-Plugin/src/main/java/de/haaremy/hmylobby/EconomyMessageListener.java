@@ -36,6 +36,9 @@ public class EconomyMessageListener implements PluginMessageListener {
             Player target = Bukkit.getPlayer(uuid);
             if (target == null) return;
 
+            // Stats-Scoreboard füttern (wird refreshed wenn angezeigt)
+            plugin.getStatsScoreboardManager().updateBalance(uuid, coins, shards);
+
             // Show balance in action bar
             target.sendActionBar(Component.text(
                     "§6⬡ §e" + coins + " hmyCoins  §8| §b◆ §3" + shards + " hmyShards"));

@@ -1,0 +1,11 @@
+name: hmySumo
+version: "1.0"
+main: de.haaremy.hmysumo.HmySumo
+api-version: 1.19
+depend: [hmyCore]
+description: Sumo 1v1 Spielmodus
+author: Haaremy
+commands:
+  sumo:
+    description: Sumo-Spielmodus
+    usage: /sumo <join|leave|stats|setup>

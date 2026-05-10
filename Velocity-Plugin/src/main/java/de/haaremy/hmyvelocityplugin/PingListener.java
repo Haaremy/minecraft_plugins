@@ -19,12 +19,12 @@ public class PingListener {
     // Animation frames – cycle every 700 ms based on system clock
     private static final long FRAME_DURATION_MS = 700;
     private static final String[] MOTD_FRAMES = {
-        "<gradient:#ffaa00:#ff5500><bold>Server by @Haaremy</bold></gradient>",
-        "<gradient:#ff5500:#ff0080><bold>Server by @Haaremy</bold></gradient>",
-        "<gradient:#ff0080:#aa00ff><bold>Server by @Haaremy</bold></gradient>",
-        "<gradient:#aa00ff:#0088ff><bold>Server by @Haaremy</bold></gradient>",
-        "<gradient:#0088ff:#00ffcc><bold>Server by @Haaremy</bold></gradient>",
-        "<gradient:#00ffcc:#ffaa00><bold>Server by @Haaremy</bold></gradient>",
+        "<gradient:#ffaa00:#ff5500><bold>hmyCubed</bold></gradient> <gray>(hmy)³ <dark_gray>· <white>by Haaremy",
+        "<gradient:#ff5500:#ff0080><bold>hmyCubed</bold></gradient> <gray>(hmy)³ <dark_gray>· <white>by Haaremy",
+        "<gradient:#ff0080:#aa00ff><bold>hmyCubed</bold></gradient> <gray>(hmy)³ <dark_gray>· <white>by Haaremy",
+        "<gradient:#aa00ff:#0088ff><bold>hmyCubed</bold></gradient> <gray>(hmy)³ <dark_gray>· <white>by Haaremy",
+        "<gradient:#0088ff:#00ffcc><bold>hmyCubed</bold></gradient> <gray>(hmy)³ <dark_gray>· <white>by Haaremy",
+        "<gradient:#00ffcc:#ffaa00><bold>hmyCubed</bold></gradient> <gray>(hmy)³ <dark_gray>· <white>by Haaremy",
     };
 
     public PingListener(ProxyServer server) {
@@ -48,7 +48,7 @@ public class PingListener {
 
         // Hover sample – title + per-server counts + total
         List<ServerPing.SamplePlayer> sample = new ArrayList<>();
-        sample.add(new ServerPing.SamplePlayer("§b§lServer by @Haaremy", UUID.randomUUID()));
+        sample.add(new ServerPing.SamplePlayer("§b§lhmyCubed §r§7(hmy)³ §8· §fby Haaremy", UUID.randomUUID()));
         sample.add(new ServerPing.SamplePlayer("§7", UUID.randomUUID()));
 
         server.getAllServers().forEach(s -> {
@@ -65,7 +65,7 @@ public class PingListener {
 
         // Version string
         ServerPing.Version version = new ServerPing.Version(
-                ping.getVersion().getProtocol(), "§b✦ mc.haaremy.de");
+                ping.getVersion().getProtocol(), "§b✦ hmyCubed §7· mc.haaremy.de");
 
         event.setPing(ping.asBuilder()
                 .description(finalMotd)

@@ -8,6 +8,8 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
+import net.luckperms.api.node.NodeType;
+import net.luckperms.api.node.types.PermissionNode;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -85,6 +87,11 @@ public class PlayerEventListener implements Listener {
             }
         }
 
+        // Stats-Scoreboard laden, falls Spieler es aktiviert hat (LuckPerms-Node "hmy.lobby.stats.on")
+        if (player.hasPermission("hmy.lobby.stats.on")) {
+            plugin.getStatsScoreboardManager().show(player);
+        }
+
         Bukkit.getScheduler().runTaskLater(plugin, () -> playFeedbackEffects(player), 20L);
     }
 
@@ -98,6 +105,7 @@ public class PlayerEventListener implements Listener {
         p.setWalkSpeed(SPEED_VALUES[0]);
         plugin.getCosmeticMenuListener().removeAllCosmetics(p);
         plugin.getSocialListener().removeOpenGUI(p.getUniqueId());
+        plugin.getStatsScoreboardManager().cleanup(p.getUniqueId());
     }
 
     @EventHandler
@@ -143,6 +151,13 @@ public class PlayerEventListener implements Listener {
     private void giveLobbyItems(Player player) {
         player.getInventory().clear();
         player.getInventory().setItem(0, getPlayerHead(player, "§bMy-Menü"));
+
+        if (player.hasPermission("hmy.lobby.friends"))
+            player.getInventory().setItem(1, createItem(Material.NAME_TAG, "§a§lFreunde",
+                    List.of("§7Deine Freundesliste",
+                            "§7Online-Status & schneller Server-Join",
+                            "",
+                            "§eRechtsklick zum Öffnen")));
 
         if (player.hasPermission("hmy.lobby.selector"))
             player.getInventory().setItem(4, createItem(Material.NETHER_STAR, "§6Navigator",
@@ -217,6 +232,8 @@ public class PlayerEventListener implements Listener {
             event.setCancelled(true); openNavigatorMenu(player);
         } else if (name.equals("§bMy-Menü")) {
             event.setCancelled(true); openHeadMenu(player);
+        } else if (item.getType() == Material.NAME_TAG && name.equals("§a§lFreunde")) {
+            event.setCancelled(true); requestFriendsList(player);
         } else if (name.equals("§bSprung Boost")) {
             handleRocketLaunch(player);
         } else if (item.getType() == Material.FEATHER && name.startsWith("§eGeschwindigkeit")) {
@@ -346,7 +363,9 @@ public class PlayerEventListener implements Listener {
         for (HmyConfigManager.TeleportPoint tp : plugin.getConfigManager().getTeleportPoints()) {
             if (tp.name().equals(name)) {
                 if (!player.hasPermission("hmy.lobby.tp." + tp.id())) {
-                    player.sendActionBar(Component.text("§cDu hast keine Berechtigung für diesen Teleportpunkt."));
+                    player.sendActionBar(Component.text(language.getMessage(player,
+                            "lobby.tp.no_permission",
+                            "§cDu hast keine Berechtigung für diesen Teleportpunkt.")));
                     player.playSound(player, Sound.ENTITY_VILLAGER_NO, 1f, 1f);
                     return;
                 }
@@ -380,6 +399,15 @@ public class PlayerEventListener implements Listener {
                 hidden ? "§bSpieler §8| §cAusgeblendet" : "§bSpieler §8| §aSichtbar",
                 List.of("§7Klicke zum Wechseln")));
 
+        boolean statsOn = plugin.getStatsScoreboardManager().isShown(player.getUniqueId());
+        inv.setItem(13, createItem(Material.TARGET,
+                statsOn ? "§6§lStats §8| §aAN" : "§6§lStats §8| §cAUS",
+                List.of("§7Zeigt Coins, Shards, Ping &",
+                        "§7Online-Zahl rechts im HUD.",
+                        "",
+                        "§8Status: " + (statsOn ? "§aAngezeigt" : "§cAusgeblendet"),
+                        "§eKlicke zum Wechseln!")));
+
         inv.setItem(14, createItem(Material.DIAMOND, "§b§lSprache §8| §7Language",
                 List.of("§7Deine Sprache: §b" + language.getPlayerLanguage(player),
                         "", "§e» Klicke zum Ändern!")));
@@ -392,9 +420,37 @@ public class PlayerEventListener implements Listener {
         switch (slot) {
             case 10 -> { toggleSpeed(player);            openUserSettingsMenu(player); }
             case 12 -> { togglePlayerVisibility(player); openUserSettingsMenu(player); }
+            case 13 -> { toggleStatsScoreboard(player);  openUserSettingsMenu(player); }
             case 14 -> openLanguageMenu(player);
             case 22 -> openHeadMenu(player);
         }
+    }
+
+    private void toggleStatsScoreboard(Player player) {
+        boolean wasOn = plugin.getStatsScoreboardManager().isShown(player.getUniqueId());
+        if (wasOn) {
+            plugin.getStatsScoreboardManager().hide(player);
+            player.sendActionBar(Component.text(language.getMessage(player,
+                    "lobby.stats.scoreboard.hidden",
+                    "§7Stats-Scoreboard §causgeblendet")));
+        } else {
+            plugin.getStatsScoreboardManager().show(player);
+            player.sendActionBar(Component.text(language.getMessage(player,
+                    "lobby.stats.scoreboard.shown",
+                    "§7Stats-Scoreboard §aangezeigt")));
+        }
+        player.playSound(player, Sound.UI_BUTTON_CLICK, 1f, wasOn ? 0.8f : 1.2f);
+
+        // Persistieren via LuckPerms-Node "hmy.lobby.stats.on"
+        plugin.getLuckPerms().getUserManager().loadUser(player.getUniqueId()).thenAcceptAsync(user -> {
+            if (user == null) return;
+            user.data().clear(node -> node.getType() == NodeType.PERMISSION
+                    && node.getKey().equals("hmy.lobby.stats.on"));
+            if (!wasOn) {
+                user.data().add(PermissionNode.builder("hmy.lobby.stats.on").value(true).build());
+            }
+            plugin.getLuckPerms().getUserManager().saveUser(user);
+        });
     }
 
     // ── Language ──────────────────────────────────────────────────────────────
@@ -451,11 +507,16 @@ public class PlayerEventListener implements Listener {
         if (clickType == ClickType.SHIFT_LEFT || clickType == ClickType.SHIFT_RIGHT) {
             // Shift-Klick → DM-Vorschlag im Chat
             player.closeInventory();
+            String dmPrompt = language.getMessage(player, "lobby.friend.dm.prompt",
+                    "§a[Nachricht an §e" + friendName + " §asenden]",
+                    Map.of("friend", friendName));
+            String dmHover = language.getMessage(player, "lobby.friend.dm.hover",
+                    "§7Klicke um §e/dm " + friendName + " §7einzugeben",
+                    Map.of("friend", friendName));
             player.sendMessage(Component.text("§8[§6DM§8] ")
-                    .append(Component.text("§a[Nachricht an §e" + friendName + " §asenden]")
+                    .append(Component.text(dmPrompt)
                             .clickEvent(ClickEvent.suggestCommand("/dm " + friendName + " "))
-                            .hoverEvent(HoverEvent.showText(
-                                    Component.text("§7Klicke um §e/dm " + friendName + " §7einzugeben")))));
+                            .hoverEvent(HoverEvent.showText(Component.text(dmHover)))));
         } else if (isOnlineFriend) {
             // Links-Klick auf Online-Freund → Server joinen
             player.closeInventory();
@@ -532,9 +593,13 @@ public class PlayerEventListener implements Listener {
     }
 
     private void playFeedbackEffects(Player player) {
+        String welcomeTitle = language.getMessage(player, "lobby.welcome.title", "§6Willkommen");
+        String welcomeSubtitle = language.getMessage(player, "lobby.welcome.subtitle",
+                "§b" + player.getName(),
+                Map.of("name", player.getName()));
         player.showTitle(Title.title(
-                Component.text("§6Willkommen"),
-                Component.text("§b" + player.getName()),
+                Component.text(welcomeTitle),
+                Component.text(welcomeSubtitle),
                 Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(2500), Duration.ofMillis(500))));
         player.getWorld().spawnParticle(Particle.DRAGON_BREATH, player.getLocation(), 1000, 1, 0, 1, 0.05, 1.0f);
         player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);

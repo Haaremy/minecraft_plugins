@@ -1,0 +1,34 @@
+name: hmyCore
+version: "2.7"
+main: de.haaremy.hmycore.HmyCore
+api-version: 1.21
+softdepend: [LuckPerms, PlaceholderAPI]
+description: Haaremy Core - Infrastruktur fuer Spielmodi
+author: Haaremy
+website: haaremy.de
+commands:
+  coins:
+    description: Zeigt deine Coins an.
+    usage: /coins
+  stats:
+    description: Zeigt deine Statistiken an.
+    usage: /stats
+  arena:
+    description: Arena-Management
+    usage: /arena <create|delete|list|join|leave|start>
+    permission: hmy.arena.admin
+  lobby:
+    description: Zurueck zur Lobby
+    usage: /lobby
+  hmyannounce:
+    description: Sendet eine Cross-Server-Ankuendigung (Chat + Title) an alle Backends.
+    usage: /hmyannounce <Text>
+    permission: hmy.announce.use
+    permission-default: op
+  hmy:
+    description: hmyCubed Hauptbefehl (Sprache, ...)
+    usage: /hmy language <de|en>
+  top:
+    description: Zeigt Leaderboards (Top-N) an.
+    usage: /top <coins|wins|losses|kills|deaths|kd|winrate|playtime> [gameType] [limit]
+    aliases: [leaderboard, lb]

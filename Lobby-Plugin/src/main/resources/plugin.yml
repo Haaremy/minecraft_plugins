@@ -71,3 +71,9 @@ permissions:
   hmy.lobby.jukebox.admin:
     description: Erlaubt das Erstellen und Verwalten von verwalteten Jukeboxen.
     default: op
+  hmy.lobby.stats.on:
+    description: Aktiviert das Stats-Sidebar-Scoreboard. Wird via Settings-Menu pro Spieler getoggelt.
+    default: false
+  hmy.lobby.friends:
+    description: Zeigt das Freunde-Hotbar-Item (Slot 1, Rechtsklick öffnet die Freundesliste).
+    default: true

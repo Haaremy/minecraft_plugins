@@ -1,0 +1,13 @@
+name: hmyNavigator
+version: "1.0"
+main: de.haaremy.hmynavigator.HmyNavigator
+api-version: 1.19
+description: Spielmodi-Navigator für die Lobby
+author: Haaremy
+commands:
+  navigator:
+    description: Öffnet das Spielmodi-Menü
+    usage: /navigator
+  play:
+    description: Wechselt zum angegebenen Spielmodus-Server
+    usage: /play <servername>

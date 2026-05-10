@@ -286,7 +286,7 @@ public class VelocityTabManager {
             : "§7Online Spieler: §d" + count + " §8auf §a" + capitalize(myServer);
 
         player.getTabList().setHeaderAndFooter(
-            Component.text("§l========================\n§7 Willkommen auf\n\n§dMC.HAAREMY.DE\n\n"
+            Component.text("§l========================\n§7 Willkommen auf\n\n§dhmyCubed §7(hmy)³\n§8by §fHaaremy §7· §fmc.haaremy.de\n\n"
                 + countLine + "\n§r§l========================"),
             Component.text("§r§l========================\n\n§7Ping: §d"
                 + player.getPing() + " ms\n§r§l========================")
