@@ -1,0 +1,29 @@
+# Maven build outputs
+target/
+*.class
+dependency-reduced-pom.xml
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Versioned build snapshots — keep only the canonical name in artifacts/deployed-custom/
+/hmy1v1-*.jar
+/HmyAI-*.jar
+/hmyCore-*.jar
+/hmyDailyRewards-*.jar
+/hmyKitsuneSegen-*.jar
+/hmyLobby-*.jar
+/hmyNavigator-*.jar
+/hmyPaper-*.jar
+/hmyParkour-*.jar
+/hmySpleef-*.jar
+/hmySumo-*.jar
+/hmyTNTRun-*.jar
+/hmyVelocity-*.jar
+/hmyWallpaper-*.jar
